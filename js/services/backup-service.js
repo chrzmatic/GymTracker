@@ -159,7 +159,16 @@ export function validarBackup(backup) {
 }
 
 /**
- * Restaura um backup, substituindo os dados locais com segurança.
+ * Restaura um backup, **substituindo** os dados locais.
+ *
+ * Substitui em vez de mesclar porque mesclar dois históricos de treino
+ * criaria duplicatas silenciosas, e não há como decidir qual versão de um
+ * registro editado nos dois lados deve vencer. A tela avisa e pede
+ * confirmação antes.
+ *
+ * Stores que existem no banco mas não no backup são esvaziadas, para o
+ * resultado ser exatamente o estado do backup.
+ *
  * @param {Object} backup já validado
  * @returns {Promise<Object>} quantos registros por store
  */
@@ -168,37 +177,12 @@ export async function restaurar(backup) {
   const gravados = {};
 
   for (const store of stores) {
-    // Se a store não existir no JSON, não limpa a tabela existente à toa
-    if (!backup.dados || !(store in backup.dados)) {
-      continue;
-    }
-
     const itens = Array.isArray(backup.dados[store]) ? backup.dados[store] : [];
-
-    await new Promise((resolve, reject) => {
-      transacao(store, 'readwrite', (tx) => {
-        const os = tx.objectStore(store);
-        
-        // 1. Limpa a tabela
-        const clearReq = os.clear();
-
-        clearReq.onsuccess = () => {
-          if (itens.length === 0) return;
-
-          // 2. Insere os itens do backup
-          itens.forEach((item) => {
-            const putReq = os.put(item);
-            putReq.onerror = (e) => console.error(`Erro ao inserir na store ${store}:`, e.target.error);
-          });
-        };
-
-        // 3. Só resolve a Promise quando O BANCO CONFIRMAR que salvou tudo no disco
-        tx.oncomplete = () => resolve();
-        tx.onerror = (e) => reject(e.target.error || new Error(`Erro na transação da store ${store}`));
-        tx.onabort = (e) => reject(e.target.error || new Error(`Transação abortada na store ${store}`));
-      });
+    await transacao(store, 'readwrite', (tx) => {
+      const os = tx.objectStore(store);
+      os.clear();
+      itens.forEach((item) => os.put(item));
     });
-
     gravados[store] = itens.length;
   }
 
