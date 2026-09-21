@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+*.log
+*.txt
+ESPECIFICACAO.md
+PROGRESSO.md
+TREINO-DADOS.md
+DIETA-DADOS.md

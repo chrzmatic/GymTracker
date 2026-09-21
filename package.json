@@ -1,0 +1,17 @@
+{
+  "name": "gymtracker",
+  "version": "0.1.0",
+  "description": "App pessoal de treino e dieta (PWA, sem build).",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/",
+    "lint": "eslint js tests",
+    "format": "prettier --write \"**/*.{js,json,css,html,md}\"",
+    "serve": "npx --yes serve ."
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0"
+  }
+}

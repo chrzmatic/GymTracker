@@ -1,0 +1,938 @@
+/* Botões, cards, formulários e diálogos. Alvos grandes, uso com uma mão. */
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--texto);
+}
+
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: var(--raio);
+  border: 1px solid var(--borda);
+  background: var(--bg-campo);
+  color: var(--texto);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:active {
+  filter: brightness(1.2);
+}
+
+.btn-primario {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: #fff;
+}
+
+.btn-perigo {
+  background: transparent;
+  border-color: var(--piora);
+  color: var(--piora);
+}
+
+.btn-bloco {
+  width: 100%;
+}
+
+.btn-pequeno {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.btn-icone {
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0;
+  font-size: 1.1rem;
+}
+
+.card {
+  background: var(--bg-elevado);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: var(--espaco);
+  margin-bottom: var(--espaco);
+}
+
+.card-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.card-cabecalho h3 {
+  flex: 1;
+  margin: 0;
+  min-width: 0;
+}
+
+.card-cabecalho .etiqueta {
+  margin-top: 4px;
+}
+
+.etiqueta {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--bg-campo);
+  border: 1px solid var(--borda);
+  color: var(--texto-fraco);
+  vertical-align: middle;
+}
+
+.etiqueta-opcional {
+  border-color: var(--aviso);
+  color: var(--aviso);
+}
+
+.etiqueta-aviso {
+  border-color: var(--aviso);
+  color: var(--aviso);
+}
+
+.etiqueta-acento {
+  border-color: var(--acento);
+  color: var(--acento);
+}
+
+/* Linha de uma série: número, carga, reps e ações. */
+.serie {
+  display: grid;
+  grid-template-columns: 44px 1fr 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--borda);
+}
+
+.serie:first-of-type {
+  border-top: 0;
+}
+
+/* O número é um botão: tocar nele alterna aquecimento. */
+.serie-numero {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 8px 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-fraco);
+  font-size: 0.9rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* Aquecimento é categoria à parte: fica no começo, em laranja, e não entra
+   em nenhuma métrica. */
+.serie.aquecimento .serie-numero {
+  color: var(--aviso);
+  font-weight: 600;
+}
+
+.serie.aquecimento + .serie:not(.aquecimento) {
+  border-top-color: var(--aviso);
+}
+
+/* Posição do exercício na sessão e setas para reordenar.
+   Num treino full body a ordem muda o resultado: o que fica para o fim pega
+   a fadiga acumulada. Por isso a posição aparece sempre, e as setas ficam
+   à mão — mas estreitas, porque o nome do exercício é quem precisa do
+   espaço numa tela de iPhone. */
+.ordem-item {
+  flex: 0 0 auto;
+  min-width: 18px;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-fraco);
+}
+
+.btn-mover {
+  min-height: 34px;
+  min-width: 28px;
+  font-size: 0.95rem;
+  padding: 0;
+  border-color: transparent;
+  background: none;
+}
+
+.btn-mover:disabled {
+  opacity: 0.2;
+}
+
+.campo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-campo);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 0 8px;
+  min-height: 46px;
+}
+
+.campo input {
+  width: 100%;
+  min-width: 0;
+  background: none;
+  border: 0;
+  outline: none;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  padding: 0;
+}
+
+.campo .unidade {
+  color: var(--texto-fraco);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.campo:focus-within {
+  border-color: var(--acento);
+}
+
+.form-linha {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.form-linha label {
+  font-size: 0.8rem;
+  color: var(--texto-fraco);
+}
+
+.entrada,
+select.entrada,
+textarea.entrada {
+  width: 100%;
+  background: var(--bg-campo);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 12px;
+  outline: none;
+}
+
+.entrada:focus {
+  border-color: var(--acento);
+}
+
+textarea.entrada {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.linha-botoes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.linha-botoes .btn {
+  flex: 1;
+}
+
+/* Grupo de alternativas: pílulas para escolher com um toque. */
+.pilulas {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.pilula {
+  appearance: none;
+  border: 1px solid var(--borda);
+  background: var(--bg-campo);
+  color: var(--texto-fraco);
+  border-radius: 99px;
+  padding: 7px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.pilula[aria-pressed='true'] {
+  border-color: var(--acento);
+  background: rgba(79, 140, 255, 0.15);
+  color: var(--texto);
+  font-weight: 600;
+}
+
+.vazio {
+  text-align: center;
+  color: var(--texto-fraco);
+  padding: 32px 16px;
+}
+
+/* Diálogo de confirmação / formulários curtos. */
+dialog.modal {
+  border: 1px solid var(--borda);
+  border-radius: 16px;
+  background: var(--bg-elevado);
+  color: var(--texto);
+  padding: 18px;
+  width: min(92vw, 420px);
+  margin: auto;
+}
+
+dialog.modal::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+dialog.modal h2 {
+  margin-bottom: 10px;
+}
+
+/* Aviso discreto no topo da aba Treino (ex.: backup falhou). */
+.faixa-aviso {
+  border: 1px solid var(--aviso);
+  color: var(--aviso);
+  background: rgba(255, 180, 84, 0.08);
+  border-radius: var(--raio);
+  padding: 8px 12px;
+  margin-bottom: var(--espaco);
+  font-size: 0.85rem;
+}
+
+/* Barra de atualização do service worker. */
+.faixa-atualizacao {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(var(--altura-abas) + var(--safe-bottom) + 12px);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--acento);
+  color: #fff;
+  border-radius: var(--raio);
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.faixa-atualizacao .btn {
+  min-height: 36px;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: transparent;
+  color: #fff;
+}
+
+.lista-simples {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lista-simples li {
+  padding: 10px 0;
+  border-top: 1px solid var(--borda);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lista-simples li:first-child {
+  border-top: 0;
+}
+
+.lista-simples li .cresce {
+  flex: 1;
+  min-width: 0;
+}
+
+.marca-treino {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Etapa 2: edição de treinos, exercícios, músculos e histórico        */
+/* ------------------------------------------------------------------ */
+
+/* Card que abre outra tela ao ser tocado. O feedback ao pressionar
+   importa no celular, onde não existe :hover para indicar que é clicável. */
+.card-clicavel {
+  cursor: pointer;
+}
+
+.card-clicavel:active {
+  border-color: var(--acento);
+  background: var(--bg-campo);
+}
+
+/* Linha de músculo dentro de um exercício, e linha da lista de músculos:
+   nome à esquerda, controles à direita. */
+.linha-musculo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.linha-musculo > span:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.linha-musculo .pilula {
+  flex: none;
+}
+
+.linha-lista {
+  border-top: 1px solid var(--borda);
+}
+
+.linha-lista:first-child {
+  border-top: 0;
+}
+
+/* Lista longa dentro de um diálogo (escolher exercício, por exemplo):
+   rola sozinha em vez de esticar o diálogo para fora da tela. */
+.lista-rolavel {
+  max-height: 46vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 10px 0;
+}
+
+/* Checkbox com rótulo ao lado, com área de toque grande. */
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 1rem;
+  color: var(--texto);
+  cursor: pointer;
+}
+
+.form-checkbox input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--acento);
+  flex: none;
+}
+
+/* Botão de voltar do cabeçalho. Fica escondido na tela raiz de cada aba. */
+#btn-voltar[hidden] {
+  display: none;
+}
+
+#btn-voltar {
+  font-size: 1.6rem;
+  line-height: 1;
+  min-width: 34px;
+  padding-bottom: 4px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Etapa 3: calendário, sugestão e configurações                       */
+/* ------------------------------------------------------------------ */
+
+/* Card em destaque com o treino sugerido para hoje. */
+.card-sugestao {
+  border-color: var(--acento);
+  background: linear-gradient(180deg, rgba(79, 140, 255, 0.12), var(--bg-elevado));
+}
+
+/* Barra de navegação entre meses. */
+.barra-mes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.btn-mes-titulo {
+  flex: 1;
+  background: none;
+  border-color: transparent;
+  font-size: 1.05rem;
+}
+
+/* Grade do mês: 7 colunas fixas, células quadradas. */
+.calendario {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendario-rotulo {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--texto-fraco);
+  padding-bottom: 4px;
+}
+
+.calendario-dia {
+  appearance: none;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--bg-elevado);
+  color: var(--texto);
+  padding: 0;
+  cursor: pointer;
+}
+
+.calendario-dia:active {
+  filter: brightness(1.3);
+}
+
+/* Dias das pontas, que vêm dos meses vizinhos: presentes para a grade não
+   ter buracos, mas apagados para não competirem com o mês atual. */
+.calendario-dia.fora-do-mes {
+  background: none;
+  color: var(--texto-fraco);
+  opacity: 0.4;
+}
+
+.calendario-dia.hoje {
+  border-color: var(--acento);
+}
+
+.calendario-dia.futuro .calendario-numero {
+  color: var(--texto-fraco);
+}
+
+.calendario-dia.com-treino {
+  background: var(--bg-campo);
+}
+
+.calendario-numero {
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* Uma bolinha por sessão do dia, na cor do treino. */
+.calendario-marcas {
+  display: flex;
+  gap: 3px;
+  min-height: 7px;
+  align-items: center;
+}
+
+.calendario-marcas .marca-treino {
+  width: 7px;
+  height: 7px;
+}
+
+/* Sessão não finalizada: bolinha vazada, para diferenciar de um treino
+   concluído sem precisar de outra cor. */
+.marca-aberta {
+  box-shadow: inset 0 0 0 2px var(--bg-elevado);
+}
+
+/* Legenda do resumo do mês. */
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.legenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+/* Linha de configuração: rótulo à esquerda, valor atual à direita. */
+.linha-config {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 0;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--borda);
+  color: var(--texto);
+  text-align: left;
+  cursor: pointer;
+}
+
+.linha-config:active {
+  color: var(--acento);
+}
+
+/* ------------------------------------------------------------------ */
+/* Etapa 4: comparação entre sessões                                   */
+/* ------------------------------------------------------------------ */
+
+/* Cabeçalho com as duas sessões e a seta entre elas. */
+.comparar-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comparar-lado {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  color: var(--texto);
+  text-align: left;
+  cursor: pointer;
+}
+
+.comparar-lado:active {
+  color: var(--acento);
+}
+
+.comparar-seta {
+  flex: none;
+  color: var(--texto-fraco);
+  font-size: 1.2rem;
+}
+
+.comparar-simples {
+  margin-top: 4px;
+}
+
+/* Linha de métrica: rótulo, valor antes, valor depois, diferença.
+   As colunas de número são fixas para os valores alinharem entre os
+   exercícios, e o rótulo fica com o que sobra. */
+.metrica {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 8px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-top: 1px solid var(--borda);
+  font-size: 0.9rem;
+}
+
+.metrica:first-of-type {
+  border-top: 0;
+}
+
+.metrica-rotulo {
+  color: var(--texto-fraco);
+  min-width: 0;
+}
+
+.metrica-valor {
+  font-variant-numeric: tabular-nums;
+  min-width: 62px;
+  text-align: right;
+}
+
+.metrica-valor:nth-of-type(2) {
+  color: var(--texto-fraco);
+}
+
+.metrica-dif {
+  font-variant-numeric: tabular-nums;
+  min-width: 96px;
+  text-align: right;
+  font-size: 0.82rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Etapa 5: progressão e séries por músculo                            */
+/* ------------------------------------------------------------------ */
+
+/* Cabeçalho das tabelas de métrica, com os rótulos das colunas. */
+.metrica-cabecalho {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--texto-fraco);
+  border-top: 0;
+  padding-bottom: 2px;
+}
+
+.metrica-cabecalho .metrica-valor,
+.metrica-cabecalho .metrica-dif {
+  color: var(--texto-fraco);
+}
+
+/* O canvas do gráfico precisa de altura própria: o Chart.js redimensiona
+   pela largura, e sem isso ele cresce sem parar. */
+.card > canvas {
+  width: 100% !important;
+  max-height: 260px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Etapa 6: itens da dieta                                             */
+/* ------------------------------------------------------------------ */
+
+.item-dieta {
+  padding: 8px 0;
+  border-top: 1px solid var(--borda);
+}
+
+.item-dieta:first-of-type {
+  border-top: 0;
+}
+
+/* Nome, quantidade e calorias em colunas próprias.
+   A quantidade não pode ficar colada no nome nem escondida junto das
+   calorias: é por ela que se monta o prato na cozinha. */
+.item-dieta-linha {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.item-dieta-nome {
+  min-width: 0;
+}
+
+.item-dieta-quantidade {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.item-dieta-kcal {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  color: var(--texto-fraco);
+  white-space: nowrap;
+  min-width: 62px;
+  text-align: right;
+}
+
+.item-dieta-grupo {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--texto-fraco);
+  margin-bottom: 6px;
+}
+
+/* Pílula de opção em duas linhas: alimento em cima, quantidade e valores
+   embaixo. A quantidade fica em negrito porque escolher entre 200 g de
+   arroz e 180 g de massa é uma decisão sobre a quantidade também. */
+.pilula-opcao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  padding: 8px 12px;
+  line-height: 1.25;
+}
+
+.pilula-opcao-nome {
+  font-size: 0.9rem;
+}
+
+.pilula-opcao-detalhe {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--texto-fraco);
+}
+
+.pilula-opcao-quantidade {
+  font-variant-numeric: tabular-nums;
+  color: var(--texto);
+}
+
+.pilula-opcao[aria-pressed='true'] .pilula-opcao-quantidade {
+  color: var(--acento);
+}
+
+/* Cabeçalho de seção dentro de uma lista (Rótulo / Genéricos). */
+.secao-lista {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 18px 0 8px;
+}
+
+.secao-lista h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.secao-lista .explicacao {
+  font-size: 0.78rem;
+  color: var(--texto-fraco);
+}
+
+/* ------------------------------------------------------------------ */
+/* Dieta: item clicável, resumo de macros e edição de grupos           */
+/* ------------------------------------------------------------------ */
+
+/* A linha do item vira botão quando dá para abrir o detalhe nutricional.
+   Precisa zerar o estilo de botão para continuar parecendo uma linha. */
+.item-dieta-clicavel {
+  appearance: none;
+  width: 100%;
+  background: none;
+  border: 0;
+  color: var(--texto);
+  font-size: 1rem;
+  text-align: left;
+  padding: 2px 0;
+  cursor: pointer;
+}
+
+.item-dieta-clicavel:active {
+  color: var(--acento);
+}
+
+.item-dieta-clicavel:active .item-dieta-quantidade {
+  color: var(--acento);
+}
+
+/* Total da refeição no cabeçalho: era cinza pequeno e sumia. */
+.refeicao-kcal {
+  margin-top: 3px;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto);
+  white-space: nowrap;
+}
+
+/* Macros da refeição: rótulo por extenso em cima, valor em destaque
+   embaixo. Antes era uma linha de texto corrido em cinza que o olho
+   pulava, e são justamente os números que decidem se a refeição presta. */
+.resumo-macros {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--borda);
+}
+
+.macro {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.macro-rotulo {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--texto-fraco);
+}
+
+.macro-valor {
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Uma opção de grupo na tela de edição: linha inteira clicável para
+   virar padrão, com o ⋯ à direita para o resto. */
+.linha-opcao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid var(--borda);
+}
+
+.linha-opcao:first-of-type {
+  border-top: 0;
+}
+
+.linha-opcao-escolher {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 10px 0;
+  color: var(--texto);
+  text-align: left;
+  cursor: pointer;
+}
+
+.linha-opcao-nome {
+  font-size: 0.95rem;
+}
+
+/* A opção padrão é a que entra no total do dia: precisa ser óbvia qual é. */
+.linha-opcao.padrao .linha-opcao-nome {
+  color: var(--acento);
+  font-weight: 600;
+}
+
+.linha-opcao.padrao .linha-opcao-escolher::before {
+  content: '● padrão';
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--acento);
+}
+
+.linha-opcao-detalhe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--texto-fraco);
+}
+
+.linha-opcao-detalhe strong {
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tabela de informação nutricional. */
+.nutriente {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--borda);
+}
+
+.nutriente:first-child {
+  border-top: 0;
+}
+
+.nutriente strong {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+}

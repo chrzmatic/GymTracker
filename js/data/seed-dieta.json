@@ -1,0 +1,189 @@
+{
+  "alimentos": [
+    { "id": "alim-aveia", "nome": "Aveia", "quantidadeRef": 100, "unidade": "g", "kcal": 380, "proteina": 13, "gordura": 9, "carbo": 55.7, "fibra": null, "fonte": "Rótulo", "generico": false },
+    { "id": "alim-leite-integral", "nome": "Leite integral", "quantidadeRef": 100, "unidade": "ml", "kcal": 61, "proteina": 3.2, "gordura": 3.3, "carbo": 4.7, "fibra": null, "fonte": "Rótulo", "generico": false },
+    { "id": "alim-proteina-em-po", "nome": "Proteína em pó", "quantidadeRef": 100, "unidade": "g", "kcal": 389, "proteina": 72.4, "gordura": 7.4, "carbo": 5.5, "fibra": null, "fonte": "Rótulo", "generico": false },
+    { "id": "alim-queijo-edam", "nome": "Queijo Edam", "quantidadeRef": 20, "unidade": "g", "kcal": 66, "proteina": 5.3, "gordura": 5.0, "carbo": 0, "fibra": null, "fonte": "Rótulo; kcal calculada pelos macros", "generico": false },
+    { "id": "alim-pao-integral-forma", "nome": "Pão integral de forma", "quantidadeRef": 2, "unidade": "unidade", "kcal": 155, "proteina": 5.7, "gordura": 1.1, "carbo": 29.5, "fibra": null, "fonte": "Rótulo", "generico": false, "observacao": "Referência: 2 fatias" },
+    { "id": "alim-pao-turco", "nome": "Pão turco", "quantidadeRef": 100, "unidade": "g", "kcal": 261, "proteina": 9.3, "gordura": 3.1, "carbo": 46.3, "fibra": 3.9, "fonte": "Rótulo", "generico": false },
+    { "id": "alim-iogurte-manga-maracuja", "nome": "Iogurte manga e maracujá", "quantidadeRef": 100, "unidade": "g", "kcal": 76, "proteina": 5.7, "gordura": 2.8, "carbo": 7.2, "fibra": null, "fonte": "Rótulo", "generico": false },
+    { "id": "alim-pasta-de-amendoim", "nome": "Pasta de amendoim", "quantidadeRef": 30, "unidade": "g", "kcal": 181, "proteina": 9, "gordura": 14.8, "carbo": 2.8, "fibra": null, "fonte": "Rótulo", "generico": false },
+    { "id": "alim-mel", "nome": "Mel", "quantidadeRef": 20, "unidade": "g", "kcal": 65, "proteina": 0, "gordura": 0, "carbo": 16, "fibra": null, "fonte": "Rótulo", "generico": false },
+
+    { "id": "alim-frango-grelhado", "nome": "Peito de frango grelhado, sem pele", "quantidadeRef": 100, "unidade": "g", "kcal": 159, "proteina": 32, "gordura": 2.5, "carbo": 0, "fibra": null, "fonte": "TACO", "generico": true },
+    { "id": "alim-frango-desfiado", "nome": "Peito de frango cozido/desfiado", "quantidadeRef": 100, "unidade": "g", "kcal": 163, "proteina": 31.5, "gordura": 3.2, "carbo": 0, "fibra": null, "fonte": "TACO", "generico": true },
+    { "id": "alim-carne-magra", "nome": "Carne magra (patinho grelhado)", "quantidadeRef": 100, "unidade": "g", "kcal": 219, "proteina": 35.9, "gordura": 7.3, "carbo": 0, "fibra": null, "fonte": "TACO", "generico": true },
+    { "id": "alim-carne-moida", "nome": "Carne moída (acém moído cozido)", "quantidadeRef": 100, "unidade": "g", "kcal": 212, "proteina": 26.7, "gordura": 10.9, "carbo": 0, "fibra": null, "fonte": "TACO", "generico": true },
+    { "id": "alim-peixe-branco", "nome": "Peixe branco cozido", "quantidadeRef": 100, "unidade": "g", "kcal": 105, "proteina": 22.8, "gordura": 0.9, "carbo": 0, "fibra": null, "fonte": "USDA (bacalhau fresco)", "generico": true },
+    { "id": "alim-atum-agua", "nome": "Atum em água, drenado", "quantidadeRef": 1, "unidade": "unidade", "kcal": 81, "proteina": 18.1, "gordura": 0.7, "carbo": 0.3, "fibra": null, "fonte": "Rótulo Sealord 95 g", "generico": false, "observacao": "Referência: 1 lata (69 g drenado)" },
+    { "id": "alim-ovo", "nome": "Ovo", "quantidadeRef": 1, "unidade": "unidade", "kcal": 72, "proteina": 6.3, "gordura": 4.8, "carbo": 0.4, "fibra": null, "fonte": "USDA", "generico": true, "observacao": "Referência: 1 unidade (50 g)" },
+    { "id": "alim-presunto-fatiado", "nome": "Presunto fatiado", "quantidadeRef": 100, "unidade": "g", "kcal": 96, "proteina": 17, "gordura": 1.7, "carbo": 3, "fibra": null, "fonte": "Média de rótulos NZ", "generico": true },
+
+    { "id": "alim-arroz-branco", "nome": "Arroz branco cozido", "quantidadeRef": 100, "unidade": "g", "kcal": 130, "proteina": 2.7, "gordura": 0.3, "carbo": 28.2, "fibra": 0.4, "fonte": "USDA", "generico": true },
+    { "id": "alim-massa-cozida", "nome": "Massa cozida", "quantidadeRef": 100, "unidade": "g", "kcal": 158, "proteina": 5.8, "gordura": 0.9, "carbo": 30.9, "fibra": 1.8, "fonte": "USDA", "generico": true },
+    { "id": "alim-batata-cozida", "nome": "Batata cozida", "quantidadeRef": 100, "unidade": "g", "kcal": 87, "proteina": 1.9, "gordura": 0.1, "carbo": 20.1, "fibra": 1.8, "fonte": "USDA", "generico": true },
+    { "id": "alim-batata-doce", "nome": "Batata doce assada", "quantidadeRef": 100, "unidade": "g", "kcal": 90, "proteina": 2, "gordura": 0.2, "carbo": 20.7, "fibra": 3.3, "fonte": "USDA", "generico": true },
+    { "id": "alim-pure-de-batata", "nome": "Purê de batata (leite e manteiga)", "quantidadeRef": 100, "unidade": "g", "kcal": 113, "proteina": 1.9, "gordura": 4.2, "carbo": 16.9, "fibra": 1.5, "fonte": "USDA", "generico": true },
+    { "id": "alim-polenta-cozida", "nome": "Polenta cozida", "quantidadeRef": 100, "unidade": "g", "kcal": 71, "proteina": 1.7, "gordura": 0.5, "carbo": 15.6, "fibra": 0.8, "fonte": "USDA", "generico": true, "conferir": true },
+    { "id": "alim-feijao-carioca", "nome": "Feijão carioca cozido", "quantidadeRef": 100, "unidade": "g", "kcal": 76, "proteina": 4.8, "gordura": 0.5, "carbo": 13.6, "fibra": 8.5, "fonte": "TACO", "generico": true },
+    { "id": "alim-banana", "nome": "Banana", "quantidadeRef": 1, "unidade": "unidade", "kcal": 105, "proteina": 1.3, "gordura": 0.4, "carbo": 27, "fibra": 3.1, "fonte": "USDA", "generico": true, "observacao": "Referência: 1 unidade média (118 g)" },
+
+    { "id": "alim-manteiga", "nome": "Manteiga", "quantidadeRef": 100, "unidade": "g", "kcal": 717, "proteina": 0.9, "gordura": 81.1, "carbo": 0.1, "fibra": null, "fonte": "USDA", "generico": true },
+    { "id": "alim-azeite-de-oliva", "nome": "Azeite de oliva", "quantidadeRef": 100, "unidade": "g", "kcal": 884, "proteina": 0, "gordura": 100, "carbo": 0, "fibra": null, "fonte": "USDA", "generico": true, "observacao": "1 colher de sopa ≈ 13,5 g" },
+
+    { "id": "alim-queijo-tasty", "nome": "Queijo Tasty (cheddar)", "quantidadeRef": 100, "unidade": "g", "kcal": 423, "proteina": 23.4, "gordura": 36.8, "carbo": 0.5, "fibra": null, "fonte": "Rótulo Mainland", "generico": false },
+    { "id": "alim-queijo-edam-generico", "nome": "Queijo Edam (genérico)", "quantidadeRef": 100, "unidade": "g", "kcal": 357, "proteina": 25, "gordura": 27.8, "carbo": 1.4, "fibra": null, "fonte": "USDA", "generico": true },
+    { "id": "alim-queijo-colby", "nome": "Queijo Colby", "quantidadeRef": 100, "unidade": "g", "kcal": 394, "proteina": 23.8, "gordura": 32.1, "carbo": 2.6, "fibra": null, "fonte": "USDA", "generico": true },
+    { "id": "alim-queijo-gouda", "nome": "Queijo Gouda", "quantidadeRef": 100, "unidade": "g", "kcal": 356, "proteina": 24.9, "gordura": 27.4, "carbo": 2.2, "fibra": null, "fonte": "USDA", "generico": true },
+    { "id": "alim-mucarela", "nome": "Muçarela", "quantidadeRef": 100, "unidade": "g", "kcal": 299, "proteina": 22.2, "gordura": 22.4, "carbo": 2.2, "fibra": null, "fonte": "USDA", "generico": true },
+    { "id": "alim-parmesao", "nome": "Parmesão", "quantidadeRef": 100, "unidade": "g", "kcal": 392, "proteina": 35.8, "gordura": 25.8, "carbo": 3.2, "fibra": null, "fonte": "USDA", "generico": true },
+    { "id": "alim-cottage", "nome": "Cottage", "quantidadeRef": 100, "unidade": "g", "kcal": 98, "proteina": 11.1, "gordura": 4.3, "carbo": 3.4, "fibra": null, "fonte": "USDA", "generico": true }
+  ],
+
+  "pratos": [
+    {
+      "id": "prato-sanduiche-com-manteiga",
+      "nome": "Sanduíche com manteiga",
+      "ingredientes": [
+        { "alimentoId": "alim-pao-turco", "quantidade": 120 },
+        { "alimentoId": "alim-presunto-fatiado", "quantidade": null },
+        { "alimentoId": "alim-queijo-edam", "quantidade": null },
+        { "alimentoId": "alim-manteiga", "quantidade": null }
+      ]
+    },
+    {
+      "id": "prato-sanduiche-sem-manteiga",
+      "nome": "Sanduíche sem manteiga",
+      "ingredientes": [
+        { "alimentoId": "alim-pao-turco", "quantidade": 120 },
+        { "alimentoId": "alim-presunto-fatiado", "quantidade": null },
+        { "alimentoId": "alim-queijo-edam", "quantidade": null }
+      ]
+    }
+  ],
+
+  "refeicoes": [
+    {
+      "id": "ref-cafe-treino",
+      "nome": "Café da manhã",
+      "ordem": 0,
+      "itens": [
+        { "id": "it-cafe-t-1", "tipo": "alimento", "alimentoId": "alim-aveia", "quantidade": 40 },
+        { "id": "it-cafe-t-2", "tipo": "alimento", "alimentoId": "alim-leite-integral", "quantidade": 300 },
+        { "id": "it-cafe-t-3", "tipo": "alimento", "alimentoId": "alim-proteina-em-po", "quantidade": 40 }
+      ]
+    },
+    {
+      "id": "ref-lanche1-treino",
+      "nome": "Lanche 1",
+      "ordem": 1,
+      "itens": [
+        { "id": "it-l1-t-1", "tipo": "prato", "pratoId": "prato-sanduiche-com-manteiga", "porcoes": 1 },
+        { "id": "it-l1-t-2", "tipo": "alimento", "alimentoId": "alim-ovo", "quantidade": 3 }
+      ]
+    },
+    {
+      "id": "ref-lanche2-treino",
+      "nome": "Lanche 2",
+      "ordem": 2,
+      "itens": [
+        { "id": "it-l2-t-1", "tipo": "alimento", "alimentoId": "alim-iogurte-manga-maracuja", "quantidade": 250 },
+        { "id": "it-l2-t-2", "tipo": "alimento", "alimentoId": "alim-pasta-de-amendoim", "quantidade": 30 },
+        { "id": "it-l2-t-3", "tipo": "alimento", "alimentoId": "alim-aveia", "quantidade": 40 },
+        { "id": "it-l2-t-4", "tipo": "alimento", "alimentoId": "alim-banana", "quantidade": 1 }
+      ]
+    },
+    {
+      "id": "ref-jantar",
+      "nome": "Jantar",
+      "ordem": 3,
+      "compartilhada": true,
+      "itens": [
+        {
+          "id": "it-jantar-carbo",
+          "tipo": "grupo",
+          "nome": "Carboidrato",
+          "padraoId": "op-carbo-arroz",
+          "opcoes": [
+            { "id": "op-carbo-arroz", "tipo": "alimento", "alimentoId": "alim-arroz-branco", "quantidade": 200 },
+            { "id": "op-carbo-massa", "tipo": "alimento", "alimentoId": "alim-massa-cozida", "quantidade": 180 },
+            { "id": "op-carbo-batata", "tipo": "alimento", "alimentoId": "alim-batata-cozida", "quantidade": 250 },
+            { "id": "op-carbo-pure", "tipo": "alimento", "alimentoId": "alim-pure-de-batata", "quantidade": 150 },
+            { "id": "op-carbo-polenta", "tipo": "alimento", "alimentoId": "alim-polenta-cozida", "quantidade": 200 }
+          ]
+        },
+        {
+          "id": "it-jantar-proteina",
+          "tipo": "grupo",
+          "nome": "Proteína",
+          "padraoId": "op-prot-frango",
+          "opcoes": [
+            { "id": "op-prot-frango", "tipo": "alimento", "alimentoId": "alim-frango-grelhado", "quantidade": 180 },
+            { "id": "op-prot-carne", "tipo": "alimento", "alimentoId": "alim-carne-magra", "quantidade": 180 },
+            { "id": "op-prot-moida", "tipo": "alimento", "alimentoId": "alim-carne-moida", "quantidade": 160 },
+            { "id": "op-prot-peixe", "tipo": "alimento", "alimentoId": "alim-peixe-branco", "quantidade": 220 },
+            { "id": "op-prot-atum", "tipo": "alimento", "alimentoId": "alim-atum-agua", "quantidade": 2 },
+            { "id": "op-prot-ovo", "tipo": "alimento", "alimentoId": "alim-ovo", "quantidade": 6 }
+          ]
+        },
+        { "id": "it-jantar-salada", "tipo": "livre", "texto": "Salada à vontade" },
+        { "id": "it-jantar-azeite", "tipo": "alimento", "alimentoId": "alim-azeite-de-oliva", "quantidade": 13.5, "observacao": "até 1 colher de sopa" }
+      ]
+    },
+    {
+      "id": "ref-cafe-sem-treino",
+      "nome": "Café da manhã",
+      "ordem": 0,
+      "itens": [
+        { "id": "it-cafe-s-1", "tipo": "alimento", "alimentoId": "alim-aveia", "quantidade": 20 },
+        { "id": "it-cafe-s-2", "tipo": "alimento", "alimentoId": "alim-leite-integral", "quantidade": 300 },
+        { "id": "it-cafe-s-3", "tipo": "alimento", "alimentoId": "alim-proteina-em-po", "quantidade": 40 }
+      ]
+    },
+    {
+      "id": "ref-lanche1-sem-treino",
+      "nome": "Lanche 1",
+      "ordem": 1,
+      "itens": [
+        { "id": "it-l1-s-1", "tipo": "prato", "pratoId": "prato-sanduiche-sem-manteiga", "porcoes": 1 },
+        { "id": "it-l1-s-2", "tipo": "alimento", "alimentoId": "alim-ovo", "quantidade": 2 }
+      ]
+    },
+    {
+      "id": "ref-lanche2-sem-treino",
+      "nome": "Lanche 2",
+      "ordem": 2,
+      "itens": [
+        { "id": "it-l2-s-1", "tipo": "alimento", "alimentoId": "alim-iogurte-manga-maracuja", "quantidade": 250 },
+        { "id": "it-l2-s-2", "tipo": "alimento", "alimentoId": "alim-pasta-de-amendoim", "quantidade": 20 },
+        { "id": "it-l2-s-3", "tipo": "alimento", "alimentoId": "alim-aveia", "quantidade": 20 }
+      ]
+    }
+  ],
+
+  "planos": [
+    {
+      "id": "plano-dia-de-treino",
+      "nome": "Dia de treino",
+      "tipoDia": "treino",
+      "ordem": 0,
+      "metaKcal": 2650,
+      "metas": {},
+      "refeicoes": ["ref-cafe-treino", "ref-lanche1-treino", "ref-lanche2-treino", "ref-jantar"]
+    },
+    {
+      "id": "plano-dia-sem-treino",
+      "nome": "Dia sem treino",
+      "tipoDia": "sem-treino",
+      "ordem": 1,
+      "metaKcal": 2300,
+      "metas": {},
+      "refeicoes": [
+        "ref-cafe-sem-treino",
+        "ref-lanche1-sem-treino",
+        "ref-lanche2-sem-treino",
+        "ref-jantar"
+      ]
+    }
+  ]
+}

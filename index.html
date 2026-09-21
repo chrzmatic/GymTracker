@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"
+    />
+    <meta name="theme-color" content="#0e1116" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Treino" />
+    <title>Treino e Dieta</title>
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="assets/icone-192.png" />
+    <link rel="icon" href="assets/icone.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="topo">
+      <button class="btn btn-icone" id="btn-voltar" aria-label="Voltar" hidden>‹</button>
+      <h1 id="titulo">Treino</h1>
+      <button class="btn btn-icone" id="btn-config" aria-label="Configurações">⚙︎</button>
+    </header>
+
+    <main class="conteudo" id="conteudo">
+      <div class="vazio">Carregando…</div>
+    </main>
+
+    <nav class="abas" aria-label="Navegação principal"></nav>
+
+    <script type="module" src="js/main.js"></script>
+    <script type="module">
+      import { registrarServiceWorker } from "./js/atualizacao.js";
+      registrarServiceWorker();
+    </script>
+  </body>
+</html>

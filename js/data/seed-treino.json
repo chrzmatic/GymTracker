@@ -1,0 +1,220 @@
+{
+  "musculos": [
+    { "id": "mus-peito", "nome": "Peito" },
+    { "id": "mus-costas", "nome": "Costas" },
+    { "id": "mus-ombro-lateral", "nome": "Ombro lateral" },
+    { "id": "mus-ombro-anterior", "nome": "Ombro anterior" },
+    { "id": "mus-ombro-posterior", "nome": "Ombro posterior" },
+    { "id": "mus-biceps", "nome": "Bíceps" },
+    { "id": "mus-triceps", "nome": "Tríceps" },
+    { "id": "mus-quadriceps", "nome": "Quadríceps" },
+    { "id": "mus-posterior-coxa", "nome": "Posterior de coxa" },
+    { "id": "mus-gluteo", "nome": "Glúteo" },
+    { "id": "mus-panturrilha", "nome": "Panturrilha" },
+    { "id": "mus-abdomen", "nome": "Abdômen" },
+    { "id": "mus-lombar", "nome": "Lombar" }
+  ],
+  "exercicios": [
+    {
+      "id": "ex-leg-press-pes-altos",
+      "nome": "Leg press com pés altos",
+      "tipoCarga": "carga",
+      "musculos": [
+        { "musculoId": "mus-quadriceps", "tipo": "direto", "fracao": 1 },
+        { "musculoId": "mus-gluteo", "tipo": "indireto", "fracao": 0.5 }
+      ]
+    },
+    {
+      "id": "ex-panturrilha-leg-press",
+      "nome": "Panturrilha no leg press",
+      "tipoCarga": "carga",
+      "musculos": [
+        { "musculoId": "mus-panturrilha", "tipo": "direto", "fracao": 1 }
+      ]
+    },
+    {
+      "id": "ex-supino-reto-maquina",
+      "nome": "Supino reto máquina",
+      "tipoCarga": "carga",
+      "musculos": [
+        { "musculoId": "mus-peito", "tipo": "direto", "fracao": 1 },
+        { "musculoId": "mus-ombro-anterior", "tipo": "indireto", "fracao": 0.5 },
+        { "musculoId": "mus-triceps", "tipo": "indireto", "fracao": 0.5 }
+      ]
+    },
+    {
+      "id": "ex-supino-inclinado-maquina",
+      "nome": "Supino inclinado máquina",
+      "tipoCarga": "carga",
+      "musculos": [
+        { "musculoId": "mus-peito", "tipo": "direto", "fracao": 1 },
+        { "musculoId": "mus-ombro-anterior", "tipo": "indireto", "fracao": 0.5 },
+        { "musculoId": "mus-triceps", "tipo": "indireto", "fracao": 0.5 }
+      ]
+    },
+    {
+      "id": "ex-pec-fly",
+      "nome": "Pec fly",
+      "tipoCarga": "carga",
+      "musculos": [{ "musculoId": "mus-peito", "tipo": "direto", "fracao": 1 }]
+    },
+    {
+      "id": "ex-remada-baixa",
+      "nome": "Remada baixa",
+      "tipoCarga": "carga",
+      "musculos": [
+        { "musculoId": "mus-costas", "tipo": "direto", "fracao": 1 },
+        { "musculoId": "mus-biceps", "tipo": "indireto", "fracao": 0.5 }
+      ]
+    },
+    {
+      "id": "ex-puxada-frente",
+      "nome": "Puxada frente (pulley)",
+      "tipoCarga": "carga",
+      "musculos": [
+        { "musculoId": "mus-costas", "tipo": "direto", "fracao": 1 },
+        { "musculoId": "mus-biceps", "tipo": "indireto", "fracao": 0.5 },
+        { "musculoId": "mus-ombro-posterior", "tipo": "indireto", "fracao": 0.5 }
+      ]
+    },
+    {
+      "id": "ex-voador-inverso",
+      "nome": "Voador inverso",
+      "tipoCarga": "carga",
+      "musculos": [
+        { "musculoId": "mus-ombro-posterior", "tipo": "direto", "fracao": 1 }
+      ]
+    },
+    {
+      "id": "ex-face-pull",
+      "nome": "Face pull",
+      "tipoCarga": "carga",
+      "musculos": [
+        { "musculoId": "mus-ombro-posterior", "tipo": "direto", "fracao": 1 }
+      ]
+    },
+    {
+      "id": "ex-elevacao-lateral",
+      "nome": "Elevação lateral",
+      "tipoCarga": "carga",
+      "musculos": [
+        { "musculoId": "mus-ombro-lateral", "tipo": "direto", "fracao": 1 }
+      ]
+    },
+    {
+      "id": "ex-triceps-pushdown",
+      "nome": "Tríceps pushdown",
+      "tipoCarga": "carga",
+      "musculos": [{ "musculoId": "mus-triceps", "tipo": "direto", "fracao": 1 }]
+    },
+    {
+      "id": "ex-triceps-frances",
+      "nome": "Tríceps francês",
+      "tipoCarga": "carga",
+      "musculos": [{ "musculoId": "mus-triceps", "tipo": "direto", "fracao": 1 }]
+    },
+    {
+      "id": "ex-rosca-direta",
+      "nome": "Rosca direta",
+      "tipoCarga": "carga",
+      "musculos": [{ "musculoId": "mus-biceps", "tipo": "direto", "fracao": 1 }]
+    },
+    {
+      "id": "ex-rosca-martelo",
+      "nome": "Rosca martelo",
+      "tipoCarga": "carga",
+      "musculos": [{ "musculoId": "mus-biceps", "tipo": "direto", "fracao": 1 }]
+    },
+    {
+      "id": "ex-agachamento",
+      "nome": "Agachamento",
+      "tipoCarga": "carga",
+      "musculos": [
+        { "musculoId": "mus-quadriceps", "tipo": "direto", "fracao": 1 },
+        { "musculoId": "mus-gluteo", "tipo": "indireto", "fracao": 0.5 },
+        { "musculoId": "mus-lombar", "tipo": "indireto", "fracao": 0.5 },
+        { "musculoId": "mus-posterior-coxa", "tipo": "indireto", "fracao": 0.25 }
+      ]
+    },
+    {
+      "id": "ex-cadeira-extensora",
+      "nome": "Cadeira extensora",
+      "tipoCarga": "carga",
+      "musculos": [
+        { "musculoId": "mus-quadriceps", "tipo": "direto", "fracao": 1 }
+      ]
+    },
+    {
+      "id": "ex-mesa-flexora",
+      "nome": "Mesa flexora",
+      "tipoCarga": "carga",
+      "musculos": [
+        { "musculoId": "mus-posterior-coxa", "tipo": "direto", "fracao": 1 }
+      ]
+    },
+    {
+      "id": "ex-abdominal",
+      "nome": "Abdominal",
+      "tipoCarga": "carga",
+      "musculos": [{ "musculoId": "mus-abdomen", "tipo": "direto", "fracao": 1 }]
+    }
+  ],
+  "treinos": [
+    {
+      "id": "tr-a",
+      "nome": "A",
+      "naRotacao": true,
+      "ordem": 0,
+      "cor": "#4f8cff",
+      "itens": [
+        { "id": "it-a-1", "tipo": "exercicio", "exercicioId": "ex-leg-press-pes-altos", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-a-2", "tipo": "exercicio", "exercicioId": "ex-panturrilha-leg-press", "seriesPlanejadas": 2, "repsPlanejadas": null, "opcional": true },
+        { "id": "it-a-3", "tipo": "exercicio", "exercicioId": "ex-supino-reto-maquina", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-a-4", "tipo": "exercicio", "exercicioId": "ex-remada-baixa", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-a-5", "tipo": "exercicio", "exercicioId": "ex-mesa-flexora", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-a-6", "tipo": "exercicio", "exercicioId": "ex-elevacao-lateral", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-a-7", "tipo": "exercicio", "exercicioId": "ex-triceps-pushdown", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": false }
+      ]
+    },
+    {
+      "id": "tr-b",
+      "nome": "B",
+      "naRotacao": true,
+      "ordem": 1,
+      "cor": "#2fbf71",
+      "itens": [
+        { "id": "it-b-1", "tipo": "exercicio", "exercicioId": "ex-agachamento", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-b-2", "tipo": "exercicio", "exercicioId": "ex-supino-inclinado-maquina", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-b-3", "tipo": "exercicio", "exercicioId": "ex-puxada-frente", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
+        {
+          "id": "it-b-4",
+          "tipo": "alternativas",
+          "nome": "Voador inverso ou face pull",
+          "alternativas": ["ex-voador-inverso", "ex-face-pull"],
+          "exercicioPadraoId": "ex-voador-inverso",
+          "seriesPlanejadas": 3,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        { "id": "it-b-5", "tipo": "exercicio", "exercicioId": "ex-triceps-frances", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-b-6", "tipo": "exercicio", "exercicioId": "ex-rosca-direta", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": false }
+      ]
+    },
+    {
+      "id": "tr-c",
+      "nome": "C",
+      "naRotacao": true,
+      "ordem": 2,
+      "cor": "#ff8a3d",
+      "itens": [
+        { "id": "it-c-1", "tipo": "exercicio", "exercicioId": "ex-cadeira-extensora", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-c-2", "tipo": "exercicio", "exercicioId": "ex-mesa-flexora", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-c-3", "tipo": "exercicio", "exercicioId": "ex-pec-fly", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-c-4", "tipo": "exercicio", "exercicioId": "ex-remada-baixa", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-c-5", "tipo": "exercicio", "exercicioId": "ex-elevacao-lateral", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-c-6", "tipo": "exercicio", "exercicioId": "ex-rosca-martelo", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": false },
+        { "id": "it-c-7", "tipo": "exercicio", "exercicioId": "ex-abdominal", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": true }
+      ]
+    }
+  ]
+}
