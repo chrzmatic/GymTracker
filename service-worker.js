@@ -20,7 +20,7 @@
  * offline.
  */
 
-const VERSAO = 'v11';
+const VERSAO = 'v12';
 const CACHE = `gymtracker-${VERSAO}`;
 
 /** Tudo que o app precisa para abrir sem rede. */

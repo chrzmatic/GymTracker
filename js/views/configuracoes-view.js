@@ -16,7 +16,7 @@ import {
   restaurarDietaPadrao,
   carregarSeNecessario,
 } from '../services/seed-service.js';
-import { abrir, recarregar } from '../navegacao.js';
+import { abrir, recarregar, recomecar } from '../navegacao.js';
 
 /**
  * Renderiza a tela de configurações.
@@ -70,7 +70,7 @@ function cardRecomecar() {
       if (!ok) return;
       await restaurarTreinoPadrao();
       await avisar('Pronto', 'Os treinos padrão foram restaurados.');
-      location.reload();
+      await recomecar();
     })
   );
 
@@ -84,7 +84,7 @@ function cardRecomecar() {
       if (!ok) return;
       await restaurarDietaPadrao();
       await avisar('Pronto', 'A dieta padrão foi restaurada.');
-      location.reload();
+      await recomecar('dieta');
     })
   );
 
@@ -111,7 +111,7 @@ function cardRecomecar() {
 
     await backup.apagarTudo();
     await carregarSeNecessario();
-    location.reload();
+    await recomecar();
   };
   card.appendChild(apagar);
 
@@ -209,11 +209,41 @@ async function importar() {
 
   try {
     await backup.restaurar(conteudo);
-    await avisar('Backup restaurado', 'O app vai recarregar para aplicar os dados.');
-    location.reload();
   } catch (erro) {
     await avisar('Não consegui restaurar', String(erro && erro.message ? erro.message : erro));
+    return;
   }
+
+  // Relê o banco antes de comemorar. O app já disse "restaurado" para um
+  // backup que não tinha entrado; agora, se a contagem não bater, quem
+  // avisa é a tela — e com o nome do que faltou.
+  let divergencias = [];
+  try {
+    divergencias = await backup.conferirRestauracao(conteudo);
+  } catch (erro) {
+    await avisar(
+      'Restaurei, mas não consegui conferir',
+      'Os dados foram gravados, mas a releitura do banco falhou: ' +
+        String(erro && erro.message ? erro.message : erro) +
+        '. Feche e abra o app para ver como ficou.'
+    );
+    await recomecar();
+    return;
+  }
+
+  if (divergencias.length) {
+    await avisar(
+      'O backup não entrou inteiro',
+      'O banco aceitou a gravação mas, relendo, falta coisa — ' +
+        divergencias.join('; ') +
+        '. Nada foi perdido do arquivo: tente importar de novo, com o app aberto na frente.'
+    );
+  } else {
+    const total = Object.values(validacao.resumo).reduce((soma, n) => soma + n, 0);
+    await avisar('Backup restaurado', `${total} registros conferidos no banco.`);
+  }
+
+  await recomecar();
 }
 
 /** Atalho para o peso corporal, que alimenta os cálculos de carga efetiva. */

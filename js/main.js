@@ -4,14 +4,21 @@
  * Responsabilidades:
  *  - abrir o banco e rodar a carga inicial na primeira abertura
  *  - desenhar a barra de abas e o botão de configurações
- *  - lembrar a última aba aberta, para o app voltar onde estava
+ *  - reabrir o app exatamente onde você parou
  *
  * A troca de telas em si vive em js/navegacao.js, que também cuida das
- * sub-telas (editar treino, exercícios, histórico) e do botão de voltar.
+ * sub-telas (editar treino, exercícios, histórico), do botão de voltar e
+ * de guardar onde você estava — aba, sub-tela e posição da rolagem.
  */
 
 import { carregarSeNecessario } from './services/seed-service.js';
-import { iniciarNavegacao, irParaAba, abrir, recarregar } from './navegacao.js';
+import {
+  iniciarNavegacao,
+  irParaAba,
+  abrir,
+  recarregar,
+  voltarParaRaiz,
+} from './navegacao.js';
 
 /** Definição das abas, na ordem da barra inferior. */
 const ABAS = [
@@ -22,18 +29,11 @@ const ABAS = [
   { id: 'dieta', rotulo: 'Dieta', icone: '🍽️' },
 ];
 
-const CHAVE_ABA = 'gymtracker:aba';
-
 let abaAtual = null;
 
-/** Marca visualmente a aba ativa e guarda qual é. */
+/** Marca visualmente a aba ativa. Quem guarda qual é é a navegação. */
 function marcarAba(id) {
   abaAtual = id;
-  try {
-    localStorage.setItem(CHAVE_ABA, id);
-  } catch {
-    /* modo privado pode bloquear o localStorage; não é crítico */
-  }
   document.querySelectorAll('.abas button').forEach((b) => {
     if (b.dataset.aba === id) b.setAttribute('aria-current', 'page');
     else b.removeAttribute('aria-current');
@@ -80,7 +80,7 @@ function montarBotaoConfig() {
 async function iniciar() {
   montarBarraDeAbas();
   montarBotaoConfig();
-  iniciarNavegacao(marcarAba);
+  const salva = iniciarNavegacao(marcarAba);
 
   try {
     await carregarSeNecessario();
@@ -89,18 +89,21 @@ async function iniciar() {
     return;
   }
 
-  let inicial = 'treino';
-  try {
-    const salva = localStorage.getItem(CHAVE_ABA);
-    if (salva && ABAS.some((a) => a.id === salva)) inicial = salva;
-  } catch {
-    /* ignora */
-  }
+  const inicial = salva && ABAS.some((a) => a.id === salva) ? salva : 'treino';
 
   try {
     await irParaAba(inicial);
   } catch (erro) {
-    mostrarErro(erro);
+    // A tela guardada pode não existir mais — um treino apagado, uma
+    // sessão que sumiu num backup restaurado. Em vez de abrir num erro,
+    // volta para a raiz da aba e tenta de novo.
+    console.warn('[app] não consegui reabrir onde você estava:', erro);
+    voltarParaRaiz(inicial);
+    try {
+      await irParaAba(inicial);
+    } catch (segundoErro) {
+      mostrarErro(segundoErro);
+    }
   }
 }
 

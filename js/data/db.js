@@ -101,7 +101,7 @@ let conexao = null;
 export function abrirDb() {
   if (conexao) return conexao;
 
-  conexao = new Promise((resolve, reject) => {
+  const promessaAtual = new Promise((resolve, reject) => {
     const req = indexedDB.open(NOME_DB, VERSAO_DB);
 
     req.onupgradeneeded = (evento) => {
@@ -114,12 +114,27 @@ export function abrirDb() {
       }
     };
 
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => {
+      const db = req.result;
+      // O Safari do iPhone fecha a conexão por conta própria quando o app
+      // fica parado em segundo plano. Sem soltar o cache aqui, a próxima
+      // escrita cairia num `InvalidStateError` — ou pior, numa transação
+      // que aborta em silêncio. Zerando, a próxima chamada reabre.
+      db.onclose = () => {
+        if (conexao === promessaAtual) conexao = null;
+      };
+      db.onversionchange = () => {
+        db.close();
+        if (conexao === promessaAtual) conexao = null;
+      };
+      resolve(db);
+    };
     req.onerror = () => reject(req.error);
     req.onblocked = () =>
       reject(new Error('Banco bloqueado por outra aba aberta do app.'));
   });
 
+  conexao = promessaAtual;
   return conexao;
 }
 
@@ -143,9 +158,8 @@ function promessa(req) {
  * @returns {Promise<*>}
  */
 export async function transacao(stores, modo, acao) {
-  const db = await abrirDb();
+  const tx = await abrirTransacao(stores, modo);
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(stores, modo);
     let resultado;
     tx.oncomplete = () => resolve(resultado);
     tx.onerror = () => reject(tx.error);
@@ -163,6 +177,29 @@ export async function transacao(stores, modo, acao) {
         reject(erro);
       });
   });
+}
+
+/**
+ * Abre a transação, reabrindo o banco se a conexão tiver caído.
+ *
+ * Vale a pena a tentativa extra porque a conexão cai justamente no pior
+ * momento: o iPhone descarta o app em segundo plano enquanto você escolhe
+ * o arquivo de backup no app Arquivos, e a primeira escrita ao voltar
+ * encontraria uma conexão morta.
+ *
+ * @param {string|string[]} stores
+ * @param {'readonly'|'readwrite'} modo
+ * @returns {Promise<IDBTransaction>}
+ */
+async function abrirTransacao(stores, modo) {
+  const db = await abrirDb();
+  try {
+    return db.transaction(stores, modo);
+  } catch (erro) {
+    if (!erro || erro.name !== 'InvalidStateError') throw erro;
+    conexao = null;
+    return (await abrirDb()).transaction(stores, modo);
+  }
 }
 
 /**

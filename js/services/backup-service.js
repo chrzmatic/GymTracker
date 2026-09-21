@@ -11,7 +11,7 @@
  * permite salvar no app Arquivos, e cai no download comum quando não há.
  */
 
-import { listarStores, lerTudo, transacao, VERSAO_DB } from '../data/db.js';
+import { listarStores, lerTudo, contar, transacao, VERSAO_DB } from '../data/db.js';
 import { hojeIso } from '../utils/date.js';
 import { mapaExercicios } from '../data/exercicios-repo.js';
 import { listarSessoes } from '../data/sessoes-repo.js';
@@ -166,27 +166,65 @@ export function validarBackup(backup) {
  * registro editado nos dois lados deve vencer. A tela avisa e pede
  * confirmação antes.
  *
- * Stores que existem no banco mas não no backup são esvaziadas, para o
- * resultado ser exatamente o estado do backup.
+ * **Tudo numa transação só.** Antes era uma transação por store, uma
+ * dúzia no total, e isso tinha dois defeitos: se o banco falhasse no meio
+ * — ou o iPhone descartasse o app entre uma transação e a seguinte, que é
+ * fácil logo depois de você voltar do app Arquivos — metade dos dados
+ * ficava apagada e a outra metade antiga, e mesmo assim o app anunciava
+ * sucesso. Com uma transação só, ou entra tudo ou não entra nada.
+ *
+ * Stores que o backup **não traz** ficam como estão, em vez de serem
+ * esvaziadas: um backup antigo, de antes de a dieta existir, não tem
+ * motivo para apagar a sua dieta de hoje.
  *
  * @param {Object} backup já validado
  * @returns {Promise<Object>} quantos registros por store
  */
 export async function restaurar(backup) {
-  const stores = await listarStores();
-  const gravados = {};
-
-  for (const store of stores) {
-    const itens = Array.isArray(backup.dados[store]) ? backup.dados[store] : [];
-    await transacao(store, 'readwrite', (tx) => {
-      const os = tx.objectStore(store);
-      os.clear();
-      itens.forEach((item) => os.put(item));
-    });
-    gravados[store] = itens.length;
+  const stores = (await listarStores()).filter((s) => Array.isArray(backup.dados[s]));
+  if (!stores.length) {
+    throw new Error('O backup não traz nenhuma tabela que este app conheça.');
   }
 
+  await transacao(stores, 'readwrite', (tx) => {
+    stores.forEach((store) => {
+      const os = tx.objectStore(store);
+      os.clear();
+      backup.dados[store].forEach((item) => os.put(item));
+    });
+  });
+
+  const gravados = {};
+  stores.forEach((store) => {
+    gravados[store] = backup.dados[store].length;
+  });
   return gravados;
+}
+
+/**
+ * Relê o banco e confere se o backup realmente entrou.
+ *
+ * Existe porque "a transação terminou" não provou ser o bastante: o app
+ * anunciava sucesso e os dados não estavam lá. Uma contagem de verdade,
+ * numa transação nova, é a única resposta confiável — e quando o número
+ * não bate, a tela diz o que faltou em vez de dar parabéns.
+ *
+ * @param {Object} backup o mesmo que acabou de ser restaurado
+ * @returns {Promise<string[]>} as divergências; lista vazia = tudo certo
+ */
+export async function conferirRestauracao(backup) {
+  const stores = (await listarStores()).filter((s) => Array.isArray(backup.dados[s]));
+  const divergencias = [];
+
+  for (const store of stores) {
+    const noBanco = await contar(store);
+    const noArquivo = backup.dados[store].length;
+    if (noBanco !== noArquivo) {
+      divergencias.push(store + ': ' + noBanco + ' de ' + noArquivo);
+    }
+  }
+
+  return divergencias;
 }
 
 /**
@@ -197,17 +235,17 @@ export async function restaurar(backup) {
  * entra aqui sozinha, e não fica um resto de dado escondido depois de um
  * "apagar tudo".
  *
- * Quem chama é responsável por recarregar a carga inicial e a página.
+ * Quem chama é responsável por recarregar a carga inicial e a tela.
  *
  * @returns {Promise<string[]>} as stores esvaziadas
  */
 export async function apagarTudo() {
   const stores = await listarStores();
-  for (const store of stores) {
-    await transacao(store, 'readwrite', (tx) => {
-      tx.objectStore(store).clear();
-    });
-  }
+  // Uma transação só, pelo mesmo motivo do `restaurar`: um "apagar tudo"
+  // que apaga metade é pior do que um que não apaga nada.
+  await transacao(stores, 'readwrite', (tx) => {
+    stores.forEach((store) => tx.objectStore(store).clear());
+  });
   return stores;
 }
 
