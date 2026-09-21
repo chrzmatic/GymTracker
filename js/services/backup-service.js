@@ -22,6 +22,86 @@ import { csvDeTreinos, csvDePeso, nomeDeArquivo } from '../domain/csv.js';
 /** Identifica o formato do arquivo, para a importação validar. */
 export const FORMATO = 'gymtracker-backup';
 
+/**
+ * Nome legível de cada store, para as telas falarem português em vez de
+ * `pesoCorporal`. O que não estiver aqui aparece com o nome técnico mesmo.
+ */
+const NOMES = {
+  musculos: 'músculos',
+  exercicios: 'exercícios',
+  treinos: 'treinos',
+  sessoes: 'sessões de treino',
+  series: 'séries registradas',
+  pesoCorporal: 'pesos corporais',
+  config: 'configurações',
+  alimentos: 'alimentos',
+  pratos: 'pratos',
+  refeicoes: 'refeições',
+  planos: 'planos de dieta',
+  tipoDia: 'dias marcados',
+};
+
+/** Quantos registros o backup traz numa store. */
+function quantos(backup, store) {
+  const itens = backup && backup.dados ? backup.dados[store] : null;
+  return Array.isArray(itens) ? itens.length : 0;
+}
+
+/**
+ * Descreve num punhado de palavras o que o backup carrega **de seu**.
+ *
+ * Existe porque um backup exportado de uma instalação nova tem 79
+ * registros — os treinos e alimentos padrão, que já vêm no app — e parece
+ * cheio na contagem total. O que separa um backup útil de um inútil é o
+ * histórico, então é o histórico que aparece primeiro.
+ *
+ * @param {Object} backup
+ * @returns {string}
+ */
+export function descreverBackup(backup) {
+  const sessoes = quantos(backup, 'sessoes');
+  const pesos = quantos(backup, 'pesoCorporal');
+  const total = Object.values(backup.dados ?? {}).reduce(
+    (soma, itens) => soma + (Array.isArray(itens) ? itens.length : 0),
+    0
+  );
+
+  const partes = [
+    sessoes === 0
+      ? 'NENHUMA sessão de treino'
+      : `${sessoes} ${sessoes === 1 ? 'sessão' : 'sessões'} de treino`,
+  ];
+  if (pesos) partes.push(`${pesos} ${pesos === 1 ? 'peso' : 'pesos'}`);
+  partes.push(`${total} registros no total`);
+  return partes.join(', ');
+}
+
+/**
+ * O que existe hoje no app e **não** existe no backup.
+ *
+ * Restaurar substitui, então tudo que o arquivo tem a menos some. Antes a
+ * tela só avisava isso no genérico ("os dados serão substituídos"); com a
+ * lista na frente dá para ver que o backup de teste que você pegou não tem
+ * as suas 27 sessões antes de mandá-las embora.
+ *
+ * @param {Object} backup já validado
+ * @returns {Promise<string[]>} ex.: ['sessões de treino: 27 → 0']
+ */
+export async function perdasAoRestaurar(backup) {
+  const stores = (await listarStores()).filter((s) => Array.isArray(backup.dados[s]));
+  const perdas = [];
+
+  for (const store of stores) {
+    const noBanco = await contar(store);
+    const noArquivo = backup.dados[store].length;
+    if (noBanco > noArquivo) {
+      perdas.push(`${NOMES[store] ?? store}: ${noBanco} → ${noArquivo}`);
+    }
+  }
+
+  return perdas;
+}
+
 /* ------------------------------------------------------------------ */
 /* Exportar                                                            */
 /* ------------------------------------------------------------------ */
@@ -55,6 +135,8 @@ export async function exportarJson() {
     nome: nomeDeArquivo('gymtracker-backup', hojeIso(), 'json'),
     conteudo: JSON.stringify(backup, null, 2),
     tipo: 'application/json',
+    resumo: descreverBackup(backup),
+    vazio: quantos(backup, 'sessoes') === 0,
   };
 }
 

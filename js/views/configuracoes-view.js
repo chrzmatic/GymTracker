@@ -139,6 +139,12 @@ function cardBackup() {
     'O JSON é o backup completo (treinos, histórico, peso e configurações) e é o que o "Importar" lê de volta. Os CSV são para abrir no Excel, Numbers ou Google Sheets.';
   card.appendChild(explica);
 
+  const nota = document.createElement('p');
+  nota.className = 'texto-fraco pequeno';
+  nota.textContent =
+    'Cada endereço guarda seus dados separadamente: o app no localhost, o app publicado na internet e o ícone na Tela de Início são três cofres diferentes, e nenhum enxerga o do outro. Exportar aqui e importar lá é justamente como mudar de um para o outro.';
+  card.appendChild(nota);
+
   card.appendChild(
     linha('Exportar backup (JSON)', 'completo', async () => {
       await exportar(backup.exportarJson());
@@ -160,16 +166,38 @@ function cardBackup() {
 }
 
 /**
- * Gera o arquivo e entrega ao usuário, avisando o que aconteceu.
+ * Gera o arquivo e entrega ao usuário, dizendo o que foi dentro dele.
+ *
+ * O "o que foi dentro" não é firula: um backup tirado de uma instalação
+ * nova tem 79 registros só de treinos e alimentos padrão, e parece cheio.
+ * Sem esta linha dá para guardar durante meses um arquivo que não tem
+ * nenhuma sessão sua — e só descobrir na hora de restaurar.
+ *
  * @param {Promise<Object>} promessa
  */
 async function exportar(promessa) {
   try {
     const arquivo = await promessa;
     const resultado = await backup.entregar(arquivo);
-    if (resultado === 'baixado') {
-      await avisar('Exportado', `Arquivo ${arquivo.nome} salvo nos seus downloads.`);
+    if (resultado === 'cancelado') return;
+
+    const onde =
+      resultado === 'baixado'
+        ? `${arquivo.nome} salvo nos seus downloads.`
+        : `${arquivo.nome} entregue ao menu de compartilhar.`;
+
+    if (!arquivo.resumo) {
+      await avisar('Exportado', onde);
+      return;
     }
+
+    await avisar(
+      arquivo.vazio ? 'Exportado, mas sem histórico' : 'Exportado',
+      `${onde} Dentro dele: ${arquivo.resumo}.` +
+        (arquivo.vazio
+          ? ' Ou seja: este arquivo não guarda treino nenhum que você tenha feito. Se você esperava histórico aqui, é porque este app está com os dados de outro lugar — veja a nota sobre endereços em "Backup".'
+          : '')
+    );
   } catch (erro) {
     await avisar('Não consegui exportar', String(erro && erro.message ? erro.message : erro));
   }
@@ -194,15 +222,23 @@ async function importar() {
     return;
   }
 
-  const resumo = Object.entries(validacao.resumo)
-    .filter(([, n]) => n > 0)
-    .map(([store, n]) => `${n} em ${store}`)
-    .join(', ');
+  // O que este app perde se o arquivo for adiante. Restaurar substitui,
+  // então tudo que o backup tem a menos some — e é isso que precisa estar
+  // na frente dos olhos, não a contagem total.
+  let perdas = [];
+  try {
+    perdas = await backup.perdasAoRestaurar(conteudo);
+  } catch {
+    /* sem a comparação, o aviso genérico abaixo ainda vale */
+  }
 
   const ok = await confirmar(
     'Restaurar este backup?',
-    `Backup de ${conteudo.data ?? 'data desconhecida'}, com ${resumo || 'nenhum registro'}. ` +
-      'Todos os dados atuais do app serão SUBSTITUÍDOS pelos do arquivo. Isso não pode ser desfeito — se quiser guardar o estado atual, exporte antes.',
+    `Backup de ${conteudo.data ?? 'data desconhecida'}: ${backup.descreverBackup(conteudo)}. ` +
+      (perdas.length
+        ? `VOCÊ VAI PERDER o que este app tem a mais — ${perdas.join('; ')}. `
+        : '') +
+      'Os dados do app são substituídos pelos do arquivo, e não dá para desfazer. Se quiser guardar o que existe hoje, cancele e exporte antes.',
     'Restaurar'
   );
   if (!ok) return;
