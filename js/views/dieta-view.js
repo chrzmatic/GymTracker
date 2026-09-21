@@ -247,16 +247,25 @@ function cardDeRefeicao(r) {
 
   const cab = document.createElement('div');
   cab.className = 'card-cabecalho';
+
+  // Nome e calorias empilhados, em vez de lado a lado. Assim o ⋯ fica
+  // sozinho na direita e nomes compridos ("Lanche da tarde") param de
+  // disputar a mesma linha com o número.
+  const titulo = document.createElement('div');
+  titulo.className = 'refeicao-titulo';
+
   const h3 = document.createElement('h3');
   h3.textContent = r.nome;
-  cab.appendChild(h3);
+  titulo.appendChild(h3);
 
   const kcal = document.createElement('span');
   kcal.className = 'refeicao-kcal';
   kcal.textContent = r.varia
     ? `${num(r.minimo.kcal, 0)}–${num(r.maximo.kcal, 0)} kcal`
     : `${num(r.total.kcal, 0)} kcal`;
-  cab.appendChild(kcal);
+  titulo.appendChild(kcal);
+
+  cab.appendChild(titulo);
 
   const menu = document.createElement('button');
   menu.className = 'btn btn-icone';

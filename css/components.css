@@ -821,8 +821,16 @@ dialog.modal h2 {
 }
 
 /* Total da refeição no cabeçalho: era cinza pequeno e sumia. */
+/* Nome da refeição com as calorias logo abaixo, e não ao lado: o ⋯ fica
+   sozinho na direita, e o número não briga por espaço com o nome. */
+.refeicao-titulo {
+  flex: 1;
+  min-width: 0;
+}
+
 .refeicao-kcal {
-  margin-top: 3px;
+  display: block;
+  margin-top: 2px;
   font-size: 0.95rem;
   font-variant-numeric: tabular-nums;
   color: var(--texto);
@@ -834,7 +842,13 @@ dialog.modal h2 {
    pulava, e são justamente os números que decidem se a refeição presta. */
 .resumo-macros {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* Colunas do tamanho do conteúdo, espalhadas de ponta a ponta. Com
+     quatro colunas iguais (`1fr`) a última sobrava vazia pela metade,
+     porque "FIBRA / 0 g" é bem mais estreito que "PROTEÍNA / 41,2 g" —
+     ficava um buraco na direita. Assim o primeiro bloco alinha com os
+     nomes dos alimentos e o último com as calorias deles. */
+  grid-template-columns: repeat(4, auto);
+  justify-content: space-between;
   gap: 6px;
   margin-top: 10px;
   padding-top: 10px;
@@ -845,6 +859,13 @@ dialog.modal h2 {
   display: flex;
   flex-direction: column;
   gap: 1px;
+}
+
+/* O último encosta na borda direita do card, como as kcal de cada item
+   logo acima. Sem isto o valor curto ("0 g") fica solto embaixo de um
+   rótulo largo ("FIBRA") e deixa a quina do card desalinhada. */
+.macro:last-child {
+  align-items: flex-end;
 }
 
 .macro-rotulo {
