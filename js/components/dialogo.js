@@ -183,6 +183,7 @@ export function formulario(titulo, campos, textoOk = 'Salvar') {
     ok.onclick = () => {
       const dados = {};
       campos.forEach((c) => {
+        if (c.tipo === 'link') return; // não é campo, não tem valor
         const el = form.querySelector(`[name="${c.nome}"]`);
         dados[c.nome] = c.tipo === 'checkbox' ? el.checked : el.value;
       });
@@ -203,6 +204,26 @@ export function formulario(titulo, campos, textoOk = 'Salvar') {
 function montarCampo(c) {
   const linha = document.createElement('div');
   linha.className = 'form-linha';
+
+  // Um link de verdade, não um botão com onclick.
+  //
+  // O Safari só deixa abrir uma aba dentro do gesto do toque. Um
+  // `window.open` chamado depois de qualquer `await` — calcular um hash,
+  // ler o banco — já perdeu o gesto e é bloqueado sem aviso nenhum: nada
+  // abre e nada é dito. Um `<a>` tocado pelo dedo não tem esse problema,
+  // e no app da Tela de Início é o único jeito confiável de mandar o
+  // usuário para fora e trazer de volta.
+  if (c.tipo === 'link') {
+    const a = document.createElement('a');
+    a.className = 'btn btn-bloco';
+    a.href = c.href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = c.rotulo;
+    linha.appendChild(a);
+    if (c.dica) linha.appendChild(dicaDoCampo(c.dica));
+    return linha;
+  }
 
   if (c.tipo === 'checkbox') {
     const label = document.createElement('label');

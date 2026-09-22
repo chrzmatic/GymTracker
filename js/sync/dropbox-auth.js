@@ -77,6 +77,38 @@ function guardarVerifier(verifier) {
   window.localStorage.setItem(CHAVE_VERIFIER, verifier);
 }
 
+/**
+ * Se há um pedido de login esperando um código.
+ *
+ * Existe por causa de uma armadilha do iPhone: o app da Tela de Início
+ * pode ser descartado da memória enquanto você autoriza no Safari.
+ * Voltando, o diálogo sumiu — e tocar em "conectar" de novo sortearia um
+ * `code_verifier` novo, que **não combina** com o código que o Dropbox
+ * acabou de mostrar. O login falharia com um "código inválido" sem causa
+ * aparente, num código que acabou de nascer.
+ *
+ * Sabendo que há um pedido pendente, a tela oferece colar o código do
+ * pedido antigo em vez de começar outro.
+ *
+ * @returns {boolean}
+ */
+export function temPedidoPendente() {
+  try {
+    return Boolean(window.localStorage.getItem(CHAVE_VERIFIER));
+  } catch {
+    return false;
+  }
+}
+
+/** Descarta um pedido de login pendente. */
+export function esquecerPedido() {
+  try {
+    window.localStorage.removeItem(CHAVE_VERIFIER);
+  } catch {
+    /* nada a fazer */
+  }
+}
+
 /** Pega o verifier guardado e o remove: cada login usa um novo. */
 function consumirVerifier() {
   const v = window.localStorage.getItem(CHAVE_VERIFIER);

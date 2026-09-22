@@ -28,6 +28,7 @@ import {
   trocarCodigoPorToken,
   nomeDaConta,
   desconectar,
+  temPedidoPendente,
   SemAppKey,
 } from '../sync/dropbox-auth.js';
 import * as sync from '../sync/dropbox-backup.js';
@@ -166,9 +167,29 @@ function cardConectar() {
     'O app só enxerga a própria pasta do Dropbox (Apps/GymTracker). O resto dos seus arquivos fica invisível para ele.';
   card.appendChild(explica);
 
+  // Voltou do Safari e o app tinha sido descartado: o código que o
+  // Dropbox mostrou continua valendo, mas só com o pedido antigo. Começar
+  // outro o invalidaria — então este botão vem primeiro.
+  if (temPedidoPendente()) {
+    const retomar = document.createElement('button');
+    retomar.className = 'btn btn-primario btn-bloco';
+    retomar.textContent = 'Colar o código que o Dropbox mostrou';
+    retomar.onclick = () => pedirOCodigo(null);
+    card.appendChild(retomar);
+
+    const dicaRetomar = document.createElement('p');
+    dicaRetomar.className = 'texto-fraco pequeno';
+    dicaRetomar.style.margin = '4px 0 12px';
+    dicaRetomar.textContent =
+      'Há um login começado esperando o código. Se você já autorizou no Dropbox, cole aqui — começar de novo invalidaria esse código.';
+    card.appendChild(dicaRetomar);
+  }
+
   const colar = document.createElement('button');
-  colar.className = 'btn btn-primario btn-bloco';
-  colar.textContent = 'Conectar colando um código';
+  colar.className = temPedidoPendente() ? 'btn btn-bloco' : 'btn btn-primario btn-bloco';
+  colar.textContent = temPedidoPendente()
+    ? 'Começar um login novo'
+    : 'Conectar colando um código';
   colar.onclick = conectarColandoCodigo;
   card.appendChild(colar);
 
@@ -224,21 +245,41 @@ async function conectarColandoCodigo() {
   } catch (erro) {
     return avisarErroDeLogin(erro);
   }
+  return pedirOCodigo(url);
+}
 
-  window.open(url, '_blank', 'noopener');
+/**
+ * O diálogo dos dois passos: abrir o Dropbox e colar o que ele mostrar.
+ *
+ * Os dois moram no mesmo diálogo porque no iPhone sair do app para o
+ * Safari e voltar é uma viagem só de ida em potencial — o app pode ser
+ * descartado da memória enquanto você autoriza. Com o campo já aberto,
+ * voltar encontra onde colar.
+ *
+ * @param {string|null} url endereço do Dropbox, ou null quando o pedido
+ *   já foi feito antes e só falta colar
+ */
+async function pedirOCodigo(url) {
+  const campos = [];
 
-  const dados = await formulario(
-    'Cole o código do Dropbox',
-    [
-      {
-        nome: 'codigo',
-        rotulo: 'Código',
-        tipo: 'text',
-        dica: 'Abriu uma aba do Dropbox. Autorize, copie o código que aparecer e cole aqui. Ele vale uma vez só e por poucos minutos.',
-      },
-    ],
-    'Conectar'
-  );
+  if (url) {
+    campos.push({
+      nome: 'abrir',
+      tipo: 'link',
+      href: url,
+      rotulo: '1. Abrir o Dropbox e autorizar',
+      dica: 'Abre numa aba nova. Autorize o GymTracker e o Dropbox vai mostrar um código na tela.',
+    });
+  }
+
+  campos.push({
+    nome: 'codigo',
+    rotulo: url ? '2. Cole aqui o código' : 'Cole aqui o código',
+    tipo: 'text',
+    dica: 'Copie o código que o Dropbox mostrou e cole aqui. Ele vale uma vez só e por poucos minutos.',
+  });
+
+  const dados = await formulario('Conectar ao Dropbox', campos, 'Conectar');
   if (!dados || !dados.codigo.trim()) return;
 
   try {

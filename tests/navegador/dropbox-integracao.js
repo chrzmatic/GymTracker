@@ -208,6 +208,43 @@ const cenario = String.raw`
   const segundo = new URL(await auth.urlDeAutorizacao({ comRedirect: false })).searchParams.get('code_challenge');
   ok('cada login sorteia um desafio novo', primeiro === segundo, false);
 
+  /* --- o pedido pendente sobrevive ao app ser descartado ----------- */
+
+  // A armadilha do iPhone: autorizar no Safari, o app morrer, e voltar.
+  // O código do Dropbox continua valendo, mas só com o verifier daquele
+  // pedido. A tela precisa saber que ele existe para oferecer colar em
+  // vez de começar outro login (que invalidaria o código).
+  auth.esquecerPedido();
+  ok('sem pedido começado, não há pendência', auth.temPedidoPendente(), false);
+  await auth.urlDeAutorizacao({ comRedirect: false });
+  ok('começar um login deixa o pedido pendente', auth.temPedidoPendente(), true);
+
+  // Simula o app sendo descartado e reaberto: módulo recarregado do zero,
+  // memória perdida, só o localStorage sobrevive.
+  const authDeNovo = await import('/js/sync/dropbox-auth.js?reabrir=' + Date.now());
+  ok('e ele sobrevive à reabertura do app', authDeNovo.temPedidoPendente(), true);
+
+  auth.esquecerPedido();
+  ok('descartar o pedido limpa a pendência', auth.temPedidoPendente(), false);
+
+  /* --- o diálogo do código oferece um link de verdade --------------- */
+
+  // O bug que isto guarda: um window.open depois de um await perde o
+  // gesto do toque e o Safari bloqueia calado — a aba do Dropbox nunca
+  // abria e o app pedia um código que não havia como ter visto. Um <a>
+  // tocado pelo dedo não depende de gesto nenhum.
+  const dialogo = await import('/js/components/dialogo.js');
+  const promessa = dialogo.formulario('teste', [
+    { nome: 'abrir', tipo: 'link', href: 'https://exemplo/autorizar', rotulo: 'Abrir' },
+    { nome: 'codigo', rotulo: 'Código', tipo: 'text' },
+  ]);
+  const ancora = document.querySelector('dialog a.btn');
+  ok('o diálogo monta um <a> de verdade', Boolean(ancora), true);
+  ok('apontando para o endereço do login', ancora && ancora.getAttribute('href'), 'https://exemplo/autorizar');
+  ok('que abre fora do app', ancora && ancora.target, '_blank');
+  document.querySelector('dialog [data-acao="cancelar"]').click();
+  ok('e o campo do código convive com o link', await promessa, null);
+
   /* --- código colado sem pedido aberto ----------------------------- */
 
   localStorage.removeItem(config.CHAVE_VERIFIER);

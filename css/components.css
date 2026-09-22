@@ -987,3 +987,11 @@ dialog.modal h2 {
 .aviso-backup:active {
   background: rgba(255, 180, 84, 0.12);
 }
+
+/* Um <a> usado como botão (ver o tipo `link` em dialogo.js). Herda tudo
+   de .btn; só precisa perder o sublinhado e o azul de link. */
+a.btn {
+  text-decoration: none;
+  color: var(--texto);
+  box-sizing: border-box;
+}
