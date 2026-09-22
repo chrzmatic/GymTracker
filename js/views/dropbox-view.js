@@ -1,28 +1,18 @@
 /**
  * Tela do backup no Dropbox (especificação, seção 6.9).
  *
- * Reúne tudo o que é do Dropbox numa tela só, em vez de espalhar pela
- * tela de configurações: conectar, ver o status, mandar um backup na hora
- * e restaurar um dos backups guardados.
- *
- * ## A ordem dos botões de conectar não é acidental
- *
- * "Colar o código" vem **primeiro**, mesmo sendo o caminho mais
- * trabalhoso, porque é o único que funciona com o app instalado na Tela
- * de Início do iPhone — que é onde eu uso este app. O botão de
- * redirecionamento fica abaixo, marcado como o do computador.
+ * Um card só: o estado em cima, os botões embaixo. Sem explicar o que o
+ * backup é nem como o Dropbox funciona — isto é um app pessoal, e quem o
+ * abre já sabe. Texto na tela só onde ele evita um erro que não dá para
+ * desfazer (a confirmação do restaurar) ou onde é preciso no momento
+ * exato (os passos de colar o código).
  */
 
 import { formulario, confirmar, avisar, escolher } from '../components/dialogo.js';
 import { formatarDataHora } from '../utils/date.js';
 import { recarregar, recomecar } from '../navegacao.js';
-import { redirectUri, podeUsarRedirect, APP_KEY } from '../sync/dropbox-config.js';
-import {
-  lerAppKey,
-  salvarAppKey,
-  lerEstado,
-  salvarEstado,
-} from '../sync/dropbox-estado.js';
+import { podeUsarRedirect, APP_KEY } from '../sync/dropbox-config.js';
+import { lerAppKey, salvarAppKey, salvarEstado } from '../sync/dropbox-estado.js';
 import {
   urlDeAutorizacao,
   trocarCodigoPorToken,
@@ -42,222 +32,198 @@ export async function montarDropbox(raiz) {
   raiz.innerHTML = '';
 
   if (!lerAppKey()) {
-    raiz.appendChild(cardAppKey());
+    raiz.appendChild(cardSemChave());
     return;
   }
 
-  // Conectar sem internet (ou com o Dropbox fora do ar) deixa o nome da
-  // conta em branco para sempre, porque ele só era buscado no login.
-  // Buscar aqui resolve na primeira vez que a tela abre com conexão, e
-  // falhar não custa nada — o card apenas omite a linha da conta.
+  // Conectar sem internet deixaria o nome da conta em branco para sempre,
+  // porque ele só era buscado no login.
   const antes = sync.estado();
   if (antes.conectado && !antes.conta) await nomeDaConta();
 
-  const estado = sync.estado();
-
-  raiz.appendChild(cardStatus(estado));
-
-  if (estado.conectado) {
-    raiz.appendChild(cardAcoes());
-    raiz.appendChild(cardRestaurar());
-    raiz.appendChild(cardDesconectar());
-  } else {
-    raiz.appendChild(cardConectar());
-  }
-
-  raiz.appendChild(cardComoFunciona());
+  raiz.appendChild(antes.conectado ? cardConectado(sync.estado()) : cardDesconectado());
 }
 
-/**
- * Pede o app key, que de propósito não está no código.
- *
- * O repositório é público e eu preferi não deixar a chave à vista, ainda
- * que publicá-la fosse seguro no PKCE. O preço é este card: cada aparelho
- * recebe a chave uma vez. São dois aparelhos.
- *
- * Como cada endereço tem armazenamento próprio, isto aparece uma vez no
- * app publicado, uma vez no ícone da Tela de Início e uma vez no
- * localhost — os três são cofres separados, o mesmo motivo pelo qual os
- * dados de um não aparecem no outro.
- */
-function cardAppKey() {
-  const card = document.createElement('div');
-  card.className = 'card';
+/* ------------------------------------------------------------------ */
+/* Peças                                                               */
+/* ------------------------------------------------------------------ */
+
+/** Um card com título e, opcionalmente, uma linha de detalhe. */
+function card(titulo, detalhe) {
+  const el = document.createElement('div');
+  el.className = 'card';
 
   const h3 = document.createElement('h3');
-  h3.textContent = 'Falta o app key neste aparelho';
-  h3.style.margin = '0 0 4px';
-  card.appendChild(h3);
+  h3.textContent = titulo;
+  h3.style.margin = '0';
+  el.appendChild(h3);
 
-  const texto = document.createElement('p');
-  texto.className = 'texto-fraco pequeno';
-  texto.textContent =
-    'A chave não fica no código, então cada aparelho precisa dela uma vez. Ela está em dropbox.com/developers/apps → seu app GymTracker → aba Settings → App key.';
-  card.appendChild(texto);
-
-  const nota = document.createElement('p');
-  nota.className = 'texto-fraco pequeno';
-  nota.textContent =
-    'Cole só o App key. O App secret não é usado por este app e não deve ser colado aqui nem em lugar nenhum.';
-  card.appendChild(nota);
-
-  const btn = document.createElement('button');
-  btn.className = 'btn btn-primario btn-bloco';
-  btn.textContent = 'Colar o app key';
-  btn.onclick = pedirAppKey;
-  card.appendChild(btn);
-
-  return card;
-}
-
-/** Conectado ou não, última vez, pendência e o último erro. */
-function cardStatus(estado) {
-  const card = document.createElement('div');
-  card.className = 'card';
-
-  const h3 = document.createElement('h3');
-  h3.textContent = estado.conectado ? 'Conectado' : 'Não conectado';
-  h3.style.margin = '0 0 4px';
-  card.appendChild(h3);
-
-  const linhas = [];
-  if (estado.conectado && estado.conta) linhas.push('Conta: ' + estado.conta);
-  linhas.push(
-    estado.ultimoEm
-      ? 'Último backup: ' + formatarDataHora(estado.ultimoEm)
-      : 'Nenhum backup enviado ainda.'
-  );
-  if (estado.pendente) {
-    linhas.push('Há um backup pendente: sai na próxima vez que o app abrir com internet.');
-  }
-
-  linhas.forEach((texto) => {
+  if (detalhe) {
     const p = document.createElement('p');
     p.className = 'texto-fraco pequeno';
     p.style.margin = '2px 0 0';
-    p.textContent = texto;
-    card.appendChild(p);
+    p.textContent = detalhe;
+    el.appendChild(p);
+  }
+
+  return el;
+}
+
+/**
+ * Botão de bloco com um espaço em cima, para os cards não precisarem
+ * repetir `style.marginTop` em cada um.
+ */
+function botao(rotulo, aoTocar, primario = false) {
+  const b = document.createElement('button');
+  b.className = 'btn btn-bloco' + (primario ? ' btn-primario' : '');
+  b.style.marginTop = '10px';
+  b.textContent = rotulo;
+  b.onclick = aoTocar;
+  return b;
+}
+
+/** Linha discreta de ações secundárias, separadas por ponto. */
+function acoesSecundarias(itens) {
+  const linha = document.createElement('p');
+  linha.className = 'pequeno';
+  linha.style.margin = '12px 0 0';
+
+  itens.forEach((item, i) => {
+    if (i) linha.appendChild(document.createTextNode(' · '));
+    const b = document.createElement('button');
+    b.className = 'link-discreto';
+    b.textContent = item.rotulo;
+    b.onclick = item.aoTocar;
+    linha.appendChild(b);
   });
+
+  return linha;
+}
+
+/* ------------------------------------------------------------------ */
+/* Os três estados da tela                                             */
+/* ------------------------------------------------------------------ */
+
+/** Sem app key neste aparelho. */
+function cardSemChave() {
+  const el = card('Falta o app key');
+  el.appendChild(botao('Colar o app key', pedirAppKey, true));
+  return el;
+}
+
+/** Com chave, sem conexão. */
+function cardDesconectado() {
+  const pendente = temPedidoPendente();
+  const el = card(
+    'Não conectado',
+    pendente ? 'Há um login começado esperando o código.' : ''
+  );
+
+  if (pendente) {
+    el.appendChild(botao('Colar o código', () => pedirOCodigo(null), true));
+    el.appendChild(botao('Começar de novo', conectar));
+  } else {
+    el.appendChild(botao('Conectar', conectar, true));
+  }
+
+  el.appendChild(acoesSecundarias([{ rotulo: 'Trocar o app key', aoTocar: pedirAppKey }]));
+  return el;
+}
+
+/** Conectado: estado e ações. */
+function cardConectado(estado) {
+  const linhas = [];
+  if (estado.conta) linhas.push(estado.conta);
+  linhas.push(
+    estado.ultimoEm ? formatarDataHora(estado.ultimoEm) : 'nenhum backup ainda'
+  );
+  if (estado.pendente) linhas.push('pendente');
+
+  const el = card('Conectado', linhas.join(' · '));
 
   if (estado.ultimoErro) {
     const erro = document.createElement('p');
     erro.className = 'pequeno';
-    erro.style.margin = '8px 0 0';
+    erro.style.margin = '6px 0 0';
     erro.style.color = 'var(--piora)';
-    erro.textContent = 'Último erro: ' + estado.ultimoErro;
-    card.appendChild(erro);
+    erro.textContent = estado.ultimoErro;
+    el.appendChild(erro);
   }
 
-  return card;
+  el.appendChild(botao('Fazer backup agora', fazerBackupAgora, true));
+  el.appendChild(botao('Restaurar', escolherERestaurar));
+
+  el.appendChild(
+    acoesSecundarias([
+      { rotulo: 'Desconectar', aoTocar: desconectarComConfirmacao },
+      ...(APP_KEY ? [] : [{ rotulo: 'Trocar o app key', aoTocar: pedirAppKey }]),
+    ])
+  );
+
+  return el;
 }
 
-/** Os dois caminhos de login. */
-function cardConectar() {
-  const card = document.createElement('div');
-  card.className = 'card';
+/* ------------------------------------------------------------------ */
+/* App key                                                             */
+/* ------------------------------------------------------------------ */
 
-  const h3 = document.createElement('h3');
-  h3.textContent = 'Conectar';
-  h3.style.margin = '0 0 4px';
-  card.appendChild(h3);
-
-  const explica = document.createElement('p');
-  explica.className = 'texto-fraco pequeno';
-  explica.textContent =
-    'O app só enxerga a própria pasta do Dropbox (Apps/GymTracker). O resto dos seus arquivos fica invisível para ele.';
-  card.appendChild(explica);
-
-  // Voltou do Safari e o app tinha sido descartado: o código que o
-  // Dropbox mostrou continua valendo, mas só com o pedido antigo. Começar
-  // outro o invalidaria — então este botão vem primeiro.
-  if (temPedidoPendente()) {
-    const retomar = document.createElement('button');
-    retomar.className = 'btn btn-primario btn-bloco';
-    retomar.textContent = 'Colar o código que o Dropbox mostrou';
-    retomar.onclick = () => pedirOCodigo(null);
-    card.appendChild(retomar);
-
-    const dicaRetomar = document.createElement('p');
-    dicaRetomar.className = 'texto-fraco pequeno';
-    dicaRetomar.style.margin = '4px 0 12px';
-    dicaRetomar.textContent =
-      'Há um login começado esperando o código. Se você já autorizou no Dropbox, cole aqui — começar de novo invalidaria esse código.';
-    card.appendChild(dicaRetomar);
-  }
-
-  const colar = document.createElement('button');
-  colar.className = temPedidoPendente() ? 'btn btn-bloco' : 'btn btn-primario btn-bloco';
-  colar.textContent = temPedidoPendente()
-    ? 'Começar um login novo'
-    : 'Conectar colando um código';
-  colar.onclick = conectarColandoCodigo;
-  card.appendChild(colar);
-
-  const dicaColar = document.createElement('p');
-  dicaColar.className = 'texto-fraco pequeno';
-  dicaColar.style.margin = '4px 0 12px';
-  dicaColar.textContent =
-    'O jeito que funciona no iPhone com o app na Tela de Início. Abre o Dropbox, você autoriza, ele mostra um código e você cola aqui.';
-  card.appendChild(dicaColar);
-
-  const dicaRedirect = document.createElement('p');
-  dicaRedirect.className = 'texto-fraco pequeno';
-  dicaRedirect.style.margin = '4px 0 0';
-
-  if (podeUsarRedirect()) {
-    const redirecionar = document.createElement('button');
-    redirecionar.className = 'btn btn-bloco';
-    redirecionar.textContent = 'Conectar direto (computador)';
-    redirecionar.onclick = conectarComRedirect;
-    card.appendChild(redirecionar);
-
-    dicaRedirect.textContent =
-      'Volta sozinho para o app. Exige que "' +
-      redirectUri() +
-      '" esteja cadastrado em Redirect URIs, na aba Settings do app no Dropbox.';
-  } else {
-    // Rodando local: o Dropbox só aceita a volta no endereço publicado, e
-    // oferecer o botão aqui seria oferecer um erro.
-    dicaRedirect.textContent =
-      'O login com redirecionamento não funciona neste endereço (' +
-      window.location.host +
-      '): no Dropbox está cadastrado só o endereço publicado. Use o botão acima, que não depende disso.';
-  }
-
-  card.appendChild(dicaRedirect);
-
-  return card;
+/** Formulário do app key, para a primeira vez e para corrigir um erro. */
+async function pedirAppKey() {
+  const dados = await formulario(
+    'App key do Dropbox',
+    [
+      {
+        nome: 'chave',
+        rotulo: 'App key',
+        tipo: 'text',
+        valor: lerAppKey(),
+        dica: 'dropbox.com/developers/apps → GymTracker → Settings. Fica só neste aparelho.',
+      },
+    ],
+    'Salvar'
+  );
+  if (!dados || !dados.chave.trim()) return;
+  salvarAppKey(dados.chave);
+  await recarregar();
 }
+
+/* ------------------------------------------------------------------ */
+/* Conectar                                                            */
+/* ------------------------------------------------------------------ */
 
 /**
- * Fluxo sem redirecionamento: abre o Dropbox numa aba e espera o código.
+ * Um botão só: o app escolhe o caminho que funciona aqui.
  *
- * O diálogo de colar abre **junto** com a aba do Dropbox, e não depois,
- * porque no iPhone o app pode ser descartado da memória enquanto você
- * está no Safari autorizando. Com o diálogo já aberto, voltar ao app
- * encontra o campo esperando; se o app tiver morrido, a mensagem de
- * "o pedido se perdeu" explica o que houve em vez de falhar calado.
+ * No endereço publicado vale o redirecionamento, que volta sozinho. No
+ * localhost e no app da Tela de Início não vale — lá o Dropbox mostra um
+ * código para colar. Perguntar isso ao usuário seria transferir para ele
+ * uma decisão que o código sabe tomar.
  */
-async function conectarColandoCodigo() {
+async function conectar() {
+  const comRedirect = podeUsarRedirect();
+
   let url;
   try {
-    url = await urlDeAutorizacao({ comRedirect: false });
+    url = await urlDeAutorizacao({ comRedirect });
   } catch (erro) {
     return avisarErroDeLogin(erro);
+  }
+
+  if (comRedirect) {
+    window.location.href = url;
+    return;
   }
   return pedirOCodigo(url);
 }
 
 /**
- * O diálogo dos dois passos: abrir o Dropbox e colar o que ele mostrar.
+ * Os dois passos de colar o código, no mesmo diálogo.
  *
- * Os dois moram no mesmo diálogo porque no iPhone sair do app para o
- * Safari e voltar é uma viagem só de ida em potencial — o app pode ser
- * descartado da memória enquanto você autoriza. Com o campo já aberto,
- * voltar encontra onde colar.
+ * Juntos porque no iPhone sair para o Safari e voltar é uma viagem só de
+ * ida em potencial: o app pode ser descartado da memória enquanto você
+ * autoriza. Com o campo já aberto, voltar encontra onde colar.
  *
- * @param {string|null} url endereço do Dropbox, ou null quando o pedido
- *   já foi feito antes e só falta colar
+ * @param {string|null} url null quando o pedido já existe e só falta colar
  */
 async function pedirOCodigo(url) {
   const campos = [];
@@ -267,16 +233,15 @@ async function pedirOCodigo(url) {
       nome: 'abrir',
       tipo: 'link',
       href: url,
-      rotulo: '1. Abrir o Dropbox e autorizar',
-      dica: 'Abre numa aba nova. Autorize o GymTracker e o Dropbox vai mostrar um código na tela.',
+      rotulo: '1. Autorizar no Dropbox',
+      dica: 'Ao autorizar, o Dropbox mostra um código.',
     });
   }
 
   campos.push({
     nome: 'codigo',
-    rotulo: url ? '2. Cole aqui o código' : 'Cole aqui o código',
+    rotulo: url ? '2. Código' : 'Código',
     tipo: 'text',
-    dica: 'Copie o código que o Dropbox mostrou e cole aqui. Ele vale uma vez só e por poucos minutos.',
   });
 
   const dados = await formulario('Conectar ao Dropbox', campos, 'Conectar');
@@ -290,20 +255,9 @@ async function pedirOCodigo(url) {
   }
 }
 
-/** Fluxo normal: sai do app e volta com `?code=` na URL. */
-async function conectarComRedirect() {
-  try {
-    const url = await urlDeAutorizacao({ comRedirect: true });
-    window.location.href = url;
-  } catch (erro) {
-    await avisarErroDeLogin(erro);
-  }
-}
-
-/** Mensagem de erro de login, com o caso do app key faltando à parte. */
+/** Erro de login, com o caso da chave faltando à parte. */
 async function avisarErroDeLogin(erro) {
   if (erro instanceof SemAppKey) {
-    await avisar('Falta o app key', 'Cole o app key do Dropbox antes de conectar.');
     await recarregar();
     return;
   }
@@ -311,91 +265,46 @@ async function avisarErroDeLogin(erro) {
 }
 
 /**
- * Fecha o login: descobre o nome da conta e já manda o primeiro backup.
+ * Fecha o login e já manda o primeiro backup.
  *
- * O primeiro backup sai na hora de propósito. Conectar e não ver nada
- * acontecer deixa a dúvida de se funcionou — e a resposta só viria 24
- * horas depois, que é tarde demais para descobrir que a permissão estava
- * errada no App Console.
+ * Na hora, de propósito: conectar e não ver nada acontecer deixa a dúvida
+ * de se funcionou, e a resposta só viria 24 horas depois — tarde demais
+ * para descobrir que a permissão no App Console estava errada.
  */
 async function depoisDeConectar() {
   await nomeDaConta();
+  const resultado = await sync.fazerBackup('manual');
   await recarregar();
 
-  const resultado = await sync.fazerBackup('manual');
-  if (resultado.ok) {
-    await avisar('Conectado', 'O primeiro backup já foi enviado para o Dropbox.');
-  } else if (resultado.pendente) {
-    await avisar('Conectado', 'Sem internet agora. O primeiro backup sai assim que houver conexão.');
-  } else {
+  if (!resultado.ok && !resultado.pendente) {
     await avisar('Conectado, mas o backup falhou', resultado.erro || 'Motivo desconhecido.');
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Backup e restauração                                                */
+/* ------------------------------------------------------------------ */
+
+/** "Fazer backup agora", com o botão contando o que está havendo. */
+async function fazerBackupAgora(evento) {
+  const btn = evento.currentTarget;
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+
+  const resultado = await sync.fazerBackup('manual');
+
+  btn.disabled = false;
+  btn.textContent = 'Fazer backup agora';
+
+  if (!resultado.ok && !resultado.pendente) {
+    await avisar('O backup falhou', resultado.erro || 'Motivo desconhecido.');
   }
   await recarregar();
 }
 
-/** "Fazer backup agora". */
-function cardAcoes() {
-  const card = document.createElement('div');
-  card.className = 'card';
-
-  const btn = document.createElement('button');
-  btn.className = 'btn btn-primario btn-bloco';
-  btn.textContent = 'Fazer backup agora';
-  btn.onclick = async () => {
-    btn.disabled = true;
-    btn.textContent = 'Enviando…';
-    const resultado = await sync.fazerBackup('manual');
-    btn.disabled = false;
-    btn.textContent = 'Fazer backup agora';
-
-    if (resultado.ok) {
-      await avisar('Backup enviado', tamanhoLegivel(resultado.bytes) + ' no Dropbox.');
-    } else if (resultado.pendente) {
-      await avisar('Sem internet', 'O backup ficou pendente e sai assim que houver conexão.');
-    } else {
-      await avisar('O backup falhou', resultado.erro || 'Motivo desconhecido.');
-    }
-    await recarregar();
-  };
-  card.appendChild(btn);
-
-  const nota = document.createElement('p');
-  nota.className = 'texto-fraco pequeno';
-  nota.style.margin = '8px 0 0';
-  nota.textContent =
-    'O backup também sai sozinho ao finalizar um treino, ao mexer na dieta e ao abrir o app depois de 24 horas.';
-  card.appendChild(nota);
-
-  return card;
-}
-
-/** Lista os backups do Dropbox e restaura o escolhido. */
-function cardRestaurar() {
-  const card = document.createElement('div');
-  card.className = 'card';
-
-  const h3 = document.createElement('h3');
-  h3.textContent = 'Restaurar';
-  h3.style.margin = '0 0 4px';
-  card.appendChild(h3);
-
-  const explica = document.createElement('p');
-  explica.className = 'texto-fraco pequeno';
-  explica.textContent =
-    'Substitui os dados deste aparelho pelos do backup escolhido. É assim que se leva o histórico do computador para o iPhone, ou se volta atrás de uma bagunça.';
-  card.appendChild(explica);
-
-  const btn = document.createElement('button');
-  btn.className = 'btn btn-bloco';
-  btn.textContent = 'Ver backups no Dropbox';
-  btn.onclick = () => escolherERestaurar(btn);
-  card.appendChild(btn);
-
-  return card;
-}
-
 /** Baixa a lista, deixa escolher, confirma e restaura. */
-async function escolherERestaurar(btn) {
+async function escolherERestaurar(evento) {
+  const btn = evento.currentTarget;
   btn.disabled = true;
   btn.textContent = 'Buscando…';
 
@@ -403,20 +312,18 @@ async function escolherERestaurar(btn) {
   try {
     lista = await sync.listarBackups();
   } catch (erro) {
-    btn.disabled = false;
-    btn.textContent = 'Ver backups no Dropbox';
     return avisar('Não consegui listar', String(erro && erro.message ? erro.message : erro));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Restaurar';
   }
 
-  btn.disabled = false;
-  btn.textContent = 'Ver backups no Dropbox';
-
   if (!lista.length) {
-    return avisar('Nenhum backup', 'Ainda não há nada na pasta do app no Dropbox.');
+    return avisar('Nenhum backup', 'A pasta do app no Dropbox está vazia.');
   }
 
   const escolhido = await escolher(
-    'Qual backup restaurar?',
+    'Restaurar qual?',
     lista.map((e) => ({
       valor: e.caminho,
       rotulo: e.rotulo + ' · ' + formatarDataHora(e.modificadoEm),
@@ -430,10 +337,10 @@ async function escolherERestaurar(btn) {
 /**
  * Baixa, mostra o que tem dentro, confirma e grava.
  *
- * O que há dentro do arquivo aparece **antes** da confirmação, pelo mesmo
- * motivo do "Importar JSON": um backup tirado de uma instalação nova tem
- * quase 80 registros de treinos e alimentos padrão e parece cheio, mas
- * pode não ter nenhuma sessão sua. Confirmar às cegas é como se perde um
+ * O conteúdo aparece **antes** da confirmação pelo mesmo motivo do
+ * "Importar JSON": um backup tirado de uma instalação nova tem quase 80
+ * registros de treinos e alimentos padrão e parece cheio, mas pode não
+ * ter nenhuma sessão sua. Confirmar às cegas é como se perde um
  * histórico.
  *
  * @param {string} caminho
@@ -458,16 +365,11 @@ async function restaurarCaminho(caminho) {
   }
 
   const ok = await confirmar(
-    'Restaurar este backup?',
-    'Backup de ' +
-      (backup.data || 'data desconhecida') +
-      ': ' +
-      descreverBackup(backup) +
+    'Restaurar o backup de ' + (backup.data || 'data desconhecida') + '?',
+    descreverBackup(backup) +
       '. ' +
-      (perdas.length
-        ? 'VOCÊ VAI PERDER o que este aparelho tem a mais — ' + perdas.join('; ') + '. '
-        : '') +
-      'Os dados deste aparelho são substituídos pelos do arquivo, e não dá para desfazer.',
+      (perdas.length ? 'VOCÊ VAI PERDER — ' + perdas.join('; ') + '. ' : '') +
+      'Substitui os dados deste aparelho e não dá para desfazer.',
     'Restaurar'
   );
   if (!ok) return;
@@ -482,121 +384,39 @@ async function restaurarCaminho(caminho) {
   if (resultado.divergencias.length) {
     await avisar(
       'O backup não entrou inteiro',
-      'O banco aceitou a gravação mas, relendo, falta coisa — ' +
+      'Falta ' +
         resultado.divergencias.join('; ') +
-        '. Nada foi perdido no Dropbox: tente de novo, com o app aberto na frente.'
+        '. Nada foi perdido no Dropbox: tente de novo.'
     );
   } else {
     const total = Object.values(resultado.gravados).reduce((soma, n) => soma + n, 0);
-    await avisar('Backup restaurado', total + ' registros conferidos no banco.');
+    await avisar('Restaurado', total + ' registros conferidos no banco.');
   }
 
   await recomecar();
 }
 
 /** Desconectar, apagando o token deste aparelho. */
-function cardDesconectar() {
-  const card = document.createElement('div');
-  card.className = 'card';
-
-  const btn = document.createElement('button');
-  btn.className = 'btn btn-bloco btn-perigo';
-  btn.textContent = 'Desconectar do Dropbox';
-  btn.onclick = async () => {
-    const ok = await confirmar(
-      'Desconectar do Dropbox?',
-      'O token sai deste aparelho e os backups automáticos param. Os arquivos já enviados continuam no seu Dropbox.',
-      'Desconectar'
-    );
-    if (!ok) return;
-    desconectar();
-    await recarregar();
-  };
-  card.appendChild(btn);
-
-  return card;
-}
-
-/** O que o app faz com a pasta, em português. */
-function cardComoFunciona() {
-  const card = document.createElement('div');
-  card.className = 'card';
-
-  const h3 = document.createElement('h3');
-  h3.textContent = 'Como funciona';
-  h3.style.margin = '0 0 4px';
-  card.appendChild(h3);
-
-  const lista = document.createElement('ul');
-  lista.className = 'texto-fraco pequeno';
-  lista.style.margin = '0';
-  lista.style.paddingLeft = '18px';
-  [
-    'backup-atual.json é sobrescrito a cada backup.',
-    'diario/backup-AAAA-MM-DD.json guarda uma cópia por dia, mantendo as 7 últimas.',
-    'Sem internet, o backup fica pendente e sai na próxima abertura com conexão.',
-    'O app só enxerga a própria pasta: Apps/GymTracker no seu Dropbox.',
-  ].forEach((texto) => {
-    const li = document.createElement('li');
-    li.textContent = texto;
-    lista.appendChild(li);
-  });
-  card.appendChild(lista);
-
-  // Sem isto, colar a chave errada seria um beco sem saída: o card de
-  // colar não volta depois do primeiro acerto, e o erro só apareceria
-  // como uma recusa do Dropbox na hora de conectar.
-  if (!APP_KEY) {
-    const trocar = document.createElement('button');
-    trocar.className = 'btn btn-bloco';
-    trocar.style.marginTop = '10px';
-    trocar.textContent = 'Trocar o app key deste aparelho';
-    trocar.onclick = pedirAppKey;
-    card.appendChild(trocar);
-  }
-
-  return card;
-}
-
-/**
- * Abre o formulário do app key e recarrega a tela.
- * Serve tanto para a primeira vez quanto para corrigir uma chave errada.
- */
-async function pedirAppKey() {
-  const dados = await formulario(
-    'App key do Dropbox',
-    [
-      {
-        nome: 'chave',
-        rotulo: 'App key',
-        tipo: 'text',
-        valor: lerAppKey(),
-        dica: 'dropbox.com/developers/apps → GymTracker → Settings → App key. Fica guardado só neste aparelho.',
-      },
-    ],
-    'Salvar'
+async function desconectarComConfirmacao() {
+  const ok = await confirmar(
+    'Desconectar do Dropbox?',
+    'Os backups automáticos param. Os arquivos já enviados continuam lá.',
+    'Desconectar'
   );
-  if (!dados || !dados.chave.trim()) return;
-  salvarAppKey(dados.chave);
+  if (!ok) return;
+  desconectar();
   await recarregar();
 }
 
-/**
- * Tamanho em KB ou MB, para o aviso do backup dizer algo concreto.
- * @param {number} bytes
- * @returns {string}
- */
-function tamanhoLegivel(bytes) {
-  if (!bytes) return 'Backup enviado';
-  if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
+/* ------------------------------------------------------------------ */
+/* Login que voltou pela URL                                           */
+/* ------------------------------------------------------------------ */
 
 /**
  * Conclui um login que voltou por redirecionamento.
  *
- * Chamado pelo `main.js` na abertura, porque o `?code=` chega na URL antes
- * de qualquer tela existir. Devolve o que houve para o app avisar.
+ * Chamado pelo `main.js` na abertura, porque o `?code=` chega na URL
+ * antes de qualquer tela existir.
  *
  * @returns {Promise<void>}
  */
@@ -608,13 +428,8 @@ export async function concluirLoginPendente() {
   if (resultado.ok) {
     await nomeDaConta();
     salvarEstado({ ultimoErro: null });
-    await avisar('Conectado ao Dropbox', 'O backup automático está ligado.');
     sync.fazerBackup('manual');
   } else {
     await avisar('Não consegui conectar', resultado.erro || 'Motivo desconhecido.');
   }
 }
-
-// `lerEstado` é reexportado para a tela de configurações mostrar o resumo
-// sem precisar conhecer a pasta `sync`.
-export { lerEstado };

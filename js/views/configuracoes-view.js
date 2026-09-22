@@ -36,7 +36,6 @@ export async function montarConfiguracoes(raiz) {
   raiz.appendChild(cardBackup());
   raiz.appendChild(cardDropbox());
   raiz.appendChild(cardRecomecar());
-  raiz.appendChild(cardOndeFica());
 }
 
 /**
@@ -49,11 +48,6 @@ export async function montarConfiguracoes(raiz) {
 function cardDropbox() {
   const card = document.createElement('div');
   card.className = 'card';
-
-  const h3 = document.createElement('h3');
-  h3.textContent = 'Dropbox';
-  h3.style.margin = '0 0 4px';
-  card.appendChild(h3);
 
   const estado = lerEstadoDropbox();
   let resumo;
@@ -71,13 +65,7 @@ function cardDropbox() {
     resumo = 'conectado';
   }
 
-  const explica = document.createElement('p');
-  explica.className = 'texto-fraco pequeno';
-  explica.textContent =
-    'Backup automático na nuvem: ao terminar um treino, ao mexer na dieta e uma vez por dia. É o que faz o histórico sobreviver à troca de aparelho.';
-  card.appendChild(explica);
-
-  card.appendChild(linha('Backup no Dropbox', resumo, () => abrir('dropbox')));
+  card.appendChild(linha('Dropbox', resumo, () => abrir('dropbox')));
 
   return card;
 }
@@ -101,12 +89,6 @@ function cardRecomecar() {
   h3.textContent = 'Recomeçar';
   h3.style.margin = '0 0 4px';
   card.appendChild(h3);
-
-  const explica = document.createElement('p');
-  explica.className = 'texto-fraco pequeno';
-  explica.textContent =
-    'Restaurar padrão devolve os treinos do arquivo de dados iniciais e mantém o seu histórico. Apagar tudo zera o app inteiro, inclusive as sessões registradas.';
-  card.appendChild(explica);
 
   card.appendChild(
     linha('Restaurar treinos padrão', 'mantém o histórico', async () => {
@@ -180,18 +162,6 @@ function cardBackup() {
   h3.textContent = 'Backup';
   h3.style.margin = '0 0 4px';
   card.appendChild(h3);
-
-  const explica = document.createElement('p');
-  explica.className = 'texto-fraco pequeno';
-  explica.textContent =
-    'O JSON é o backup completo (treinos, histórico, peso e configurações) e é o que o "Importar" lê de volta. Os CSV são para abrir no Excel, Numbers ou Google Sheets.';
-  card.appendChild(explica);
-
-  const nota = document.createElement('p');
-  nota.className = 'texto-fraco pequeno';
-  nota.textContent =
-    'Cada endereço guarda seus dados separadamente: o app no localhost, o app publicado na internet e o ícone na Tela de Início são três cofres diferentes, e nenhum enxerga o do outro. Exportar aqui e importar lá é justamente como mudar de um para o outro.';
-  card.appendChild(nota);
 
   card.appendChild(
     linha('Exportar backup (JSON)', 'completo', async () => {
@@ -340,12 +310,6 @@ function cardPeso() {
   h3.style.margin = '0 0 4px';
   card.appendChild(h3);
 
-  const explica = document.createElement('p');
-  explica.className = 'texto-fraco pequeno';
-  explica.textContent =
-    'Necessário para calcular a carga efetiva de barra fixa, paralelas e exercícios assistidos. Sem ele, a comparação desses exercícios usa só reps e o kg registrado.';
-  card.appendChild(explica);
-
   const botao = document.createElement('button');
   botao.className = 'btn btn-bloco';
   botao.textContent = 'Registrar e ver histórico';
@@ -364,12 +328,6 @@ function cardRotacao(config) {
   h3.textContent = 'Rotação';
   h3.style.margin = '0 0 4px';
   card.appendChild(h3);
-
-  const explica = document.createElement('p');
-  explica.className = 'texto-fraco pequeno';
-  explica.textContent =
-    'A rotação volta para o primeiro treino só quando as duas coisas valem ao mesmo tempo: o dia cai numa semana posterior à do último treino, e passaram pelo menos X dias desde ele.';
-  card.appendChild(explica);
 
   card.appendChild(
     linha(
@@ -441,23 +399,3 @@ function linha(rotulo, valor, aoTocar) {
   return btn;
 }
 
-/**
- * Onde mora o que não está aqui.
- *
- * Sobrou da lista de "ainda por vir", que morreu com a Etapa 9. A nota
- * continua útil: sem ela, procurar a edição de treinos nas configurações é
- * o primeiro reflexo de quem abre esta tela.
- */
-function cardOndeFica() {
-  const card = document.createElement('div');
-  card.className = 'card';
-
-  const nota = document.createElement('p');
-  nota.className = 'texto-fraco pequeno';
-  nota.style.margin = '0';
-  nota.textContent =
-    'Editar treinos, exercícios e músculos fica na aba Treino, em "Treinos e exercícios" — é coisa de toda semana, não de configuração.';
-  card.appendChild(nota);
-
-  return card;
-}

@@ -995,3 +995,21 @@ a.btn {
   color: var(--texto);
   box-sizing: border-box;
 }
+
+/* Ação secundária em forma de texto: desconectar, trocar a chave. Não
+   compete com o botão principal do card, mas continua sendo um alvo de
+   toque com altura decente. */
+.link-discreto {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  font: inherit;
+  color: var(--texto-fraco);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link-discreto:active {
+  color: var(--texto);
+}
