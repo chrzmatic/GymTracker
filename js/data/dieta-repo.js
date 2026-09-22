@@ -9,7 +9,49 @@
  * mesmo no dia de treino e no dia sem treino, e editar uma vez precisa
  * valer para os dois. O plano guarda só os IDs das refeições dele.
  */
-import { lerTudo, ler, gravar, apagar, gravarVarios, contar } from './db.js';
+import {
+  lerTudo,
+  ler,
+  contar,
+  gravar as gravarNoBanco,
+  apagar as apagarDoBanco,
+  gravarVarios as gravarVariosNoBanco,
+} from './db.js';
+import { dadosMudaram } from '../sync/gatilho.js';
+
+/* ------------------------------------------------------------------ */
+/* Escrita, com aviso ao backup                                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A especificação manda fazer backup "ao salvar alterações no índice,
+ * pratos compostos ou plano de dieta". São umas doze funções de escrita
+ * aqui embaixo, e pendurar a chamada em cada uma seria doze chances de
+ * esquecer — inclusive na próxima que eu escrever.
+ *
+ * Em vez disso, os três helpers de escrita do banco entram embrulhados:
+ * qualquer gravação neste arquivo avisa o backup, hoje e depois. O aviso
+ * é o de `sync/gatilho.js`, que não faz nada se o Dropbox não estiver
+ * conectado e nunca atrasa quem salvou.
+ */
+
+/** @param {string} store @param {Object} registro @returns {Promise<void>} */
+async function gravar(store, registro) {
+  await gravarNoBanco(store, registro);
+  dadosMudaram();
+}
+
+/** @param {string} store @param {*} chave @returns {Promise<void>} */
+async function apagar(store, chave) {
+  await apagarDoBanco(store, chave);
+  dadosMudaram();
+}
+
+/** @param {string} store @param {Object[]} registros @returns {Promise<void>} */
+async function gravarVarios(store, registros) {
+  await gravarVariosNoBanco(store, registros);
+  dadosMudaram();
+}
 
 /* ------------------------------------------------------------------ */
 /* Alimentos                                                           */

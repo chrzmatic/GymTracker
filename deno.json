@@ -1,7 +1,7 @@
 {
   "tasks": {
     "test": "deno test --allow-read tests/",
-    "test:navegador": "deno run -A tests/navegador/sessao-integracao.js && deno run -A tests/navegador/edicao-integracao.js && deno run -A tests/navegador/rotacao-integracao.js && deno run -A tests/navegador/comparacao-integracao.js && deno run -A tests/navegador/progresso-backup-integracao.js && deno run -A tests/navegador/dieta-integracao.js && deno run -A tests/navegador/migracao-integracao.js",
+    "test:navegador": "deno run -A tests/navegador/sessao-integracao.js && deno run -A tests/navegador/edicao-integracao.js && deno run -A tests/navegador/rotacao-integracao.js && deno run -A tests/navegador/comparacao-integracao.js && deno run -A tests/navegador/progresso-backup-integracao.js && deno run -A tests/navegador/dieta-integracao.js && deno run -A tests/navegador/migracao-integracao.js && deno run -A tests/navegador/dropbox-integracao.js && deno run -A tests/navegador/backup-extremo-integracao.js",
     "servir": "deno run -A --node-modules-dir=false jsr:@std/http/file-server --port 8080"
   },
   "fmt": { "useTabs": false, "lineWidth": 90, "singleQuote": true },

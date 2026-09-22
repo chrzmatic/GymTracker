@@ -65,6 +65,10 @@ const TELAS = {
     titulo: 'Peso corporal',
     carregar: () => import('./views/peso-view.js').then((m) => m.montarPeso),
   },
+  dropbox: {
+    titulo: 'Backup no Dropbox',
+    carregar: () => import('./views/dropbox-view.js').then((m) => m.montarDropbox),
+  },
   comparar: {
     titulo: 'Comparar',
     carregar: () => import('./views/comparar-view.js').then((m) => m.montarComparar),

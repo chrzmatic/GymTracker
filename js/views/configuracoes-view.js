@@ -7,7 +7,11 @@
  */
 
 import { lerTodasConfigs, salvarConfig, CONFIG_PADRAO } from '../data/config-repo.js';
-import { NOMES_DIA_SEMANA } from '../utils/date.js';
+import { NOMES_DIA_SEMANA, formatarDataHora } from '../utils/date.js';
+import {
+  lerEstado as lerEstadoDropbox,
+  lerAppKey as lerAppKeyDropbox,
+} from '../sync/dropbox-estado.js';
 import { paraNumero } from '../utils/format.js';
 import { formulario, confirmar, avisar } from '../components/dialogo.js';
 import * as backup from '../services/backup-service.js';
@@ -30,8 +34,52 @@ export async function montarConfiguracoes(raiz) {
   raiz.appendChild(cardRotacao(config));
   raiz.appendChild(cardPeso());
   raiz.appendChild(cardBackup());
+  raiz.appendChild(cardDropbox());
   raiz.appendChild(cardRecomecar());
-  raiz.appendChild(cardFuturo());
+  raiz.appendChild(cardOndeFica());
+}
+
+/**
+ * Atalho para o backup no Dropbox, com o status resumido.
+ *
+ * O status aparece aqui, e não só lá dentro, porque backup é uma coisa em
+ * que ninguém toca até precisar: se o app parou de enviar há duas semanas,
+ * eu preciso tropeçar nessa informação, não ir procurar por ela.
+ */
+function cardDropbox() {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const h3 = document.createElement('h3');
+  h3.textContent = 'Dropbox';
+  h3.style.margin = '0 0 4px';
+  card.appendChild(h3);
+
+  const estado = lerEstadoDropbox();
+  let resumo;
+  if (!lerAppKeyDropbox()) {
+    // "não conectado" mandaria você tocar em conectar e esbarrar num
+    // pedido de app key sem explicação. Melhor dizer o que falta.
+    resumo = 'falta o app key';
+  } else if (!estado.refreshToken) {
+    resumo = 'não conectado';
+  } else if (estado.pendente) {
+    resumo = 'pendente';
+  } else if (estado.ultimoEm) {
+    resumo = formatarDataHora(estado.ultimoEm);
+  } else {
+    resumo = 'conectado';
+  }
+
+  const explica = document.createElement('p');
+  explica.className = 'texto-fraco pequeno';
+  explica.textContent =
+    'Backup automático na nuvem: ao terminar um treino, ao mexer na dieta e uma vez por dia. É o que faz o histórico sobreviver à troca de aparelho.';
+  card.appendChild(explica);
+
+  card.appendChild(linha('Backup no Dropbox', resumo, () => abrir('dropbox')));
+
+  return card;
 }
 
 /**
@@ -393,30 +441,20 @@ function linha(rotulo, valor, aoTocar) {
   return btn;
 }
 
-/** O que ainda não existe, para não parecer que sumiu. */
-function cardFuturo() {
+/**
+ * Onde mora o que não está aqui.
+ *
+ * Sobrou da lista de "ainda por vir", que morreu com a Etapa 9. A nota
+ * continua útil: sem ela, procurar a edição de treinos nas configurações é
+ * o primeiro reflexo de quem abre esta tela.
+ */
+function cardOndeFica() {
   const card = document.createElement('div');
   card.className = 'card';
 
-  const h3 = document.createElement('h3');
-  h3.textContent = 'Ainda por vir';
-  h3.style.margin = '0 0 4px';
-  card.appendChild(h3);
-
-  const lista = document.createElement('ul');
-  lista.className = 'texto-fraco pequeno';
-  lista.style.margin = '0';
-  lista.style.paddingLeft = '18px';
-  ['Conectar ao Dropbox (Etapa 9)'].forEach((texto) => {
-    const li = document.createElement('li');
-    li.textContent = texto;
-    lista.appendChild(li);
-  });
-  card.appendChild(lista);
-
   const nota = document.createElement('p');
   nota.className = 'texto-fraco pequeno';
-  nota.style.margin = '10px 0 0';
+  nota.style.margin = '0';
   nota.textContent =
     'Editar treinos, exercícios e músculos fica na aba Treino, em "Treinos e exercícios" — é coisa de toda semana, não de configuração.';
   card.appendChild(nota);

@@ -20,7 +20,7 @@
  * offline.
  */
 
-const VERSAO = 'v12';
+const VERSAO = 'v13';
 const CACHE = `gymtracker-${VERSAO}`;
 
 /** Tudo que o app precisa para abrir sem rede. */
@@ -84,8 +84,17 @@ const ARQUIVOS = [
   './js/components/dialogo.js',
   './js/components/ui.js',
 
+  './js/sync/dropbox-config.js',
+  './js/sync/dropbox-estado.js',
+  './js/sync/dropbox-auth.js',
+  './js/sync/dropbox-api.js',
+  './js/sync/rotacao-backups.js',
+  './js/sync/dropbox-backup.js',
+  './js/sync/gatilho.js',
+
   './js/views/calendario-view.js',
   './js/views/comparar-view.js',
+  './js/views/dropbox-view.js',
   './js/views/configuracoes-view.js',
   './js/views/dieta-view.js',
   './js/views/dieta-editor-view.js',

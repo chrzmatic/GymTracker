@@ -55,8 +55,20 @@ export async function montarTreino(elemento, params = {}) {
   await desenhar();
 }
 
-/** Recarrega os dados da sessão e redesenha a tela. */
+/**
+ * Recarrega os dados da sessão e redesenha a tela.
+ *
+ * O aviso do backup entra por último, depois de a tela estar pronta, e
+ * vale para os dois caminhos (escolher treino e sessão aberta), porque os
+ * dois começam limpando a raiz.
+ */
 async function desenhar() {
+  await desenharConteudo();
+  avisarSeOBackupFalhou();
+}
+
+/** O desenho da tela em si. */
+async function desenharConteudo() {
   if (!raiz) return;
   if (!estado.sessaoId) {
     estado.sessao = null;
@@ -800,3 +812,57 @@ async function sair() {
   await desenhar();
 }
 
+
+/* ------------------------------------------------------------------ */
+/* Aviso do backup                                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Faixa discreta no topo quando o último backup no Dropbox não saiu.
+ *
+ * A especificação pede isso aqui, e não num diálogo, por um motivo
+ * concreto: o backup falha justamente no lugar onde a internet é ruim, a
+ * academia, e um modal no meio de uma série seria a pior interrupção
+ * possível. A faixa informa e sai do caminho — dá para treinar o dia
+ * inteiro sem tocar nela.
+ *
+ * Só aparece quando há erro de verdade. "Pendente" por falta de rede é o
+ * funcionamento normal e não vira aviso.
+ */
+function avisarSeOBackupFalhou() {
+  if (!raiz) return;
+
+  import('../sync/dropbox-estado.js')
+    .then(({ lerEstado }) => {
+      const estadoBackup = lerEstado();
+      if (!estadoBackup.refreshToken || !estadoBackup.ultimoErro) return;
+      if (!raiz || raiz.querySelector('.aviso-backup')) return;
+      raiz.prepend(faixaDeAviso(estadoBackup.ultimoErro));
+    })
+    .catch(() => {
+      /* sem backup configurado, não há aviso a dar */
+    });
+}
+
+/**
+ * A faixa em si: toca para ir às configurações do Dropbox.
+ * @param {string} mensagem
+ * @returns {HTMLElement}
+ */
+function faixaDeAviso(mensagem) {
+  const faixa = document.createElement('button');
+  faixa.className = 'aviso-backup';
+  faixa.title = mensagem;
+
+  const texto = document.createElement('span');
+  texto.textContent = '⚠︎ O backup no Dropbox não está saindo.';
+  faixa.appendChild(texto);
+
+  const acao = document.createElement('span');
+  acao.className = 'pequeno';
+  acao.textContent = 'ver';
+  faixa.appendChild(acao);
+
+  faixa.onclick = () => abrir('dropbox');
+  return faixa;
+}

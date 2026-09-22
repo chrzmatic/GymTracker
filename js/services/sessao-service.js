@@ -26,6 +26,7 @@ import {
 } from '../data/series-repo.js';
 import { buscarTreino } from '../data/treinos-repo.js';
 import { mapaExercicios } from '../data/exercicios-repo.js';
+import { dadosMudaram } from '../sync/gatilho.js';
 import {
   montarSessao,
   montarSerie,
@@ -105,6 +106,10 @@ export async function finalizarSessao(sessao) {
     finalizadaEm: Date.now(),
   };
   await salvarSessao(atualizada);
+  // Fim de treino é o momento em que mais dói perder dados, e é quando eu
+  // ainda estou na academia com o celular na mão. O backup sai na hora,
+  // sem a espera que as alterações comuns respeitam.
+  dadosMudaram('sessao');
   return atualizada;
 }
 

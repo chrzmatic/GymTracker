@@ -89,6 +89,12 @@ async function iniciar() {
     return;
   }
 
+  // Um login do Dropbox que voltou por redirecionamento chega como
+  // `?code=` na URL, antes de qualquer tela existir. Tem que ser tratado
+  // aqui, e antes de desenhar: senão a tela de configurações abre dizendo
+  // "não conectado" enquanto o código ainda está na barra de endereços.
+  await concluirLoginDoDropbox();
+
   const inicial = salva && ABAS.some((a) => a.id === salva) ? salva : 'treino';
 
   try {
@@ -105,6 +111,35 @@ async function iniciar() {
       mostrarErro(segundoErro);
     }
   }
+
+  // Depois da tela no ar, nunca antes: manda o que ficou pendente e refaz
+  // o backup se o último passou de 24 horas. Não é esperado de propósito —
+  // abrir o app na academia não pode depender do Dropbox responder.
+  backupDeAbertura();
+}
+
+/**
+ * Conclui um login do Dropbox que voltou pela URL.
+ * Só carrega o código do Dropbox se houver mesmo um `?code=` esperando.
+ */
+async function concluirLoginDoDropbox() {
+  if (!window.location.search.includes('code=')) return;
+  try {
+    const { concluirLoginPendente } = await import('./views/dropbox-view.js');
+    await concluirLoginPendente();
+  } catch (erro) {
+    console.warn('[app] não consegui concluir o login do Dropbox:', erro);
+  }
+}
+
+/** Backup de abertura, se houver conexão configurada. */
+function backupDeAbertura() {
+  import('./sync/dropbox-estado.js')
+    .then(({ conectado }) => {
+      if (!conectado()) return null;
+      return import('./sync/dropbox-backup.js').then((m) => m.aoAbrirApp());
+    })
+    .catch((erro) => console.warn('[app] backup de abertura falhou:', erro));
 }
 
 // Reconstrói a tela ao voltar do segundo plano, para refletir o banco atual.

@@ -957,3 +957,33 @@ dialog.modal h2 {
   font-variant-numeric: tabular-nums;
   font-size: 1.05rem;
 }
+
+/* Faixa discreta na aba Treino quando o backup no Dropbox falhou.
+   Informa sem interromper: no meio de uma série, um modal seria a pior
+   interrupção possível. Usa a cor de aviso, não a de erro, porque o
+   treino em si não tem nada de errado. */
+.aviso-backup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--aviso);
+  border-radius: var(--raio);
+  background: transparent;
+  color: var(--aviso);
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.aviso-backup .pequeno {
+  margin-left: auto;
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+.aviso-backup:active {
+  background: rgba(255, 180, 84, 0.12);
+}
