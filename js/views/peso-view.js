@@ -26,7 +26,7 @@ export async function montarPeso(raiz) {
   const explica = document.createElement('p');
   explica.className = 'texto-fraco pequeno';
   explica.textContent =
-    'Usado para calcular a carga efetiva de barra fixa, paralelas e exercícios assistidos. Vale sempre o peso mais recente até a data da sessão.';
+    'Usado na carga de barra fixa, paralelas e exercícios assistidos.';
   raiz.appendChild(explica);
 
   const registrar = document.createElement('button');

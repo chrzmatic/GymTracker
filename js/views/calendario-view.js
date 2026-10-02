@@ -3,7 +3,8 @@
  *
  * Cada dia treinado ganha uma bolinha na cor do treino (mais de uma se
  * houve mais de uma sessão no dia). Tocar num dia:
- *  - com treino: abre a sessão daquele dia;
+ *  - com treino: abre o resumo da sessão (ou o registro, se ainda está em
+ *    andamento); editar fica a um toque dali;
  *  - sem treino, passado ou hoje: mostra o sugerido e deixa registrar;
  *  - futuro: mostra o que seria sugerido, considerando só o que já foi
  *    registrado, e não deixa registrar (não dá para treinar amanhã hoje).
@@ -175,11 +176,14 @@ async function tocarNoDia(dia, doDia) {
   const acoes = acoesDoDia(dia, doDia, hojeIso());
   const titulo = `${formatarLongo(dia)} · ${descreverDistancia(dia)}`;
 
-  const opcoes = doDia.map((s) => ({
-    valor: 'abrir:' + s.id,
-    rotulo: 'Abrir treino ' + s.treinoNome,
-    detalhe: s.status === sessoes.STATUS.FINALIZADA ? '' : 'em andamento',
-  }));
+  const opcoes = doDia.map((s) => {
+    const finalizada = s.status === sessoes.STATUS.FINALIZADA;
+    return {
+      valor: (finalizada ? 'ver:' : 'editar:') + s.id,
+      rotulo: (finalizada ? 'Ver treino ' : 'Continuar treino ') + s.treinoNome,
+      detalhe: finalizada ? '' : 'em andamento',
+    };
+  });
 
   if (acoes.podeRegistrar) {
     opcoes.push({
@@ -197,8 +201,12 @@ async function tocarNoDia(dia, doDia) {
   const escolha = opcoes.length === 1 ? opcoes[0].valor : await escolher(titulo, opcoes);
   if (!escolha) return;
 
-  if (escolha.startsWith('abrir:')) {
-    await abrir('treino', { sessaoId: escolha.slice(6) });
+  if (escolha.startsWith('ver:')) {
+    await abrir('sessao-resumo', { sessaoId: escolha.slice(4) });
+    return;
+  }
+  if (escolha.startsWith('editar:')) {
+    await abrir('treino', { sessaoId: escolha.slice(7) });
     return;
   }
   await registrarNoDia(dia, titulo);
@@ -215,7 +223,7 @@ async function mostrarSugestaoFutura(dia, titulo) {
   await avisar(
     titulo,
     sugestao
-      ? `Sugerido para este dia: treino ${sugestao.treino.nome}. ${sugestao.explicacao} A sugestão considera só os treinos já registrados, então pode mudar até lá.`
+      ? `Sugerido para este dia: treino ${sugestao.treino.nome}. ${sugestao.explicacao}`
       : 'Nenhum treino na rotação ainda.'
   );
 }

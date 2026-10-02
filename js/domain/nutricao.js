@@ -21,8 +21,51 @@
 /** Os cinco valores que o app soma. */
 export const NUTRIENTES = ['kcal', 'proteina', 'gordura', 'carbo', 'fibra'];
 
+/**
+ * Os valores que precisam estar preenchidos para o item não ser
+ * "incompleto". A fibra fica de fora: muitos rótulos não a informam e em
+ * carne, ovo, óleo e manteiga ela é zero de fato. Em branco ela ainda
+ * conta zero e aparece em `faltando`, mas não marca o item.
+ */
+export const NUTRIENTES_OBRIGATORIOS = ['kcal', 'proteina', 'gordura', 'carbo'];
+
 /** Unidades aceitas. Só comparam entre iguais. */
 export const UNIDADES = { G: 'g', ML: 'ml', UNIDADE: 'unidade' };
+
+/**
+ * Unidades de energia aceitas na **entrada**. O app guarda e mostra sempre
+ * kcal; kJ existe só para digitar o que está no rótulo (comum fora do
+ * Brasil) e é convertido na hora de salvar.
+ */
+export const UNIDADES_ENERGIA = { KCAL: 'kcal', KJ: 'kj' };
+
+/** 1 kcal = 4,184 kJ (caloria termoquímica, a dos rótulos de alimento). */
+export const KJ_POR_KCAL = 4.184;
+
+/**
+ * Converte kJ em kcal, arredondado para inteiro (como nos rótulos).
+ * @param {number|string|null|undefined} kj
+ * @returns {number|null} null quando não há número
+ */
+export function kjParaKcal(kj) {
+  if (kj === null || kj === undefined || kj === '') return null;
+  const n = Number(kj);
+  if (!Number.isFinite(n)) return null;
+  return Math.round(n / KJ_POR_KCAL);
+}
+
+/**
+ * Energia digitada num formulário, já em kcal.
+ * @param {number|string|null|undefined} valor
+ * @param {string} [unidade] 'kcal' (padrão) ou 'kj'
+ * @returns {number|null}
+ */
+export function energiaEmKcal(valor, unidade = UNIDADES_ENERGIA.KCAL) {
+  if (unidade === UNIDADES_ENERGIA.KJ) return kjParaKcal(valor);
+  if (valor === null || valor === undefined || valor === '') return null;
+  const n = Number(valor);
+  return Number.isFinite(n) ? n : null;
+}
 
 /** Tipos de item de refeição. */
 export const TIPO_ITEM = {
@@ -77,7 +120,8 @@ export function arredondar(valores, casas = 1) {
  * Valores de referência de um alimento, com os brancos virando zero.
  *
  * A especificação manda contar branco como 0 e marcar o item — em vez de
- * abortar a soma do dia inteiro por causa de uma fibra não preenchida.
+ * abortar a soma do dia inteiro por causa de um valor não preenchido. Só
+ * os obrigatórios marcam (ver NUTRIENTES_OBRIGATORIOS).
  *
  * @param {Object} alimento
  * @returns {{valores: Object, incompleto: boolean, faltando: string[]}}
@@ -89,7 +133,8 @@ export function valoresDeReferencia(alimento) {
   const valores = Object.fromEntries(
     NUTRIENTES.map((n) => [n, Number(alimento[n]) || 0])
   );
-  return { valores, incompleto: faltando.length > 0, faltando };
+  const incompleto = faltando.some((n) => NUTRIENTES_OBRIGATORIOS.includes(n));
+  return { valores, incompleto, faltando };
 }
 
 /**

@@ -27,11 +27,6 @@ export async function montarHistorico(raiz) {
     return;
   }
 
-  const resumo = document.createElement('p');
-  resumo.className = 'texto-fraco pequeno';
-  resumo.textContent = `${lista.length} sessão${lista.length > 1 ? 'ões' : ''} registrada${lista.length > 1 ? 's' : ''}. Toque numa para abrir, editar ou excluir.`;
-  raiz.appendChild(resumo);
-
   let mesAtual = null;
   lista.forEach((registro) => {
     const { ano, mes } = partesIso(registro.sessao.data);
@@ -117,8 +112,20 @@ function cardDaSessao({ sessao, series, aquecimentos, exercicios }) {
     card.appendChild(nota);
   }
 
-  card.onclick = () => abrir('treino', { sessaoId: sessao.id });
+  card.onclick = () => abrirSessao(sessao);
   return card;
+}
+
+/**
+ * Sessão finalizada abre no resumo, só para ler; em andamento abre direto
+ * no registro, que é o que se quer fazer com ela.
+ * @param {Object} sessao
+ * @returns {Promise<void>}
+ */
+function abrirSessao(sessao) {
+  return sessao.status === sessoes.STATUS.FINALIZADA
+    ? abrir('sessao-resumo', { sessaoId: sessao.id })
+    : abrir('treino', { sessaoId: sessao.id });
 }
 
 /**
@@ -133,7 +140,10 @@ function cardDaSessao({ sessao, series, aquecimentos, exercicios }) {
 async function menuDaSessao(sessao) {
   const anterior = await anteriorDoMesmoTreino(sessao);
 
-  const opcoes = [{ valor: 'abrir', rotulo: 'Abrir sessão' }];
+  const opcoes = [
+    { valor: 'ver', rotulo: 'Ver resumo' },
+    { valor: 'editar', rotulo: 'Editar sessão' },
+  ];
   if (anterior) {
     opcoes.push({
       valor: 'comparar',
@@ -148,7 +158,8 @@ async function menuDaSessao(sessao) {
     opcoes
   );
 
-  if (acao === 'abrir') return abrir('treino', { sessaoId: sessao.id });
+  if (acao === 'ver') return abrir('sessao-resumo', { sessaoId: sessao.id });
+  if (acao === 'editar') return abrir('treino', { sessaoId: sessao.id });
 
   if (acao === 'comparar') {
     return abrir('comparar', { idA: anterior.id, idB: sessao.id });
@@ -157,7 +168,7 @@ async function menuDaSessao(sessao) {
   if (acao === 'excluir') {
     const ok = await confirmar(
       'Excluir a sessão de ' + formatarCurto(sessao.data) + '?',
-      'As séries registradas nela serão apagadas. Tudo que depende de datas (sugestão do próximo treino, gráficos, séries semanais) recalcula sozinho.'
+      'As séries registradas nela serão apagadas.'
     );
     if (!ok) return;
     await sessoes.apagarSessao(sessao.id);

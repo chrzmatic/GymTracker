@@ -30,7 +30,6 @@ export async function montarTreinos(raiz) {
   exercicios = mapa;
 
   raiz.innerHTML = '';
-  raiz.appendChild(explicacao());
 
   secao(raiz, 'Rotação', rotacao, true);
   secao(raiz, 'Extras', extras, false);
@@ -38,14 +37,6 @@ export async function montarTreinos(raiz) {
   raiz.appendChild(botoesDoRodape());
 }
 
-/** Texto curto explicando o que a ordem significa. */
-function explicacao() {
-  const p = document.createElement('p');
-  p.className = 'texto-fraco pequeno';
-  p.textContent =
-    'A ordem da rotação é a sequência seguida na sugestão do próximo treino. Treinos extras ficam fora dela.';
-  return p;
-}
 
 /**
  * Desenha uma seção (rotação ou extras).

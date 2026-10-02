@@ -35,12 +35,6 @@ export async function montarMusculos(raiz) {
 
   raiz.innerHTML = '';
 
-  const intro = document.createElement('p');
-  intro.className = 'texto-fraco pequeno';
-  intro.textContent =
-    'A ordem daqui é a ordem da tabela de séries semanais. Renomear não desliga os exercícios: o vínculo é por ID.';
-  raiz.appendChild(intro);
-
   if (!musculos.length) {
     raiz.appendChild(blocoVazio('Nenhum músculo cadastrado.'));
   }

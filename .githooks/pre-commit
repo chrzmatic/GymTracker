@@ -1,0 +1,15 @@
+#!/bin/sh
+# Atualiza a versão do app (js/versao.js e o cache do service worker) com o
+# número deste commit. Ativar uma vez por clone:
+#   git config core.hooksPath .githooks
+
+if command -v node >/dev/null 2>&1; then
+  node scripts/versao.mjs --proximo || exit 1
+elif command -v deno >/dev/null 2>&1; then
+  deno run -A scripts/versao.mjs --proximo || exit 1
+else
+  echo "pre-commit: sem node nem deno, versão não atualizada" >&2
+  exit 0
+fi
+
+git add js/versao.js service-worker.js

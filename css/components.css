@@ -594,8 +594,13 @@ dialog.modal h2 {
 /* Cabeçalho com as duas sessões e a seta entre elas. */
 .comparar-cabecalho {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 8px;
+  margin-bottom: var(--espaco);
+}
+
+.comparar-cabecalho .comparar-seta {
+  align-self: center;
 }
 
 .comparar-lado {
@@ -605,16 +610,30 @@ dialog.modal h2 {
   flex-direction: column;
   gap: 1px;
   appearance: none;
-  background: none;
-  border: 0;
-  padding: 4px 0;
+  background: var(--bg-campo);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 8px 10px;
   color: var(--texto);
+  font: inherit;
   text-align: left;
   cursor: pointer;
 }
 
 .comparar-lado:active {
+  border-color: var(--acento);
+}
+
+.comparar-lado-topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.comparar-lado-trocar {
   color: var(--acento);
+  font-size: 0.75rem;
 }
 
 .comparar-seta {
@@ -787,11 +806,6 @@ dialog.modal h2 {
 .secao-lista h2 {
   margin: 0;
   font-size: 1rem;
-}
-
-.secao-lista .explicacao {
-  font-size: 0.78rem;
-  color: var(--texto-fraco);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1012,4 +1026,73 @@ a.btn {
 
 .link-discreto:active {
   color: var(--texto);
+}
+
+/* Visualização rápida da sessão: só leitura, compacta para caber num print. */
+.resumo-cabecalho {
+  margin: 0 0 var(--espaco);
+}
+
+.resumo-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resumo-exercicio {
+  padding: 8px 0;
+  border-top: 1px solid var(--borda);
+}
+
+.resumo-exercicio:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.resumo-exercicio:last-child {
+  padding-bottom: 0;
+}
+
+.resumo-exercicio-nome {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.resumo-exercicio-nome .etiqueta {
+  margin-left: auto;
+}
+
+.resumo-series {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.resumo-serie {
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: var(--bg-campo);
+  border: 1px solid var(--borda);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.resumo-serie.aquecimento {
+  color: var(--aviso);
+  border-color: transparent;
+}
+
+.resumo-anotacao {
+  white-space: pre-wrap;
+  font-style: italic;
+  color: var(--texto-fraco);
+}
+
+.versao-app {
+  text-align: center;
+  margin: 20px 0 4px;
 }

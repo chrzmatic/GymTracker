@@ -85,6 +85,10 @@ async function esperarPagina(porta, tentativas = 40) {
  * @returns {string}
  */
 export function acharNavegador() {
+  // Fora do Windows (ou para forçar outro navegador), o caminho vem de fora.
+  const doAmbiente = Deno.env.get('GYMTRACKER_NAVEGADOR');
+  if (doAmbiente) return doAmbiente;
+
   const pf = Deno.env.get('ProgramFiles') ?? 'C:\\Program Files';
   const pf86 = Deno.env.get('ProgramFiles(x86)') ?? 'C:\\Program Files (x86)';
   const local = Deno.env.get('LOCALAPPDATA') ?? '';
@@ -137,6 +141,15 @@ const FLAGS = [
 ];
 
 /**
+ * Flags extras vindas do ambiente, separadas por espaço. Servem para rodar
+ * fora do Windows (ex.: `--no-sandbox` num contêiner Linux como root).
+ * @returns {string[]}
+ */
+function flagsDoAmbiente() {
+  return (Deno.env.get('GYMTRACKER_NAVEGADOR_FLAGS') ?? '').split(' ').filter(Boolean);
+}
+
+/**
  * Sobe um navegador de teste num perfil descartável.
  *
  * O perfil é apagado por `encerrar()`. Antes isso não existia e cada
@@ -150,7 +163,13 @@ export async function lancarNavegador({ url, porta }) {
   const perfil = await Deno.makeTempDir({ prefix: 'gymtracker-teste-' });
 
   const processo = new Deno.Command(acharNavegador(), {
-    args: [...FLAGS, `--remote-debugging-port=${porta}`, `--user-data-dir=${perfil}`, url],
+    args: [
+      ...FLAGS,
+      ...flagsDoAmbiente(),
+      `--remote-debugging-port=${porta}`,
+      `--user-data-dir=${perfil}`,
+      url,
+    ],
     stdout: 'null',
     stderr: 'null',
   }).spawn();

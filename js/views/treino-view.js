@@ -131,14 +131,6 @@ async function desenharEscolhaDeTreino() {
     treinos.forEach((t) => raiz.appendChild(cardDeTreino(t, exercicios)));
   };
 
-  const outro = document.createElement('p');
-  outro.className = 'texto-fraco pequeno';
-  outro.style.margin = '18px 0 0';
-  outro.textContent = sugestao
-    ? 'Ou escolha outro treino:'
-    : 'Escolha o treino de hoje para começar a registrar.';
-  raiz.appendChild(outro);
-
   secao('Rotação', rotacao);
   secao('Extras', extras);
   raiz.appendChild(atalhosDeGestao());

@@ -182,11 +182,31 @@ test('"unidade" e "g" não se misturam', () => {
 /* Dados faltando                                                      */
 /* ------------------------------------------------------------------ */
 
-test('valor em branco conta zero mas marca o item como incompleto', () => {
+test('valor obrigatório em branco conta zero mas marca o item como incompleto', () => {
+  const r = calcularAlimento({ ...AVEIA, proteina: null }, 100);
+  assert.equal(r.valores.proteina, 0, 'a proteína em branco entra como zero');
+  assert.equal(r.incompleto, true);
+  assert.deepEqual(r.faltando.sort(), ['fibra', 'proteina']);
+});
+
+test('fibra em branco conta zero e aparece em faltando, mas não marca incompleto', () => {
   const r = calcularAlimento(AVEIA, 100);
   assert.equal(r.valores.fibra, 0, 'a fibra em branco entra como zero');
-  assert.equal(r.incompleto, true);
+  assert.equal(r.incompleto, false);
   assert.deepEqual(r.faltando, ['fibra']);
+});
+
+for (const campo of ['kcal', 'proteina', 'gordura', 'carbo']) {
+  test(`${campo} em branco marca o item como incompleto`, () => {
+    assert.equal(calcularAlimento({ ...PAO_TURCO, [campo]: null }, 100).incompleto, true);
+    assert.equal(calcularAlimento({ ...PAO_TURCO, [campo]: '' }, 100).incompleto, true);
+    assert.equal(calcularAlimento({ ...PAO_TURCO, [campo]: undefined }, 100).incompleto, true);
+  });
+}
+
+test('zero preenchido não é branco: carbo 0 não marca incompleto', () => {
+  const r = calcularAlimento(FRANGO, 100);
+  assert.equal(r.incompleto, false);
 });
 
 test('alimento com tudo preenchido não é incompleto', () => {
@@ -233,9 +253,30 @@ test('o prato soma os ingredientes', () => {
   assert.equal(r1(r.valores.proteina), 19.7);
 });
 
-test('o prato herda o "incompleto" dos ingredientes', () => {
+test('prato com quantidades preenchidas e só a fibra em branco não é incompleto', () => {
+  // Era o bug: o sanduíche continuava "incompleto" depois de preencher
+  // tudo, só porque o presunto não tem fibra no rótulo.
   const r = calcularPrato(SANDUICHE, alimentos);
-  assert.equal(r.incompleto, true, 'o presunto está sem fibra');
+  assert.equal(r.incompleto, false);
+});
+
+test('o prato herda o "incompleto" de um ingrediente sem valor obrigatório', () => {
+  const semKcal = new Map(alimentos);
+  semKcal.set(PRESUNTO.id, { ...PRESUNTO, kcal: null });
+  assert.equal(calcularPrato(SANDUICHE, semKcal).incompleto, true);
+});
+
+test('o prato é incompleto enquanto um ingrediente estiver sem quantidade', () => {
+  const semQuantidade = {
+    ...SANDUICHE,
+    ingredientes: [SANDUICHE.ingredientes[0], { alimentoId: 'alim-presunto', quantidade: null }],
+  };
+  assert.equal(calcularPrato(semQuantidade, alimentos).incompleto, true);
+  const preenchido = {
+    ...semQuantidade,
+    ingredientes: [SANDUICHE.ingredientes[0], { alimentoId: 'alim-presunto', quantidade: 40 }],
+  };
+  assert.equal(calcularPrato(preenchido, alimentos).incompleto, false, 'preencher resolve');
 });
 
 test('prato com ingrediente apagado reporta o erro', () => {

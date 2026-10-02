@@ -11,16 +11,18 @@
  *
  * ## Ao publicar uma versão nova
  *
- * Trocar `VERSAO` abaixo. Isso cria um cache novo, faz o service worker
- * novo instalar em paralelo, e o app mostra "Nova versão disponível" com
- * um botão de recarregar. Os caches antigos são apagados na ativação.
+ * `VERSAO` abaixo é trocada sozinha a cada commit pelo hook de pre-commit
+ * (scripts/versao.mjs), com o mesmo número mostrado nas configurações.
+ * Isso cria um cache novo, faz o service worker novo instalar em paralelo,
+ * e o app mostra "Nova versão disponível" com um botão de recarregar. Os
+ * caches antigos são apagados na ativação.
  *
  * Se acrescentar arquivos ao projeto (a Etapa 6 vai acrescentar os da
  * dieta), incluí-los em `ARQUIVOS` — senão eles não ficam disponíveis
  * offline.
  */
 
-const VERSAO = 'v15';
+const VERSAO = '1.0.10';
 const CACHE = `gymtracker-${VERSAO}`;
 
 /** Tudo que o app precisa para abrir sem rede. */
@@ -41,6 +43,7 @@ const ARQUIVOS = [
   './js/main.js',
   './js/atualizacao.js',
   './js/navegacao.js',
+  './js/versao.js',
 
   './js/utils/constantes.js',
   './js/utils/date.js',
@@ -64,6 +67,7 @@ const ARQUIVOS = [
   './js/domain/csv.js',
   './js/domain/metricas.js',
   './js/domain/progressao.js',
+  './js/domain/resumo-sessao.js',
   './js/domain/rotacao.js',
   './js/domain/series-semanais.js',
   './js/domain/nutricao.js',
@@ -81,6 +85,7 @@ const ARQUIVOS = [
   './js/services/sessao-service.js',
   './js/services/treino-service.js',
 
+  './js/components/copiar.js',
   './js/components/dialogo.js',
   './js/components/ui.js',
 
@@ -103,6 +108,7 @@ const ARQUIVOS = [
   './js/views/musculos-view.js',
   './js/views/peso-view.js',
   './js/views/progresso-view.js',
+  './js/views/sessao-resumo-view.js',
   './js/views/treino-editor-view.js',
   './js/views/treino-view.js',
   './js/views/treinos-view.js',

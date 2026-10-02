@@ -52,6 +52,11 @@ const TELAS = {
     titulo: 'Histórico',
     carregar: () => import('./views/historico-view.js').then((m) => m.montarHistorico),
   },
+  'sessao-resumo': {
+    titulo: 'Treino',
+    carregar: () =>
+      import('./views/sessao-resumo-view.js').then((m) => m.montarResumoDaSessao),
+  },
   calendario: {
     titulo: 'Calendário',
     carregar: () => import('./views/calendario-view.js').then((m) => m.montarCalendario),

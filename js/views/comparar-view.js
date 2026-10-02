@@ -14,7 +14,6 @@ import { ESTADO } from '../domain/comparacao.js';
 import { formatarLongo, descreverDistancia } from '../utils/date.js';
 import { num, comSinal, percentual } from '../utils/format.js';
 import { escolher } from '../components/dialogo.js';
-import { abrir } from '../navegacao.js';
 
 /** Sessões escolhidas. Guardado entre montagens. */
 const estado = { idA: null, idB: null };
@@ -62,6 +61,12 @@ async function desenhar() {
     return;
   }
 
+  // A comparação põe a mais antiga como "antes", seja qual for a ordem da
+  // escolha. O estado acompanha, para que tocar na caixa "antes" troque
+  // exatamente a sessão que está aparecendo nela.
+  estado.idA = r.sessaoA.id;
+  estado.idB = r.sessaoB.id;
+
   raiz.appendChild(cabecalho(r));
   raiz.appendChild(cardDeTotal(r));
 
@@ -78,7 +83,6 @@ async function desenhar() {
   }
 
   avisos(r).forEach((faixa) => raiz.appendChild(faixa));
-  raiz.appendChild(botoesDeEscolha());
 }
 
 /* ------------------------------------------------------------------ */
@@ -86,31 +90,40 @@ async function desenhar() {
 /* ------------------------------------------------------------------ */
 
 function cabecalho(r) {
-  const card = document.createElement('div');
-  card.className = 'card';
-
   const linha = document.createElement('div');
   linha.className = 'comparar-cabecalho';
   linha.append(
-    ladoDaSessao(r.sessaoA, 'antes'),
+    ladoDaSessao(r.sessaoA, 'antes', 'idA'),
     seta(),
-    ladoDaSessao(r.sessaoB, 'depois')
+    ladoDaSessao(r.sessaoB, 'depois', 'idB')
   );
-  card.appendChild(linha);
-
-  return card;
+  return linha;
 }
 
-/** Um lado do cabeçalho, clicável para abrir a sessão. */
-function ladoDaSessao(sessao, papel) {
+/**
+ * Um lado do cabeçalho. Tocar nele troca a sessão daquele lado.
+ * @param {Object} sessao
+ * @param {'antes'|'depois'} papel
+ * @param {'idA'|'idB'} lado
+ * @returns {HTMLElement}
+ */
+function ladoDaSessao(sessao, papel, lado) {
   const div = document.createElement('button');
   div.className = 'comparar-lado';
-  div.onclick = () => abrir('treino', { sessaoId: sessao.id });
+  div.dataset.lado = lado;
+  div.setAttribute('aria-label', `Trocar a sessão "${papel}"`);
+  div.onclick = () => escolherSessao(lado);
 
+  const topo = document.createElement('span');
+  topo.className = 'comparar-lado-topo';
   const etq = document.createElement('span');
   etq.className = 'texto-fraco pequeno';
   etq.textContent = papel;
-  div.appendChild(etq);
+  const trocar = document.createElement('span');
+  trocar.className = 'comparar-lado-trocar';
+  trocar.textContent = 'trocar';
+  topo.append(etq, trocar);
+  div.appendChild(topo);
 
   const nome = document.createElement('strong');
   nome.textContent = 'Treino ' + sessao.treinoNome;
@@ -136,7 +149,10 @@ function seta() {
   return span;
 }
 
-/** Botões para trocar cada lado da comparação. */
+/**
+ * Botões para escolher cada lado. Só aparecem quando ainda não há
+ * comparação na tela; com ela, as próprias caixas do topo trocam.
+ */
 function botoesDeEscolha() {
   const div = document.createElement('div');
   div.className = 'linha-botoes';
@@ -169,13 +185,16 @@ async function escolherSessao(lado) {
     .map((s) => ({
       valor: s.id,
       rotulo: 'Treino ' + s.treinoNome,
-      detalhe: formatarLongo(s.data),
+      detalhe: formatarLongo(s.data) + (s.id === estado[lado] ? ' · atual' : ''),
     }));
 
   if (!opcoes.length) return;
 
-  const id = await escolher('Escolher sessão', opcoes);
-  if (!id) return;
+  const id = await escolher(
+    lado === 'idA' ? 'Trocar a sessão "antes"' : 'Trocar a sessão "depois"',
+    opcoes
+  );
+  if (!id || id === estado[lado]) return;
   estado[lado] = id;
   await desenhar();
 }
@@ -217,14 +236,6 @@ function cardDeExercicio(item) {
   const etiqueta = etiquetaDoEstado(item);
   if (etiqueta) cab.appendChild(etiqueta);
   card.appendChild(cab);
-
-  if (item.ordemA && item.ordemB && item.ordemA !== item.ordemB) {
-    const ordem = document.createElement('p');
-    ordem.className = 'texto-fraco pequeno';
-    ordem.style.margin = '0 0 8px';
-    ordem.textContent = `Era o ${item.ordemA}º do treino, agora é o ${item.ordemB}º.`;
-    card.appendChild(ordem);
-  }
 
   if (item.estado === ESTADO.DIFERENTE) {
     const nota = document.createElement('p');
@@ -365,7 +376,7 @@ function avisos(r) {
   if (faltando.pesoCorporal) {
     faixas.push(
       faixa(
-        `${series(faltando.pesoCorporal)} são de peso corporal ou assistido e não têm peso registrado até a data da sessão. Para elas, a comparação usa só reps e o kg registrado. Registre seu peso em ⚙︎ → Peso corporal.`
+        `${series(faltando.pesoCorporal)} de peso corporal sem o seu peso registrado. Registre em ⚙︎ → Peso corporal.`
       )
     );
   }
@@ -373,7 +384,7 @@ function avisos(r) {
   if (faltando.carga) {
     faixas.push(
       faixa(
-        `${series(faltando.carga)} estão sem o kg anotado. Elas contam nas séries e nas reps, mas ficam fora do volume e do 1RM.`
+        `${series(faltando.carga)} sem kg anotado, fora do volume e do 1RM.`
       )
     );
   }
@@ -381,7 +392,7 @@ function avisos(r) {
   if (faltando.reps) {
     faixas.push(
       faixa(
-        `${series(faltando.reps)} estão sem as reps anotadas. Elas contam nas séries e na carga máxima, mas ficam fora do volume e do 1RM — o app não chuta que foram zero.`
+        `${series(faltando.reps)} sem reps anotadas, fora do volume e do 1RM.`
       )
     );
   }

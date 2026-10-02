@@ -11,7 +11,7 @@
  */
 
 import * as dieta from '../services/dieta-service.js';
-import { UNIDADES, TIPO_ITEM } from '../domain/nutricao.js';
+import { UNIDADES, UNIDADES_ENERGIA, TIPO_ITEM, energiaEmKcal } from '../domain/nutricao.js';
 import { num, paraNumero } from '../utils/format.js';
 import {
   confirmar,
@@ -43,12 +43,6 @@ export async function montarAlimentos(raiz) {
   const lista = await dieta.listarAlimentos();
   raiz.innerHTML = '';
 
-  const intro = document.createElement('p');
-  intro.className = 'texto-fraco pequeno';
-  intro.textContent =
-    'Os planos guardam só alimento e quantidade. Corrigir um valor aqui atualiza o dia inteiro na hora.';
-  raiz.appendChild(intro);
-
   const busca = document.createElement('input');
   busca.className = 'entrada';
   busca.type = 'search';
@@ -77,10 +71,8 @@ export async function montarAlimentos(raiz) {
     // rótulo do produto do que é média de tabela evita tratar os dois com
     // a mesma confiança, mas continuar vendo tudo de uma vez importa na
     // hora de procurar um alimento.
-    secao(container, 'Meus rótulos', 'valores do produto que você compra',
-      visiveis.filter((a) => !a.generico));
-    secao(container, 'Valores genéricos', 'médias de tabela, para substituir quando tiver o rótulo',
-      visiveis.filter((a) => a.generico));
+    secao(container, 'Meus rótulos', visiveis.filter((a) => !a.generico));
+    secao(container, 'Valores genéricos', visiveis.filter((a) => a.generico));
   };
 
   busca.oninput = desenhar;
@@ -100,14 +92,13 @@ export async function montarAlimentos(raiz) {
 }
 
 /**
- * Uma seção da lista de alimentos, com título e explicação.
+ * Uma seção da lista de alimentos, com título.
  * Não desenha nada se a seção estiver vazia.
  * @param {HTMLElement} destino
  * @param {string} titulo
- * @param {string} explicacao
  * @param {Object[]} alimentos
  */
-function secao(destino, titulo, explicacao, alimentos) {
+function secao(destino, titulo, alimentos) {
   if (!alimentos.length) return;
 
   const cabecalho = document.createElement('div');
@@ -116,11 +107,6 @@ function secao(destino, titulo, explicacao, alimentos) {
   const h2 = document.createElement('h2');
   h2.textContent = `${titulo} (${alimentos.length})`;
   cabecalho.appendChild(h2);
-
-  const nota = document.createElement('span');
-  nota.className = 'explicacao';
-  nota.textContent = explicacao;
-  cabecalho.appendChild(nota);
 
   destino.appendChild(cabecalho);
   alimentos.forEach((a) => destino.appendChild(cardDeAlimento(a)));
@@ -182,7 +168,17 @@ async function formularioDeAlimento(alimento) {
         valor: alimento?.unidade ?? UNIDADES.G,
         opcoes: OPCOES_UNIDADE,
       },
-      { nome: 'kcal', rotulo: 'Calorias (kcal)', tipo: 'number', valor: alimento?.kcal ?? '' },
+      { nome: 'kcal', rotulo: 'Calorias', tipo: 'number', valor: alimento?.kcal ?? '' },
+      {
+        nome: 'unidadeEnergia',
+        rotulo: 'Calorias em',
+        tipo: 'select',
+        valor: UNIDADES_ENERGIA.KCAL,
+        opcoes: [
+          { valor: UNIDADES_ENERGIA.KCAL, rotulo: 'kcal' },
+          { valor: UNIDADES_ENERGIA.KJ, rotulo: 'kJ (converte para kcal ao salvar)' },
+        ],
+      },
       { nome: 'proteina', rotulo: 'Proteína (g)', tipo: 'number', valor: alimento?.proteina ?? '' },
       { nome: 'gordura', rotulo: 'Gordura (g)', tipo: 'number', valor: alimento?.gordura ?? '' },
       { nome: 'carbo', rotulo: 'Carboidrato (g)', tipo: 'number', valor: alimento?.carbo ?? '' },
@@ -191,7 +187,7 @@ async function formularioDeAlimento(alimento) {
         rotulo: 'Fibra (g)',
         tipo: 'number',
         valor: alimento?.fibra ?? '',
-        dica: 'Deixe em branco o que não souber: em branco conta zero na soma, mas o app marca o item como incompleto.',
+        dica: 'Em branco conta como zero. Kcal e macros em branco marcam o item como incompleto; a fibra não.',
       },
       { nome: 'fonte', rotulo: 'Fonte', valor: alimento?.fonte ?? '', placeholder: 'Rótulo, TACO, USDA…' },
       {
@@ -209,7 +205,7 @@ async function formularioDeAlimento(alimento) {
     nome: dados.nome,
     quantidadeRef: paraNumero(dados.quantidadeRef) ?? 100,
     unidade: dados.unidade,
-    kcal: paraNumero(dados.kcal),
+    kcal: energiaEmKcal(paraNumero(dados.kcal), dados.unidadeEnergia),
     proteina: paraNumero(dados.proteina),
     gordura: paraNumero(dados.gordura),
     carbo: paraNumero(dados.carbo),
@@ -334,12 +330,6 @@ export async function montarEditorDeAlimento(raiz, params) {
 export async function montarPratos(raiz) {
   const [pratos, indice] = await Promise.all([dieta.listarPratos(), dieta.carregarIndice()]);
   raiz.innerHTML = '';
-
-  const intro = document.createElement('p');
-  intro.className = 'texto-fraco pequeno';
-  intro.textContent =
-    'Um prato é uma combinação de alimentos do índice. Os valores dele são sempre calculados dos ingredientes.';
-  raiz.appendChild(intro);
 
   if (!pratos.length) {
     raiz.appendChild(blocoVazio('Nenhum prato composto ainda.'));
@@ -568,19 +558,11 @@ export async function montarEditorDePlano(raiz, params) {
   definirTitulo(plano.nome);
   raiz.innerHTML = '';
 
-  raiz.appendChild(
-    textoFraco(
-      'As refeições deste plano, na ordem do dia. Uma refeição pode estar nos dois planos ao mesmo tempo — editar nela vale para os dois.'
-    )
-  );
-
   const totais = document.createElement('div');
   totais.className = 'card card-sugestao';
   const h2 = document.createElement('h2');
   h2.style.margin = '0 0 2px';
-  h2.textContent = dia.varia
-    ? `${num(dia.minimo.kcal, 0)}–${num(dia.maximo.kcal, 0)} kcal`
-    : `${num(dia.total.kcal, 0)} kcal`;
+  h2.textContent = `${num(dia.total.kcal, 0)} kcal`;
   totais.appendChild(h2);
   totais.appendChild(
     textoFraco(
@@ -663,9 +645,7 @@ function cardDeRefeicaoNoPlano(plano, r, indice, total) {
   const resumo = document.createElement('p');
   resumo.className = 'texto-fraco pequeno';
   resumo.style.margin = '0';
-  const kcal = r.varia
-    ? `${num(r.minimo.kcal, 0)}–${num(r.maximo.kcal, 0)} kcal`
-    : `${num(r.total.kcal, 0)} kcal`;
+  const kcal = `${num(r.total.kcal, 0)} kcal`;
   resumo.textContent =
     `${r.itens.length} ${r.itens.length === 1 ? 'item' : 'itens'} · ${kcal} · ` +
     `P ${num(r.total.proteina, 1)} g`;
@@ -1035,16 +1015,14 @@ export async function montarEditorDeRefeicao(raiz, params) {
   const totais = document.createElement('div');
   totais.className = 'card card-sugestao';
   const h2 = document.createElement('h2');
-  h2.textContent = calculo.varia
-    ? `${num(calculo.minimo.kcal, 0)}–${num(calculo.maximo.kcal, 0)} kcal`
-    : `${num(calculo.total.kcal, 0)} kcal`;
+  h2.textContent = `${num(calculo.total.kcal, 0)} kcal`;
   h2.style.margin = '0 0 2px';
   totais.appendChild(h2);
   const macros = document.createElement('p');
   macros.className = 'texto-fraco pequeno';
   macros.style.margin = '0';
   macros.textContent =
-    `Com as opções padrão: P ${num(calculo.total.proteina, 1)} g · ` +
+    `P ${num(calculo.total.proteina, 1)} g · ` +
     `G ${num(calculo.total.gordura, 1)} g · C ${num(calculo.total.carbo, 1)} g`;
   totais.appendChild(macros);
   raiz.appendChild(totais);
@@ -1129,13 +1107,6 @@ function cardDeItemEditavel(refeicao, item) {
     add.textContent = '+ opção';
     add.onclick = () => adicionarOpcao(refeicao, item);
     card.appendChild(add);
-
-    card.appendChild(
-      textoFraco(
-        `Faixa do grupo: ${num(item.minimo.kcal, 0)} a ${num(item.maximo.kcal, 0)} kcal · proteína de ${num(item.minimo.proteina, 1)} a ${num(item.maximo.proteina, 1)} g.`,
-        '10px 0 0'
-      )
-    );
     return card;
   }
 

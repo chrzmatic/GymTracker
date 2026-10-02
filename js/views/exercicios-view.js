@@ -210,7 +210,7 @@ function cardIdentidade(ex) {
 
   const p = document.createElement('p');
   p.className = 'texto-fraco pequeno';
-  p.textContent = `${NOME_TIPO_CARGA[ex.tipoCarga]} — a série registra "${ROTULO_CARGA[ex.tipoCarga]}" e reps.`;
+  p.textContent = NOME_TIPO_CARGA[ex.tipoCarga];
   card.appendChild(p);
 
   const botao = document.createElement('button');

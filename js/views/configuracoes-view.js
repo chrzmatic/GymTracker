@@ -7,7 +7,7 @@
  */
 
 import { lerTodasConfigs, salvarConfig, CONFIG_PADRAO } from '../data/config-repo.js';
-import { NOMES_DIA_SEMANA, formatarDataHora } from '../utils/date.js';
+import { NOMES_DIA_SEMANA, formatarDataHora, formatarLongo } from '../utils/date.js';
 import {
   lerEstado as lerEstadoDropbox,
   lerAppKey as lerAppKeyDropbox,
@@ -21,6 +21,7 @@ import {
   carregarSeNecessario,
 } from '../services/seed-service.js';
 import { abrir, recarregar, recomecar } from '../navegacao.js';
+import { VERSAO, DATA_DA_VERSAO } from '../versao.js';
 
 /**
  * Renderiza a tela de configurações.
@@ -36,6 +37,15 @@ export async function montarConfiguracoes(raiz) {
   raiz.appendChild(cardBackup());
   raiz.appendChild(cardDropbox());
   raiz.appendChild(cardRecomecar());
+  raiz.appendChild(rodapeDaVersao());
+}
+
+/** Versão do app, no pé da tela. */
+function rodapeDaVersao() {
+  const p = document.createElement('p');
+  p.className = 'texto-fraco pequeno versao-app';
+  p.textContent = `Versão ${VERSAO} · ${formatarLongo(DATA_DA_VERSAO)}`;
+  return p;
 }
 
 /**
@@ -94,7 +104,7 @@ function cardRecomecar() {
     linha('Restaurar treinos padrão', 'mantém o histórico', async () => {
       const ok = await confirmar(
         'Restaurar os treinos padrão?',
-        'Treinos, exercícios e músculos voltam a ser os do arquivo de dados iniciais. Qualquer treino ou exercício que você criou por conta própria continua lá; os que têm o mesmo ID dos padrões voltam ao original. O histórico de sessões não é tocado.',
+        'Treinos, exercícios e músculos padrão voltam ao original. O que você criou continua lá, e o histórico de sessões não é tocado.',
         'Restaurar'
       );
       if (!ok) return;
@@ -108,7 +118,7 @@ function cardRecomecar() {
     linha('Restaurar dieta padrão', 'mantém o resto', async () => {
       const ok = await confirmar(
         'Restaurar a dieta padrão?',
-        'Índice de alimentos, pratos, refeições e planos voltam a ser os do arquivo de dados iniciais. O que você criou por conta própria continua lá; o que tem o mesmo ID dos padrões volta ao original.',
+        'Alimentos, pratos, refeições e planos padrão voltam ao original. O que você criou continua lá.',
         'Restaurar'
       );
       if (!ok) return;
@@ -213,7 +223,7 @@ async function exportar(promessa) {
       arquivo.vazio ? 'Exportado, mas sem histórico' : 'Exportado',
       `${onde} Dentro dele: ${arquivo.resumo}.` +
         (arquivo.vazio
-          ? ' Ou seja: este arquivo não guarda treino nenhum que você tenha feito. Se você esperava histórico aqui, é porque este app está com os dados de outro lugar — veja a nota sobre endereços em "Backup".'
+          ? ' Ou seja: este arquivo não guarda treino nenhum que você tenha feito.'
           : '')
     );
   } catch (erro) {

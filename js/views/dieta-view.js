@@ -45,7 +45,7 @@ export async function montarDieta(elemento, params = {}) {
 async function desenhar() {
   raiz.innerHTML = '';
 
-  const { plano, automatico, treinou } = await dieta.planoDoDia(estado.data);
+  const { plano, automatico } = await dieta.planoDoDia(estado.data);
   if (!plano) {
     raiz.innerHTML = '<div class="vazio">Nenhum plano de dieta cadastrado.</div>';
     raiz.appendChild(atalhos());
@@ -55,7 +55,7 @@ async function desenhar() {
   estado.planoId = plano.id;
   const dia = await dieta.calcularDia(plano.id);
 
-  raiz.appendChild(cabecalho(plano, automatico, treinou));
+  raiz.appendChild(cabecalho(plano, automatico));
   raiz.appendChild(cardDeTotais(dia));
 
   dia.refeicoes.forEach((r) => raiz.appendChild(cardDeRefeicao(r)));
@@ -70,7 +70,7 @@ async function desenhar() {
 /* Cabeçalho: qual plano e por quê                                     */
 /* ------------------------------------------------------------------ */
 
-function cabecalho(plano, automatico, treinou) {
+function cabecalho(plano, automatico) {
   const card = document.createElement('div');
   card.className = 'card';
 
@@ -90,11 +90,7 @@ function cabecalho(plano, automatico, treinou) {
   const porque = document.createElement('p');
   porque.className = 'texto-fraco pequeno';
   porque.style.margin = '0 0 10px';
-  porque.textContent = automatico
-    ? treinou
-      ? `${formatarLongo(estado.data)} · há treino registrado hoje, então vale o plano de dia de treino.`
-      : `${formatarLongo(estado.data)} · nenhum treino registrado hoje. Se for treinar, troque abaixo.`
-    : `${formatarLongo(estado.data)} · você fixou este plano para hoje.`;
+  porque.textContent = formatarLongo(estado.data);
   card.appendChild(porque);
 
   const botoes = document.createElement('div');
@@ -143,14 +139,6 @@ function cardDeTotais(dia) {
   h2.textContent = num(dia.total.kcal, 0) + ' kcal';
   h2.style.margin = '0 0 2px';
   card.appendChild(h2);
-
-  if (dia.varia) {
-    const faixa = document.createElement('p');
-    faixa.className = 'texto-fraco pequeno';
-    faixa.style.margin = '0 0 10px';
-    faixa.textContent = `Com as trocas possíveis: de ${num(dia.minimo.kcal, 0)} a ${num(dia.maximo.kcal, 0)} kcal.`;
-    card.appendChild(faixa);
-  }
 
   const cabecalhoTabela = document.createElement('div');
   cabecalhoTabela.className = 'metrica metrica-cabecalho';
@@ -258,11 +246,11 @@ function cardDeRefeicao(r) {
   h3.textContent = r.nome;
   titulo.appendChild(h3);
 
+  // As kcal das opções escolhidas, as mesmas que somam os macros embaixo.
+  // A faixa de todas as trocas possíveis confundia mais do que ajudava.
   const kcal = document.createElement('span');
   kcal.className = 'refeicao-kcal';
-  kcal.textContent = r.varia
-    ? `${num(r.minimo.kcal, 0)}–${num(r.maximo.kcal, 0)} kcal`
-    : `${num(r.total.kcal, 0)} kcal`;
+  kcal.textContent = `${num(r.total.kcal, 0)} kcal`;
   titulo.appendChild(kcal);
 
   cab.appendChild(titulo);
