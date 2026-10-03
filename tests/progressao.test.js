@@ -1,7 +1,4 @@
-/**
- * Testes da progressão: série histórica de um exercício, filtro de período
- * e resumo semanal.
- */
+/** Testes da progressão: histórico de um exercício, período e resumo semanal. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -29,7 +26,6 @@ const sessoes = [
   { id: 's3', data: '2025-09-15', treinoNome: 'A' },
 ];
 
-/** Série de teste. */
 const s = (sessaoId, exercicioId, carga, reps, aquecimento = false) => ({
   sessaoId,
   exercicioId,
@@ -47,9 +43,7 @@ const series = [
   s('s3', 'ex-remada', 40, 12),
 ];
 
-/* ------------------------------------------------------------------ */
-/* Série histórica                                                     */
-/* ------------------------------------------------------------------ */
+/* --- Série histórica --- */
 
 test('um ponto por sessão em que o exercício foi feito, em ordem cronológica', () => {
   const pontos = historicoDoExercicio(sessoes, series, 'ex-supino', CARGA, []);
@@ -99,9 +93,7 @@ test('sem peso corporal, o ponto de um assistido fica sem carga', () => {
   assert.equal(pontos[0].reps, 8, 'mas as reps continuam');
 });
 
-/* ------------------------------------------------------------------ */
-/* Filtro de período                                                   */
-/* ------------------------------------------------------------------ */
+/* --- Filtro de período --- */
 
 const pontos = [
   { data: '2025-01-15', cargaMaxima: 50 },
@@ -125,17 +117,15 @@ test('"tudo" não corta nada', () => {
 });
 
 test('a borda do período é inclusiva', () => {
-  // 28 dias antes de 29/09 é exatamente 01/09.
+  // 28 dias antes de 29/09 é 01/09.
   const r = filtrarPorPeriodo(pontos, PERIODO.QUATRO_SEMANAS, '2025-09-29');
   assert.ok(r.some((p) => p.data === '2025-09-01'), 'o ponto do dia exato entra');
 });
 
-/* ------------------------------------------------------------------ */
-/* Resumo semanal                                                      */
-/* ------------------------------------------------------------------ */
+/* --- Resumo semanal --- */
 
 test('agrupa as sessões por semana, da mais recente para a mais antiga', () => {
-  // 01/09 é segunda; 08/09 e 15/09 também. Três semanas distintas.
+  // 01/09, 08/09 e 15/09 são segundas: três semanas.
   const r = resumoSemanal(sessoes, series, exercicios, [], 1);
   assert.deepEqual(r.map((x) => x.semana), ['2025-09-15', '2025-09-08', '2025-09-01']);
   assert.deepEqual(r.map((x) => x.treinos), [1, 1, 1]);
@@ -187,9 +177,7 @@ test('sem sessão nenhuma, o resumo é vazio', () => {
   assert.deepEqual(resumoSemanal([], [], exercicios, [], 1), []);
 });
 
-/* ------------------------------------------------------------------ */
-/* Lista de exercícios com histórico                                   */
-/* ------------------------------------------------------------------ */
+/* --- Lista de exercícios com histórico --- */
 
 test('lista os exercícios já feitos, do mais recente para o mais antigo', () => {
   const r = exerciciosComHistorico(sessoes, series, exercicios);
@@ -208,9 +196,7 @@ test('exercício apagado do cadastro ainda aparece, com nome de aviso', () => {
   assert.equal(r[0].nome, 'Exercício removido');
 });
 
-/* ------------------------------------------------------------------ */
-/* Variação                                                            */
-/* ------------------------------------------------------------------ */
+/* --- Variação --- */
 
 test('variação compara o primeiro e o último ponto', () => {
   const p = historicoDoExercicio(sessoes, series, 'ex-supino', CARGA, []);

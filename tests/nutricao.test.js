@@ -1,11 +1,4 @@
-/**
- * Testes da matemática da dieta (especificação, seção 6.7).
- *
- * É a parte do app onde um erro passa despercebido mais fácil: um número
- * errado numa regra de três continua parecendo um número plausível. Por
- * isso os testes conferem contas feitas na mão, e não só "bate consigo
- * mesmo".
- */
+/** Testes dos cálculos da dieta, conferidos com contas feitas à mão. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -26,7 +19,7 @@ import {
   TIPO_ITEM,
 } from '../js/domain/nutricao.js';
 
-/* Alimentos de teste, com números reais do DIETA-DADOS.md. */
+/* Alimentos com números reais. */
 const AVEIA = {
   id: 'alim-aveia', nome: 'Aveia', quantidadeRef: 100, unidade: 'g',
   kcal: 380, proteina: 13, gordura: 9, carbo: 55.7, fibra: null,
@@ -72,12 +65,10 @@ const SANDUICHE = {
 const pratos = new Map([[SANDUICHE.id, SANDUICHE]]);
 const indice = { alimentos, pratos };
 
-/** Arredonda para comparar sem sofrer com ponto flutuante. */
+/** Arredonda para comparar sem erro de ponto flutuante. */
 const r1 = (v) => Math.round(v * 10) / 10;
 
-/* ------------------------------------------------------------------ */
-/* Aritmética básica                                                   */
-/* ------------------------------------------------------------------ */
+/* --- Aritmética básica --- */
 
 test('zeros tem os cinco nutrientes em zero', () => {
   assert.deepEqual(zeros(), { kcal: 0, proteina: 0, gordura: 0, carbo: 0, fibra: 0 });
@@ -103,9 +94,7 @@ test('arredondar mata o lixo de ponto flutuante', () => {
   assert.equal(arredondar({ kcal: 0.1 + 0.2 }).kcal, 0.3);
 });
 
-/* ------------------------------------------------------------------ */
-/* A regra de três                                                     */
-/* ------------------------------------------------------------------ */
+/* --- A regra de três --- */
 
 test('a quantidade de referência dá exatamente o valor de referência', () => {
   const { valores } = calcularAlimento(AVEIA, 100);
@@ -153,9 +142,7 @@ test('quantidade zero dá tudo zero, sem erro', () => {
   assert.equal(r.erro, null);
 });
 
-/* ------------------------------------------------------------------ */
-/* Unidades incompatíveis                                              */
-/* ------------------------------------------------------------------ */
+/* --- Unidades incompatíveis --- */
 
 test('ml num alimento medido em gramas dá erro, não conta errada', () => {
   const r = calcularAlimento(AVEIA, 100, 'ml');
@@ -178,9 +165,7 @@ test('"unidade" e "g" não se misturam', () => {
   assert.match(calcularAlimento(OVO, 100, 'g').erro, /Unidades incompatíveis/);
 });
 
-/* ------------------------------------------------------------------ */
-/* Dados faltando                                                      */
-/* ------------------------------------------------------------------ */
+/* --- Dados faltando --- */
 
 test('valor obrigatório em branco conta zero mas marca o item como incompleto', () => {
   const r = calcularAlimento({ ...AVEIA, proteina: null }, 100);
@@ -240,9 +225,7 @@ test('valoresDeReferencia lista todos os campos em branco', () => {
   assert.equal(r.valores.proteina, 0);
 });
 
-/* ------------------------------------------------------------------ */
-/* Pratos compostos                                                    */
-/* ------------------------------------------------------------------ */
+/* --- Pratos compostos --- */
 
 test('o prato soma os ingredientes', () => {
   // Pão turco 120 g: 1,2 × 261 = 313,2 kcal
@@ -254,8 +237,7 @@ test('o prato soma os ingredientes', () => {
 });
 
 test('prato com quantidades preenchidas e só a fibra em branco não é incompleto', () => {
-  // Era o bug: o sanduíche continuava "incompleto" depois de preencher
-  // tudo, só porque o presunto não tem fibra no rótulo.
+  // O bug antigo: o prato ficava "incompleto" só porque o presunto não tem fibra.
   const r = calcularPrato(SANDUICHE, alimentos);
   assert.equal(r.incompleto, false);
 });
@@ -319,9 +301,7 @@ test('meia porção de prato conta metade', () => {
   assert.equal(r1(meia.valores.kcal), 180.6);
 });
 
-/* ------------------------------------------------------------------ */
-/* Grupos de opções                                                    */
-/* ------------------------------------------------------------------ */
+/* --- Grupos de opções --- */
 
 const GRUPO = {
   id: 'g1',
@@ -354,8 +334,7 @@ test('a faixa do grupo vai do mínimo ao máximo de cada nutriente', () => {
 });
 
 test('a faixa é por nutriente, não pela opção de menor kcal', () => {
-  // O arroz tem a menor kcal, mas a menor proteína é dele também (5,4);
-  // a maior proteína é do frango (57,6), que NÃO é a maior kcal (ovo).
+  // A menor proteína é do arroz (5,4); a maior é do frango (57,6), que não tem a maior kcal.
   const r = calcularItem(GRUPO, indice);
   assert.equal(r1(r.minimo.proteina), 5.4, 'arroz');
   assert.equal(r1(r.maximo.proteina), 57.6, 'frango, mesmo não sendo o de mais kcal');
@@ -388,9 +367,7 @@ test('um grupo pode ter prato entre as opções', () => {
   assert.equal(r1(r.minimo.kcal), 216, '3 ovos');
 });
 
-/* ------------------------------------------------------------------ */
-/* Item livre                                                          */
-/* ------------------------------------------------------------------ */
+/* --- Item livre --- */
 
 test('item livre não entra em conta nenhuma', () => {
   const r = calcularItem({ id: 'i', tipo: TIPO_ITEM.LIVRE, texto: 'Salada à vontade' }, indice);
@@ -400,9 +377,7 @@ test('item livre não entra em conta nenhuma', () => {
   assert.equal(r.nome, 'Salada à vontade');
 });
 
-/* ------------------------------------------------------------------ */
-/* Refeição                                                            */
-/* ------------------------------------------------------------------ */
+/* --- Refeição --- */
 
 const CAFE = {
   id: 'ref-cafe',
@@ -462,9 +437,7 @@ test('refeição vazia soma zero', () => {
   assert.equal(r.varia, false);
 });
 
-/* ------------------------------------------------------------------ */
-/* Plano do dia e metas                                                */
-/* ------------------------------------------------------------------ */
+/* --- Plano do dia e metas --- */
 
 const LANCHE = {
   id: 'ref-lanche', nome: 'Lanche', ordem: 1,
@@ -545,9 +518,7 @@ test('o erro de um item sobe até o plano, dizendo em que refeição está', () 
   assert.equal(r.erros[0].refeicao, 'Almoço');
 });
 
-/* ------------------------------------------------------------------ */
-/* Uma refeição compartilhada entre os dois planos                     */
-/* ------------------------------------------------------------------ */
+/* --- Uma refeição compartilhada entre os dois planos --- */
 
 test('a mesma refeição em dois planos dá o mesmo resultado', () => {
   const treino = calcularPlano(PLANO, [JANTAR], indice);
@@ -567,6 +538,6 @@ test('mudar o valor de um alimento no índice muda o dia inteiro', () => {
   corrigido.set('alim-aveia', { ...AVEIA, kcal: 400 });
   const depois = calcularPlano(PLANO, [CAFE], { alimentos: corrigido, pratos });
 
-  // 40 g: 152 -> 160 kcal, ou seja +8 no dia.
+  // 40 g: 152 → 160 kcal, ou seja +8 no dia.
   assert.equal(r1(depois.total.kcal - antes.total.kcal), 8);
 });

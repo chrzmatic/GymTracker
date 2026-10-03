@@ -1,7 +1,6 @@
 /**
- * Teste de integração das Etapas 5 e 7 contra o IndexedDB real:
- * progressão, séries por músculo, e o ciclo completo de exportar e
- * restaurar um backup.
+ * Progressão, séries por músculo e o ciclo de exportar e restaurar backup,
+ * no IndexedDB real.
  *
  *   deno run -A tests/navegador/progresso-backup-integracao.js
  */
@@ -71,7 +70,7 @@ const cenario = String.raw`
   ok('uma sessao por semana', semanas.map((s) => s.treinos), [1, 1, 1]);
   ok('volume da semana mais recente', semanas[0].volume, 60 * 18);
 
-  /* --- series por musculo, contra o seed --- */
+  /* --- séries por músculo, contra os dados padrão --- */
   const musc = await progresso.seriesPorMusculo();
   const peito = musc.planejado.find((m) => m.nome === 'Peito');
   ok('o planejado bate com a tabela do TREINO-DADOS.md', [peito.diretas, peito.indiretas, peito.total], [11, 0, 11]);
@@ -99,7 +98,7 @@ const cenario = String.raw`
   ok('o backup traz os treinos', validacao.resumo.treinos > 0, true);
   ok('e tambem o peso corporal', validacao.resumo.pesoCorporal, antes.pesos);
 
-  // Estraga os dados de proposito, para ver a restauracao trazer de volta.
+  // Estraga os dados de propósito, para a restauração trazer de volta.
   for (const s of await sessoes.listarSessoes()) await sessoes.apagarSessao(s.id);
   for (const x of await peso.listarPesos()) await peso.removerPeso(x.id);
   const novoEx = await exercicios.criar('Exercicio intruso', 'carga');
@@ -115,7 +114,7 @@ const cenario = String.raw`
     undefined
   );
 
-  /* --- validacao rejeita lixo --- */
+  /* --- validação rejeita lixo --- */
   ok('rejeita arquivo que nao e backup', backup.validarBackup({ foo: 1 }).ok, false);
   ok('rejeita nulo', backup.validarBackup(null).ok, false);
   ok(
@@ -158,8 +157,7 @@ const navegador = await lancarNavegador({
 });
 
 let codigoSaida = 1;
-// Declarado fora do try para o finally conseguir fechar o navegador pelo
-// protocolo, que e o unico jeito confiavel de soltar o perfil temporario.
+// Fora do try, para o finally fechar o navegador pelo protocolo.
 let cdp = null;
 try {
   cdp = await conectar(PORTA_DEVTOOLS);

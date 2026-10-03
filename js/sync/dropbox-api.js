@@ -1,28 +1,15 @@
 /**
  * Chamadas à API do Dropbox: enviar, baixar, listar e apagar arquivos.
+ * Todo caminho é relativo à pasta do app no Dropbox.
  *
- * Só o que o backup precisa. A pasta é a do app ("App folder"), então todo
- * caminho aqui é relativo a ela — o app não enxerga, e não consegue
- * estragar, nada do resto do Dropbox.
- *
- * ## Duas coisas que esta camada resolve para quem chama
- *
- * **Token vencido.** Um 401 significa quase sempre que o access token
- * expirou no meio do caminho. Em vez de devolver o erro para a tela, a
- * chamada renova o token e tenta de novo, uma vez. Só a segunda recusa
- * vira erro de verdade.
- *
- * **Falta de internet é diferente de erro.** `fetch` estourar por falta de
- * rede vira `SemInternet`, e o backup trata isso como "fica pendente,
- * mando depois". Um 409 do Dropbox, esse sim é um problema para contar ao
- * usuário. Misturar os dois transformaria cada treino no subsolo da
- * academia num aviso vermelho de erro.
+ * Um 401 renova o token e tenta de novo uma vez.
+ * Falta de rede vira `SemInternet`: o backup fica pendente em vez de dar erro.
  */
 
 import { API_RPC, API_CONTEUDO } from './dropbox-config.js';
 import { tokenValido } from './dropbox-auth.js';
 
-/** Falha de rede, não do Dropbox. O backup vira pendente em vez de erro. */
+/** Falha de rede. O backup fica pendente em vez de dar erro. */
 export class SemInternet extends Error {
   constructor(causa) {
     super('Sem conexão com a internet.');
@@ -31,12 +18,7 @@ export class SemInternet extends Error {
   }
 }
 
-/**
- * O header `Dropbox-API-Arg` só aceita ASCII, e nomes de arquivo com
- * acento apareceriam aqui se eu deixasse. Escapa o que passar de 0x7F.
- * @param {Object} arg
- * @returns {string}
- */
+/** O header `Dropbox-API-Arg` só aceita ASCII: escapa acentos. */
 function argHttp(arg) {
   return JSON.stringify(arg).replace(/[\u007f-￿]/g, (c) => {
     return '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0');
@@ -44,16 +26,15 @@ function argHttp(arg) {
 }
 
 /**
- * Faz a requisição com o token atual, renovando e repetindo num 401.
+ * Faz a requisição com o token atual; num 401, renova e repete.
  * @param {(token: string) => Promise<Response>} montar
- * @returns {Promise<Response>}
  */
 async function comToken(montar) {
   let resposta;
   try {
     resposta = await montar(await tokenValido());
   } catch (erro) {
-    // `fetch` só estoura assim quando a requisição não chegou a sair.
+    // TypeError aqui = a requisição nem saiu (sem rede).
     if (erro instanceof TypeError) throw new SemInternet(erro);
     throw erro;
   }
@@ -69,11 +50,7 @@ async function comToken(montar) {
   return resposta;
 }
 
-/**
- * Transforma uma resposta ruim em erro com mensagem legível.
- * @param {Response} resposta
- * @returns {Promise<Error>}
- */
+/** Resposta de erro para um Error com mensagem legível. */
 async function erroDaResposta(resposta) {
   const texto = await resposta.text().catch(() => '');
 
@@ -89,10 +66,9 @@ async function erroDaResposta(resposta) {
 }
 
 /**
- * Chamada RPC comum (a maioria dos endpoints do Dropbox).
+ * Chamada RPC comum.
  * @param {string} endpoint ex.: `files/list_folder`
- * @param {Object|null} corpo `null` manda um corpo vazio
- * @returns {Promise<Object>}
+ * @param {Object|null} corpo `null` manda corpo vazio
  */
 export async function chamar(endpoint, corpo) {
   const resposta = await comToken((token) => {
@@ -111,15 +87,10 @@ export async function chamar(endpoint, corpo) {
 }
 
 /**
- * Envia (ou sobrescreve) um arquivo de texto na pasta do app.
- *
- * `mode: overwrite` é proposital: `backup-atual.json` é para ser
- * substituído. Sem isso o Dropbox criaria `backup-atual (1).json`,
- * `(2)`, e a pasta viraria um cemitério em uma semana.
- *
+ * Envia ou sobrescreve um arquivo de texto.
+ * `overwrite` evita cópias como `backup-atual (1).json`.
  * @param {string} caminho ex.: `/backup-atual.json`
- * @param {string} conteudo
- * @returns {Promise<Object>} metadados do arquivo gravado
+ * @returns {Promise<Object>} metadados do arquivo
  */
 export async function enviar(caminho, conteudo) {
   const resposta = await comToken((token) =>
@@ -142,11 +113,7 @@ export async function enviar(caminho, conteudo) {
   return resposta.json();
 }
 
-/**
- * Baixa um arquivo da pasta do app e devolve o texto.
- * @param {string} caminho
- * @returns {Promise<string>}
- */
+/** Baixa um arquivo e devolve o texto. */
 export async function baixar(caminho) {
   const resposta = await comToken((token) =>
     fetch(API_CONTEUDO + '/files/download', {
@@ -163,13 +130,8 @@ export async function baixar(caminho) {
 }
 
 /**
- * Lista os arquivos de uma pasta.
- *
- * Pasta que não existe devolve lista vazia em vez de erro: antes do
- * primeiro backup, `/diario` realmente não existe, e isso é normal, não
- * é falha.
- *
- * @param {string} pasta `''` para a raiz da pasta do app
+ * Arquivos de uma pasta. Pasta inexistente devolve lista vazia.
+ * @param {string} pasta `''` para a raiz
  * @returns {Promise<{nome: string, caminho: string, modificadoEm: string, tamanho: number}[]>}
  */
 export async function listar(pasta) {
@@ -204,16 +166,7 @@ export async function listar(pasta) {
   return entradas;
 }
 
-/**
- * Apaga um arquivo da pasta do app.
- *
- * Usado só na rotação das cópias diárias. Um arquivo que já não existe
- * não é erro — se duas rotações correrem juntas, a segunda encontra o
- * trabalho feito.
- *
- * @param {string} caminho
- * @returns {Promise<void>}
- */
+/** Apaga um arquivo. Se ele já não existe, não é erro. */
 export async function apagarArquivo(caminho) {
   try {
     await chamar('files/delete_v2', { path: caminho });

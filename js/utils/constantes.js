@@ -1,8 +1,4 @@
-/**
- * Constantes compartilhadas por mais de uma camada.
- * Fica em utils (a camada mais baixa) para não criar dependência cruzada
- * entre domínio e dados.
- */
+/** Constantes usadas por mais de uma camada. */
 
 /** Status possíveis de uma sessão de treino. */
 export const STATUS = {
@@ -10,7 +6,7 @@ export const STATUS = {
   FINALIZADA: 'finalizada',
 };
 
-/** Tipos de carga de um exercício. Decide quais campos a série mostra. */
+/** Tipos de carga de um exercício. */
 export const TIPOS_CARGA = {
   CARGA: 'carga',
   PESO_CORPORAL: 'peso-corporal',

@@ -1,52 +1,34 @@
 /**
- * Cálculos de nutrição (especificação, seção 6.7).
+ * Cálculos da dieta.
  *
- * Funções puras. A regra central é uma regra de três:
+ * Regra de três: valor = quantidade ÷ quantidade de referência × valor de referência.
+ * Os planos guardam só alimento e quantidade; os valores são sempre calculados.
  *
- *     valor do item = quantidade ÷ quantidade de referência × valor de referência
- *
- * Os planos **nunca** guardam kcal nem macros: guardam alimento e
- * quantidade. Tudo é calculado na hora, a partir do índice. É isso que faz
- * corrigir um valor no índice atualizar o dia inteiro sozinho.
- *
- * Três situações em que o app se recusa a inventar número:
- *
- *  - **Unidades incompatíveis** (200 ml de um alimento medido em gramas):
- *    devolve erro no item em vez de calcular errado.
- *  - **Valor em branco** no índice: conta como 0 na soma, mas o item e a
- *    refeição ficam marcados como "dados incompletos".
- *  - **Alimento apagado** do índice: erro no item, não zero silencioso.
+ * O app não inventa número:
+ * - unidades diferentes (ml num alimento em g) dão erro no item;
+ * - valor em branco conta 0 e marca o item como incompleto;
+ * - alimento apagado dá erro no item.
  */
 
-/** Os cinco valores que o app soma. */
+/** Os valores somados. */
 export const NUTRIENTES = ['kcal', 'proteina', 'gordura', 'carbo', 'fibra'];
 
 /**
- * Os valores que precisam estar preenchidos para o item não ser
- * "incompleto". A fibra fica de fora: muitos rótulos não a informam e em
- * carne, ovo, óleo e manteiga ela é zero de fato. Em branco ela ainda
- * conta zero e aparece em `faltando`, mas não marca o item.
+ * Os que, em branco, marcam o item como incompleto.
+ * A fibra fica de fora: muitos rótulos não trazem e muitos alimentos não têm.
  */
 export const NUTRIENTES_OBRIGATORIOS = ['kcal', 'proteina', 'gordura', 'carbo'];
 
-/** Unidades aceitas. Só comparam entre iguais. */
+/** Unidades de quantidade. Só se comparam entre iguais. */
 export const UNIDADES = { G: 'g', ML: 'ml', UNIDADE: 'unidade' };
 
-/**
- * Unidades de energia aceitas na **entrada**. O app guarda e mostra sempre
- * kcal; kJ existe só para digitar o que está no rótulo (comum fora do
- * Brasil) e é convertido na hora de salvar.
- */
+/** Unidades de energia na entrada. O app guarda e mostra só kcal. */
 export const UNIDADES_ENERGIA = { KCAL: 'kcal', KJ: 'kj' };
 
-/** 1 kcal = 4,184 kJ (caloria termoquímica, a dos rótulos de alimento). */
+/** 1 kcal = 4,184 kJ. */
 export const KJ_POR_KCAL = 4.184;
 
-/**
- * Converte kJ em kcal, arredondado para inteiro (como nos rótulos).
- * @param {number|string|null|undefined} kj
- * @returns {number|null} null quando não há número
- */
+/** kJ para kcal inteiro, ou null se não for número. */
 export function kjParaKcal(kj) {
   if (kj === null || kj === undefined || kj === '') return null;
   const n = Number(kj);
@@ -55,10 +37,9 @@ export function kjParaKcal(kj) {
 }
 
 /**
- * Energia digitada num formulário, já em kcal.
+ * Energia digitada, em kcal, ou null.
  * @param {number|string|null|undefined} valor
  * @param {string} [unidade] 'kcal' (padrão) ou 'kj'
- * @returns {number|null}
  */
 export function energiaEmKcal(valor, unidade = UNIDADES_ENERGIA.KCAL) {
   if (unidade === UNIDADES_ENERGIA.KJ) return kjParaKcal(valor);
@@ -75,40 +56,22 @@ export const TIPO_ITEM = {
   LIVRE: 'livre',
 };
 
-/**
- * Objeto de valores zerado.
- * @returns {Object}
- */
+/** Valores todos zerados. */
 export function zeros() {
   return Object.fromEntries(NUTRIENTES.map((n) => [n, 0]));
 }
 
-/**
- * Soma dois conjuntos de valores.
- * @param {Object} a
- * @param {Object} b
- * @returns {Object}
- */
+/** Soma dois conjuntos de valores. */
 export function somar(a, b) {
   return Object.fromEntries(NUTRIENTES.map((n) => [n, (a[n] ?? 0) + (b[n] ?? 0)]));
 }
 
-/**
- * Multiplica um conjunto de valores por um fator.
- * @param {Object} valores
- * @param {number} fator
- * @returns {Object}
- */
+/** Multiplica os valores por um fator. */
 export function escalar(valores, fator) {
   return Object.fromEntries(NUTRIENTES.map((n) => [n, (valores[n] ?? 0) * fator]));
 }
 
-/**
- * Arredonda os valores para exibição, matando o lixo de ponto flutuante.
- * @param {Object} valores
- * @param {number} [casas]
- * @returns {Object}
- */
+/** Arredonda os valores para exibir. */
 export function arredondar(valores, casas = 1) {
   const f = 10 ** casas;
   return Object.fromEntries(
@@ -117,13 +80,7 @@ export function arredondar(valores, casas = 1) {
 }
 
 /**
- * Valores de referência de um alimento, com os brancos virando zero.
- *
- * A especificação manda contar branco como 0 e marcar o item — em vez de
- * abortar a soma do dia inteiro por causa de um valor não preenchido. Só
- * os obrigatórios marcam (ver NUTRIENTES_OBRIGATORIOS).
- *
- * @param {Object} alimento
+ * Valores de referência do alimento, com branco virando zero.
  * @returns {{valores: Object, incompleto: boolean, faltando: string[]}}
  */
 export function valoresDeReferencia(alimento) {
@@ -138,11 +95,10 @@ export function valoresDeReferencia(alimento) {
 }
 
 /**
- * Calcula um alimento numa quantidade qualquer (a regra de três).
- *
+ * Um alimento numa quantidade (regra de três).
  * @param {Object|undefined} alimento
  * @param {number|null} quantidade
- * @param {string} [unidade] unidade da quantidade; vazia assume a do alimento
+ * @param {string} [unidade] vazia = a do alimento
  * @returns {{valores: Object, erro: string|null, incompleto: boolean, faltando: string[]}}
  */
 export function calcularAlimento(alimento, quantidade, unidade) {
@@ -184,10 +140,7 @@ export function calcularAlimento(alimento, quantidade, unidade) {
 }
 
 /**
- * Calcula um prato composto inteiro (uma porção).
- *
- * @param {Object|undefined} prato
- * @param {Map<string, Object>} alimentos
+ * Um prato inteiro (uma porção).
  * @returns {{valores: Object, erro: string|null, incompleto: boolean, ingredientes: Object[]}}
  */
 export function calcularPrato(prato, alimentos) {
@@ -222,9 +175,7 @@ export function calcularPrato(prato, alimentos) {
 }
 
 /**
- * Calcula uma opção de grupo ou um item simples.
- * @param {Object} opcao
- * @param {{alimentos: Map, pratos: Map}} indice
+ * Uma opção de grupo ou um item simples.
  * @returns {{nome: string, valores: Object, erro: string|null, incompleto: boolean}}
  */
 export function calcularOpcao(opcao, indice) {
@@ -254,17 +205,9 @@ export function calcularOpcao(opcao, indice) {
 }
 
 /**
- * Calcula um item de refeição.
- *
- * Num **grupo de opções**, o total usa a alternativa marcada como padrão —
- * é o que você planeja comer. A faixa mínima e máxima do grupo vai junto,
- * para a refeição saber o quanto ela pode variar.
- *
- * Um **item livre** ("salada à vontade") não entra em conta nenhuma.
- *
- * @param {Object} item
- * @param {{alimentos: Map, pratos: Map}} indice
- * @returns {Object}
+ * Um item da refeição.
+ * Num grupo, o total usa a opção padrão e guarda o mínimo e o máximo.
+ * Item livre ("salada à vontade") não entra na conta.
  */
 export function calcularItem(item, indice) {
   if (item.tipo === TIPO_ITEM.LIVRE) {
@@ -321,14 +264,8 @@ export function calcularItem(item, indice) {
 }
 
 /**
- * Menor ou maior valor de cada nutriente entre as opções.
- *
- * Por nutriente, não pela opção inteira: a opção com menos kcal nem sempre
- * é a com menos proteína, e a faixa tem que ser honesta em cada linha.
- *
- * @param {Object[]} opcoes
+ * Menor ou maior valor de cada nutriente entre as opções (por nutriente).
  * @param {(...n: number[]) => number} escolher Math.min ou Math.max
- * @returns {Object}
  */
 function extremo(opcoes, escolher) {
   return Object.fromEntries(
@@ -336,12 +273,7 @@ function extremo(opcoes, escolher) {
   );
 }
 
-/**
- * Calcula uma refeição inteira.
- * @param {Object} refeicao
- * @param {{alimentos: Map, pratos: Map}} indice
- * @returns {Object}
- */
+/** Uma refeição inteira. */
 export function calcularRefeicao(refeicao, indice) {
   const itens = (refeicao.itens ?? []).map((i) => calcularItem(i, indice));
 
@@ -367,7 +299,7 @@ export function calcularRefeicao(refeicao, indice) {
     total,
     minimo,
     maximo,
-    /** true quando as opções fazem a refeição variar. */
+    /** true quando as opções mudam as kcal. */
     varia: maximo.kcal - minimo.kcal > 0.0001,
     incompleto,
     erros,
@@ -375,12 +307,10 @@ export function calcularRefeicao(refeicao, indice) {
 }
 
 /**
- * Calcula um plano de dia inteiro e compara com as metas.
- *
+ * O dia inteiro, com a comparação com as metas.
  * @param {Object} plano
- * @param {Object[]} refeicoes as refeições do plano, já resolvidas
+ * @param {Object[]} refeicoes as refeições do plano
  * @param {{alimentos: Map, pratos: Map}} indice
- * @returns {Object}
  */
 export function calcularPlano(plano, refeicoes, indice) {
   const calculadas = refeicoes
@@ -417,11 +347,7 @@ export function calcularPlano(plano, refeicoes, indice) {
   };
 }
 
-/**
- * Metas do plano, normalizadas. Meta ausente vira null, não zero.
- * @param {Object} plano
- * @returns {Object}
- */
+/** Metas do plano. Meta ausente é null, não zero. */
 export function metasDoPlano(plano) {
   const metas = plano.metas ?? {};
   const pegar = (v) => (v === null || v === undefined || v === '' ? null : Number(v));
@@ -435,10 +361,8 @@ export function metasDoPlano(plano) {
 }
 
 /**
- * Diferença entre o total do dia e cada meta.
- * @param {Object} total
- * @param {Object} metas
- * @returns {Object} por nutriente: {meta, total, diferenca, percentual} ou null
+ * Diferença entre o total e cada meta.
+ * @returns {Object} por nutriente: {meta, total, diferenca, percentual}, ou null sem meta
  */
 export function compararComMetas(total, metas) {
   return Object.fromEntries(

@@ -1,10 +1,4 @@
-/**
- * Testes das regras puras de edição de treinos, exercícios e músculos.
- *
- * O que importa aqui: reordenar sem furar a sequência da rotação, e não
- * deixar dado órfão ao excluir um exercício ou um músculo que ainda está
- * em uso.
- */
+/** Testes da edição de treinos, exercícios e músculos. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -27,7 +21,7 @@ import {
   seriesPlanejadasDoTreino,
 } from '../js/domain/treino.js';
 
-/* ---- reordenação genérica ---- */
+/* --- reordenação genérica --- */
 
 test('moverNoArray troca elementos e devolve um array novo', () => {
   const lista = ['a', 'b', 'c'];
@@ -43,7 +37,7 @@ test('moverNoArray devolve null nas pontas', () => {
   assert.equal(moverNoArray(lista, 9, 1), null);
 });
 
-/* ---- itens de um treino ---- */
+/* --- itens de um treino --- */
 
 const treinoA = {
   id: 'tr-a',
@@ -76,7 +70,7 @@ test('seriesPlanejadasDoTreino separa as opcionais', () => {
   });
 });
 
-/* ---- ordem dos treinos ---- */
+/* --- ordem dos treinos --- */
 
 const treinos = [
   { id: 'tr-a', nome: 'A', naRotacao: true, ordem: 0 },
@@ -140,7 +134,7 @@ test('alternarRotacao devolve um treino extra para o fim da rotação', () => {
   );
 });
 
-/* ---- grupos de alternativas ---- */
+/* --- grupos de alternativas --- */
 
 const item = criarItemExercicio({
   id: 'it-1',
@@ -196,7 +190,7 @@ test('remover a alternativa padrão promove outra a padrão', () => {
   assert.equal(r.exercicioPadraoId, 'ex-face-pull');
 });
 
-/* ---- músculos de um exercício ---- */
+/* --- músculos de um exercício --- */
 
 test('normalizarMusculos força fração 1 no direto e limita o indireto', () => {
   const r = normalizarMusculos([
@@ -222,7 +216,7 @@ test('normalizarMusculos não deixa o mesmo músculo duas vezes', () => {
   assert.equal(r[0].tipo, 'direto');
 });
 
-/* ---- exclusão sem deixar órfão ---- */
+/* --- exclusão sem deixar órfão --- */
 
 const comGrupo = {
   id: 'tr-b',
@@ -273,7 +267,7 @@ test('treino sem o exercício não entra na lista de alterados', () => {
   assert.deepEqual(tirarExercicioDosTreinos([treinoA], 'ex-inexistente'), []);
 });
 
-/* ---- músculos em uso ---- */
+/* --- músculos em uso --- */
 
 const exercicios = [
   {

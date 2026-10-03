@@ -1,10 +1,6 @@
 /**
- * Testes das métricas de série: carga efetiva, volume, 1RM e diferenças.
- *
- * O ponto delicado é a carga efetiva. Um exercício assistido com 30 kg de
- * assistência e outro com 20 kg não são "30 contra 20": são 50 contra 60
- * de carga efetiva para quem pesa 80 kg. Errar isso inverteria o sinal do
- * progresso na tela.
+ * Testes das métricas: carga efetiva, volume, 1RM e diferenças.
+ * No assistido, 30 kg de assistência para quem pesa 80 kg são 50 kg de carga efetiva.
  */
 
 import test from 'node:test';
@@ -24,12 +20,9 @@ const CARGA = { id: 'ex-supino', nome: 'Supino', tipoCarga: 'carga' };
 const CORPORAL = { id: 'ex-barra', nome: 'Barra fixa', tipoCarga: 'peso-corporal' };
 const ASSISTIDO = { id: 'ex-assist', nome: 'Barra assistida', tipoCarga: 'assistido' };
 
-/** Série de teste. */
 const s = (carga, reps, aquecimento = false) => ({ carga, reps, aquecimento });
 
-/* ------------------------------------------------------------------ */
-/* Peso corporal na data                                               */
-/* ------------------------------------------------------------------ */
+/* --- Peso corporal na data --- */
 
 const pesos = [
   { data: '2025-08-01', kg: 82 },
@@ -49,9 +42,7 @@ test('pesoCorporalEm devolve null antes do primeiro registro', () => {
   assert.equal(pesoCorporalEm([], '2025-09-10'), null);
 });
 
-/* ------------------------------------------------------------------ */
-/* Carga efetiva por tipo                                              */
-/* ------------------------------------------------------------------ */
+/* --- Carga efetiva por tipo --- */
 
 test('carga: a efetiva é o kg registrado, e o peso corporal não interfere', () => {
   assert.equal(cargaEfetiva(s(60, 10), CARGA, 80), 60);
@@ -78,9 +69,7 @@ test('sem peso corporal, peso corporal e assistido ficam sem carga efetiva', () 
   assert.equal(cargaEfetiva(s(30, 8), ASSISTIDO, null), null);
 });
 
-/* ------------------------------------------------------------------ */
-/* Epley                                                               */
-/* ------------------------------------------------------------------ */
+/* --- Epley --- */
 
 test('epley: carga × (1 + reps / 30)', () => {
   assert.equal(epley(100, 0), 100, 'uma repetição máxima é a própria carga');
@@ -90,9 +79,7 @@ test('epley: carga × (1 + reps / 30)', () => {
   assert.equal(epley(60, null), null);
 });
 
-/* ------------------------------------------------------------------ */
-/* Métricas de um exercício                                            */
-/* ------------------------------------------------------------------ */
+/* --- Métricas de um exercício --- */
 
 test('métricas de um exercício de carga', () => {
   const m = metricasDeSeries([s(60, 10), s(65, 8), s(65, 6)], CARGA, null);
@@ -105,7 +92,7 @@ test('métricas de um exercício de carga', () => {
 });
 
 test('a carga média é ponderada pelas reps, não a média simples', () => {
-  // 100 kg × 1 rep e 50 kg × 9 reps. Média simples seria 75.
+  // 100 kg × 1 e 50 kg × 9. A média simples seria 75.
   const m = metricasDeSeries([s(100, 1), s(50, 9)], CARGA, null);
   assert.equal(m.cargaMedia, (100 * 1 + 50 * 9) / 10);
   assert.equal(m.cargaMedia, 55);
@@ -158,9 +145,7 @@ test('uma série sem carga no meio marca o conjunto como incompleto', () => {
   assert.equal(m.semCargaEfetiva, true);
 });
 
-/* ------------------------------------------------------------------ */
-/* Total da sessão                                                     */
-/* ------------------------------------------------------------------ */
+/* --- Total da sessão --- */
 
 test('somarMetricas junta séries, reps e volume', () => {
   const a = metricasDeSeries([s(60, 10), s(60, 10)], CARGA, null);
@@ -198,9 +183,7 @@ test('metricasVazias é neutra na soma', () => {
   assert.deepEqual(somarMetricas([a, metricasVazias()]), somarMetricas([a]));
 });
 
-/* ------------------------------------------------------------------ */
-/* Diferenças                                                          */
-/* ------------------------------------------------------------------ */
+/* --- Diferenças --- */
 
 test('diferença calcula absoluta, percentual e direção', () => {
   const d = diferenca(100, 110);
@@ -236,9 +219,7 @@ test('percentual sobre zero fica indefinido em vez de infinito', () => {
   assert.equal(d.direcao, 'melhora');
 });
 
-/* ------------------------------------------------------------------ */
-/* Reps em branco: "não contei", não "não fiz"                         */
-/* ------------------------------------------------------------------ */
+/* --- Reps em branco --- */
 
 test('série com carga e sem reps não vira volume zero', () => {
   const m = metricasDeSeries([s(60, null)], CARGA, null);
@@ -259,8 +240,7 @@ test('reps em branco não somam zero no total de reps', () => {
 });
 
 test('a carga máxima considera séries sem reps', () => {
-  // A série mais pesada do dia não deixa de ser a mais pesada por eu não
-  // ter contado as reps dela.
+  // A série mais pesada continua sendo a mais pesada, mesmo sem reps.
   const m = metricasDeSeries([s(60, 10), s(80, null)], CARGA, null);
   assert.equal(m.cargaMaxima, 80);
 });

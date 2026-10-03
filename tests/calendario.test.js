@@ -1,10 +1,4 @@
-/**
- * Testes da grade do calendário.
- *
- * O que pode dar errado aqui: a primeira linha começar no dia errado, um
- * mês perder ou ganhar um dia na virada, e fevereiro bissexto. Tudo isso
- * com o dia de início da semana configurável.
- */
+/** Testes da grade do calendário: início da semana, viradas de mês e ano bissexto. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -18,9 +12,9 @@ import {
   acoesDoDia,
 } from '../js/domain/calendario.js';
 
-/** Achata as semanas numa lista de datas. */
+/** Datas da grade, numa lista. */
 const todas = (grade) => grade.semanas.flat().map((c) => c.iso);
-/** Só os dias que pertencem ao mês. */
+/** Só os dias do mês. */
 const doMes = (grade) => grade.semanas.flat().filter((c) => c.doMes).map((c) => c.iso);
 
 test('a grade é sempre retangular, em múltiplos de 7', () => {
@@ -90,14 +84,14 @@ test('janeiro puxa dias do ano anterior', () => {
   assert.equal(grade.semanas[0][0].iso, '2024-12-30', '01/01/2025 é uma quarta');
 });
 
-/* ---- rótulos ---- */
+/* --- rótulos --- */
 
 test('os rótulos seguem o dia de início da semana', () => {
   assert.deepEqual(rotulosDaSemana(1), ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']);
   assert.deepEqual(rotulosDaSemana(0), ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']);
 });
 
-/* ---- navegação entre meses ---- */
+/* --- navegação entre meses --- */
 
 test('mesVizinho atravessa a virada do ano nos dois sentidos', () => {
   assert.deepEqual(mesVizinho(2025, 12, 1), { ano: 2026, mes: 1 });
@@ -106,7 +100,7 @@ test('mesVizinho atravessa a virada do ano nos dois sentidos', () => {
   assert.deepEqual(mesVizinho(2025, 6, -1), { ano: 2025, mes: 5 });
 });
 
-/* ---- sessões no calendário ---- */
+/* --- sessões no calendário --- */
 
 const sessoes = [
   { id: 's1', data: '2025-09-01', treinoId: 'tr-a', treinoNome: 'A', cor: '#00f', criadaEm: 1 },
@@ -135,9 +129,8 @@ test('resumoDoMes de um mês sem treino', () => {
   assert.deepEqual(resumoDoMes([]), { total: 0, porTreino: [] });
 });
 
-/* ------------------------------------------------------------------ */
-/* O que tocar num dia oferece (correção da inconsistência)            */
-/* ------------------------------------------------------------------ */
+/* --- O que tocar num dia oferece (correção da inconsistência) --- */
+/* --- O que tocar num dia oferece --- */
 
 const umaSessao = [{ id: 's1', treinoNome: 'A' }];
 

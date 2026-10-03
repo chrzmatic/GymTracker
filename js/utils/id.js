@@ -1,16 +1,6 @@
-/**
- * Geração de IDs.
- *
- * IDs criados no app são opacos e únicos. Os IDs da carga inicial são fixos e
- * legíveis (ex.: `ex-mesa-flexora`) e vêm dos arquivos de seed, não daqui.
- */
+/** Geração de IDs. */
 
-/**
- * Gera um ID único com prefixo legível.
- * Usa crypto.randomUUID quando disponível; senão, tempo + aleatório.
- * @param {string} prefixo ex.: 'ses', 'set', 'ex'
- * @returns {string}
- */
+/** ID único com prefixo legível (ex.: 'ses-…'). */
 export function novoId(prefixo) {
   const aleatorio =
     typeof crypto !== 'undefined' && crypto.randomUUID
@@ -19,12 +9,7 @@ export function novoId(prefixo) {
   return `${prefixo}-${Date.now().toString(36)}-${aleatorio}`;
 }
 
-/**
- * Transforma um texto em slug kebab-case sem acentos.
- * Usado para sugerir IDs legíveis ao criar exercícios e alimentos.
- * @param {string} texto
- * @returns {string}
- */
+/** Texto para slug sem acentos (ex.: 'mesa-flexora'). */
 export function paraSlug(texto) {
   return texto
     .normalize('NFD')

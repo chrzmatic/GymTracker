@@ -1,4 +1,4 @@
-/* Cores, tipografia e variáveis. Visual escuro, pensado para iPhone em pé. */
+/* Cores, tipografia e variáveis. Tema escuro. */
 
 :root {
   --bg: #0e1116;
@@ -66,7 +66,7 @@ a {
   color: var(--acento);
 }
 
-/* Cabeçalho fixo com o título da aba e o acesso às configurações. */
+/* Cabeçalho fixo: título e configurações. */
 .topo {
   position: sticky;
   top: 0;
@@ -85,12 +85,12 @@ a {
   margin: 0;
 }
 
-/* Área rolável das telas. Deixa espaço para a barra de abas. */
+/* Área das telas, com espaço para a barra de abas. */
 .conteudo {
   padding: var(--espaco) 14px calc(var(--altura-abas) + var(--safe-bottom) + 24px);
 }
 
-/* Barra de abas inferior. */
+/* Barra de abas. */
 .abas {
   position: fixed;
   left: 0;

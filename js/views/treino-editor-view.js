@@ -1,12 +1,6 @@
 /**
- * Tela de edição de um treino: a lista ordenada de itens.
- *
- * Um item é um exercício ou um grupo de alternativas ("Voador inverso ou
- * face pull"). Aqui se define a ordem, as séries e reps planejadas, o que é
- * opcional e quais são as alternativas.
- *
- * Nada do que se faz aqui altera sessões já registradas: a sessão guarda
- * uma cópia congelada do modelo do dia em que foi feita.
+ * Editor de um treino: itens em ordem, séries e reps planejadas,
+ * opcionais e alternativas. Não muda sessões já registradas.
  */
 
 import * as treinos from '../services/treino-service.js';
@@ -25,10 +19,9 @@ const estado = {
 let raiz = null;
 
 /**
- * Renderiza o editor de um treino.
+ * Monta o editor.
  * @param {HTMLElement} elemento
  * @param {{treinoId: string}} params
- * @returns {Promise<void>}
  */
 export async function montarEditor(elemento, params) {
   raiz = elemento;
@@ -36,7 +29,7 @@ export async function montarEditor(elemento, params) {
   await desenhar();
 }
 
-/** Relê o treino do banco e redesenha. */
+/** Relê o treino e redesenha. */
 async function desenhar() {
   const detalhe = await treinos.buscarTreinoDetalhado(estado.treinoId);
   if (!detalhe) {
@@ -64,7 +57,7 @@ async function desenhar() {
   raiz.appendChild(botaoAdicionar());
 }
 
-/** Linha de resumo: quantos exercícios e quantas séries por sessão. */
+/** Quantos exercícios e séries por sessão. */
 function resumoDoTreino() {
   const s = seriesPlanejadasDoTreino(estado.treino);
   const p = document.createElement('p');
@@ -75,13 +68,7 @@ function resumoDoTreino() {
   return p;
 }
 
-/**
- * Card de um item do treino.
- * @param {Object} item
- * @param {number} posicao
- * @param {number} total
- * @returns {HTMLElement}
- */
+/** Card de um item. */
 function cardDeItem(item, posicao, total) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -122,7 +109,7 @@ function cardDeItem(item, posicao, total) {
   return card;
 }
 
-/** Seta de reordenação. */
+/** Seta para subir ou descer. */
 function seta(item, direcao, ativo) {
   const btn = document.createElement('button');
   btn.className = 'btn btn-icone btn-mover';
@@ -136,10 +123,7 @@ function seta(item, direcao, ativo) {
   return btn;
 }
 
-/**
- * Pílulas das alternativas. A marcada é a padrão, que a sessão nova começa
- * usando; tocar em outra troca o padrão.
- */
+/** Pílulas das alternativas. A marcada é a padrão; tocar em outra troca. */
 function listaDeAlternativas(item) {
   const div = document.createElement('div');
   div.className = 'pilulas';
@@ -161,7 +145,7 @@ function listaDeAlternativas(item) {
   return div;
 }
 
-/** Botões de séries e reps planejadas, editáveis com um toque. */
+/** Séries e reps planejadas, editáveis com um toque. */
 function linhaDePlanejamento(item) {
   const div = document.createElement('div');
   div.className = 'linha-botoes';
@@ -218,7 +202,7 @@ async function editarPlanejamento(item) {
   await desenhar();
 }
 
-/** Menu de opções do item. */
+/** Menu do item. */
 async function menuDoItem(item) {
   const nome = treinos.nomeDoItem(item, estado.exercicios);
   const opcoes = [{ valor: 'planejar', rotulo: 'Séries, reps e opcional' }];
@@ -329,9 +313,9 @@ async function menuDoItem(item) {
 }
 
 /**
- * Abre a busca de exercícios, escondendo os que já estão no item.
+ * Busca de exercícios, sem os que já estão no item.
  * @param {string} titulo
- * @param {string[]} [excluir] ids a não mostrar
+ * @param {string[]} [excluir] ids a esconder
  * @returns {Promise<string|null>}
  */
 async function escolherExercicio(titulo, excluir = []) {
@@ -343,7 +327,7 @@ async function escolherExercicio(titulo, excluir = []) {
   return escolherComBusca(titulo, opcoes);
 }
 
-/** Botão de adicionar exercício ao treino. */
+/** Botão de adicionar exercício. */
 function botaoAdicionar() {
   const div = document.createElement('div');
   div.style.marginTop = '12px';

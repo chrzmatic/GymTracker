@@ -1,11 +1,4 @@
-/**
- * Tela de peso corporal: registrar e ver o histórico.
- *
- * Chegou antes da hora (a especificação a coloca na Etapa 5) porque a
- * comparação da Etapa 4 depende dela: sem peso registrado, exercícios de
- * peso corporal e assistidos não têm carga efetiva e só dá para comparar
- * reps e a assistência.
- */
+/** Peso corporal: registrar e ver o histórico. */
 
 import * as peso from '../services/peso-service.js';
 import { hojeIso, formatarLongo, descreverDistancia } from '../utils/date.js';
@@ -14,11 +7,7 @@ import { confirmar, escolher, formulario } from '../components/dialogo.js';
 import { blocoVazio } from '../components/ui.js';
 import { recarregar } from '../navegacao.js';
 
-/**
- * Renderiza a tela de peso corporal.
- * @param {HTMLElement} raiz
- * @returns {Promise<void>}
- */
+/** Monta a tela de peso corporal. */
 export async function montarPeso(raiz) {
   const [lista, resumo] = await Promise.all([peso.listarPesos(), peso.resumo()]);
   raiz.innerHTML = '';
@@ -77,10 +66,9 @@ function cardResumo(resumo) {
 }
 
 /**
- * Uma linha do histórico, com a variação em relação ao registro anterior.
+ * Linha do histórico, com a variação para o registro anterior.
  * @param {Object} registro
- * @param {Object|null} anterior o registro imediatamente mais antigo
- * @returns {HTMLElement}
+ * @param {Object|null} anterior
  */
 function linhaDePeso(registro, anterior) {
   const div = document.createElement('div');
@@ -135,10 +123,7 @@ async function menuDoRegistro(registro) {
   }
 }
 
-/**
- * Formulário de registro, novo ou edição.
- * @param {Object} [registro]
- */
+/** Formulário de registro (novo ou edição). */
 async function abrirFormulario(registro) {
   const dados = await formulario(
     registro ? 'Editar peso' : 'Registrar peso',

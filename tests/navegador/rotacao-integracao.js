@@ -1,10 +1,6 @@
 /**
- * Teste de integração da Etapa 3: sugestão do próximo treino e calendário
- * lendo treinos, sessões e configurações do IndexedDB real.
- *
- * Os testes puros de `tests/rotacao.test.js` já cobrem a regra. O que este
- * verifica é a ligação: a sugestão usa a rotação que está gravada (na ordem
- * gravada) e respeita as configurações salvas.
+ * Sugestão e calendário lendo do IndexedDB real: usa a rotação gravada
+ * e as configurações salvas.
  *
  *   deno run -A tests/navegador/rotacao-integracao.js
  */
@@ -142,8 +138,7 @@ const navegador = await lancarNavegador({
 });
 
 let codigoSaida = 1;
-// Declarado fora do try para o finally conseguir fechar o navegador pelo
-// protocolo, que e o unico jeito confiavel de soltar o perfil temporario.
+// Fora do try, para o finally fechar o navegador pelo protocolo.
 let cdp = null;
 try {
   cdp = await conectar(PORTA_DEVTOOLS);

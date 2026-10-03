@@ -1,12 +1,8 @@
 /**
- * Testes da sugestão do próximo treino (especificação, seção 6.4).
+ * Testes da sugestão do próximo treino: os quatro exemplos da especificação
+ * e casos de borda.
  *
- * A primeira parte reproduz literalmente os quatro exemplos da
- * especificação. O resto cobre o que os exemplos não dizem: rotação de
- * outro tamanho, treino tirado da rotação, empate no mesmo dia e a
- * fronteira exata das duas condições de reinício.
- *
- * Calendário usado nos testes (2025):
+ * Calendário dos testes (2025):
  *   set  1 seg   2 ter   3 qua   4 qui   5 sex   6 sáb   7 dom
  *   set  8 seg   9 ter  10 qua  11 qui  12 sex  13 sáb  14 dom
  */
@@ -23,7 +19,7 @@ import {
   MOTIVO,
 } from '../js/domain/rotacao.js';
 
-/** Semana começando na segunda, X = 2 dias: o padrão da especificação. */
+/** Semana começando na segunda e X = 2 dias. */
 const PADRAO = { inicioSemana: 1, diasParaReiniciarRotacao: 2 };
 
 const A = { id: 'tr-a', nome: 'A', naRotacao: true };
@@ -33,12 +29,7 @@ const ROTACAO = [A, B, C];
 
 let contador = 0;
 
-/**
- * Monta uma sessão de teste.
- * @param {Object} treino
- * @param {string} data AAAA-MM-DD
- * @returns {Object}
- */
+/** Sessão de teste. */
 function sessao(treino, data) {
   contador += 1;
   return {
@@ -51,15 +42,13 @@ function sessao(treino, data) {
   };
 }
 
-/** Só o nome do treino sugerido, que é o que os exemplos afirmam. */
+/** Nome do treino sugerido. */
 function sugerido(sessoes, dia, rotacao = ROTACAO, config = PADRAO) {
   const r = sugerirTreino(sessoes, rotacao, dia, config);
   return r ? r.treino.nome : null;
 }
 
-/* ------------------------------------------------------------------ */
-/* Os quatro exemplos da especificação                                 */
-/* ------------------------------------------------------------------ */
+/* --- Os quatro exemplos da especificação --- */
 
 test('exemplo 1: fez A e B, pulou o C — na segunda seguinte sugere A', () => {
   const sessoes = [sessao(A, '2025-09-01'), sessao(B, '2025-09-03')];
@@ -86,9 +75,7 @@ test('exemplo 4: fez A, depois um treino extra — o próximo sugerido é B', ()
   assert.equal(sugerido(sessoes, '2025-09-03'), 'B', 'o extra não avança a rotação');
 });
 
-/* ------------------------------------------------------------------ */
-/* Sem histórico e rotação vazia                                       */
-/* ------------------------------------------------------------------ */
+/* --- Sem histórico e rotação vazia --- */
 
 test('sem nenhuma sessão, sugere o primeiro da rotação', () => {
   const r = sugerirTreino([], ROTACAO, '2025-09-08', PADRAO);
@@ -108,12 +95,10 @@ test('só treinos extras registrados: continua sugerindo o primeiro', () => {
   assert.equal(r.motivo, MOTIVO.PRIMEIRO);
 });
 
-/* ------------------------------------------------------------------ */
-/* A fronteira das duas condições de reinício                          */
-/* ------------------------------------------------------------------ */
+/* --- A fronteira das duas condições de reinício --- */
 
 test('as duas condições precisam valer juntas para reiniciar', () => {
-  // Segunda 08/09, último treino na própria semana: semana não virou.
+  // Segunda 08/09 para quarta 10/09: mesma semana.
   assert.equal(deveReiniciar('2025-09-08', '2025-09-10', PADRAO), false);
   // Domingo 07/09 para segunda 08/09: semana virou, mas só 1 dia.
   assert.equal(deveReiniciar('2025-09-07', '2025-09-08', PADRAO), false);
@@ -144,14 +129,12 @@ test('muitas semanas paradas ainda reiniciam no primeiro', () => {
 });
 
 test('dentro da mesma semana a sequência não reinicia, mesmo com folga grande', () => {
-  // Segunda 08/09 e domingo 14/09 são a mesma semana (começando na segunda).
+  // Segunda 08/09 e domingo 14/09: mesma semana.
   const sessoes = [sessao(A, '2025-09-08')];
   assert.equal(sugerido(sessoes, '2025-09-14'), 'B', '6 dias, mas semana não virou');
 });
 
-/* ------------------------------------------------------------------ */
-/* Dia de início da semana configurável                                */
-/* ------------------------------------------------------------------ */
+/* --- Dia de início da semana configurável --- */
 
 test('mudar o início da semana para domingo muda o resultado', () => {
   const domingo = { inicioSemana: 0, diasParaReiniciarRotacao: 2 };
@@ -169,9 +152,7 @@ test('mudar o início da semana para domingo muda o resultado', () => {
   );
 });
 
-/* ------------------------------------------------------------------ */
-/* Rotação de qualquer tamanho e ordem                                 */
-/* ------------------------------------------------------------------ */
+/* --- Rotação de qualquer tamanho e ordem --- */
 
 test('rotação de dois treinos alterna entre eles', () => {
   const dois = [A, B];
@@ -205,9 +186,7 @@ test('rotação de quatro treinos dá a volta no fim', () => {
   assert.equal(sugerido([sessao(C, '2025-09-08')], '2025-09-09', quatro), 'D');
 });
 
-/* ------------------------------------------------------------------ */
-/* Casos de borda do histórico                                         */
-/* ------------------------------------------------------------------ */
+/* --- Casos de borda do histórico --- */
 
 test('a sugestão de um dia ignora as sessões daquele mesmo dia', () => {
   const sessoes = [sessao(A, '2025-09-08'), sessao(B, '2025-09-09')];
@@ -253,9 +232,7 @@ test('ultimaSessaoDaRotacao devolve null quando nada se aplica', () => {
   );
 });
 
-/* ------------------------------------------------------------------ */
-/* Explicação mostrada na tela                                         */
-/* ------------------------------------------------------------------ */
+/* --- Explicação mostrada na tela --- */
 
 test('a explicação diz por que o treino foi sugerido', () => {
   const semHistorico = sugerirTreino([], ROTACAO, '2025-09-08', PADRAO);
@@ -271,9 +248,7 @@ test('a explicação diz por que o treino foi sugerido', () => {
   assert.equal(explicarSugestao(null), '');
 });
 
-/* ------------------------------------------------------------------ */
-/* Para que dia sugerir (correção: já treinou hoje)                    */
-/* ------------------------------------------------------------------ */
+/* --- Para que dia sugerir --- */
 
 test('sem treino hoje, a sugestão é para hoje', () => {
   assert.equal(diaDaProximaSugestao('2025-09-08', []), '2025-09-08');

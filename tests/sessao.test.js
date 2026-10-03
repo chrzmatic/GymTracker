@@ -1,7 +1,4 @@
-/**
- * Testes das regras puras da sessão: montagem a partir do modelo,
- * busca da última vez de um exercício e pré-preenchimento das séries.
- */
+/** Testes da sessão: montagem, última vez e valores iniciais das séries. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -81,7 +78,7 @@ test('grupo de alternativas começa na alternativa padrão', () => {
   assert.equal(item.opcional, true);
 });
 
-/* ---- última vez / pré-preenchimento ---- */
+/* --- última vez / pré-preenchimento --- */
 
 const sessoes = [
   { id: 's1', data: '2025-09-01', criadaEm: 1 },
@@ -137,7 +134,7 @@ test('sem histórico e sem reps planejadas, tudo em branco', () => {
 });
 
 test('cada série repete a série de mesmo número da última vez', () => {
-  // Última vez: 14×12 na primeira, 16×8 na segunda, 16×6 na terceira.
+  // Última vez: 14×12, 16×8 e 16×6.
   const item = itemDaSessao(treino.itens[0], 0);
   const anterior = {
     series: [
@@ -198,7 +195,7 @@ test('aquecimento já feito nesta sessão não serve de base para a série valen
   assert.deepEqual(valoresIniciaisDaSerie(item, atuais, null), { carga: null, reps: 10 });
 });
 
-/* ---- aquecimento: ordem e numeração ---- */
+/* --- aquecimento: ordem e numeração --- */
 
 test('proximoNumero conta cada categoria separadamente', () => {
   const doItem = [
@@ -279,7 +276,7 @@ test('desmarcar aquecimento devolve a série ao grupo das que valem', () => {
   );
 });
 
-/* ---- ordem dos exercícios na sessão ---- */
+/* --- ordem dos exercícios na sessão --- */
 
 const itensDaSessao = [
   { itemId: 'i1', ordem: 0 },

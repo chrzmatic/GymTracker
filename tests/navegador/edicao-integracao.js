@@ -1,6 +1,5 @@
 /**
- * Teste de integração da Etapa 2: edição de treinos, exercícios e músculos
- * contra o IndexedDB real.
+ * Edição de treinos, exercícios e músculos no IndexedDB real.
  *
  *   deno run -A tests/navegador/edicao-integracao.js
  */
@@ -95,8 +94,7 @@ const cenario = String.raw`
   await sessoes.adicionarSerie(sessao, sessao.itens[0], [], false);
   const seriesAntes = (await sessoes.seriesDaSessao(sessao.id)).length;
 
-  // O item do agachamento já saiu do modelo acima, então agora ele não está
-  // em treino nenhum — mas o histórico dele continua existindo.
+  // O agachamento já saiu do treino, mas o histórico dele continua.
   const usoAntes = await exercicios.ondeEUsado(agacho.id);
   ok('tirado do treino, o exercício não aparece mais em uso', usoAntes.treinos, []);
 
@@ -160,8 +158,7 @@ const navegador = await lancarNavegador({
 });
 
 let codigoSaida = 1;
-// Declarado fora do try para o finally conseguir fechar o navegador pelo
-// protocolo, que e o unico jeito confiavel de soltar o perfil temporario.
+// Fora do try, para o finally fechar o navegador pelo protocolo.
 let cdp = null;
 try {
   cdp = await conectar(PORTA_DEVTOOLS);

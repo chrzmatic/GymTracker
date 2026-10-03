@@ -1,8 +1,6 @@
 /**
- * Aba Progresso: gráfico por exercício, resumo semanal e séries por músculo.
- *
- * O Chart.js é carregado sob demanda, na primeira vez que a aba abre: são
- * 208 KB que não fazem falta enquanto você está registrando o treino.
+ * Aba Progresso: gráfico por exercício, séries por músculo e resumo semanal.
+ * O Chart.js só carrega quando a aba abre.
  */
 
 import * as progresso from '../services/progresso-service.js';
@@ -12,7 +10,7 @@ import { num, comSinal, percentual } from '../utils/format.js';
 import { escolherComBusca, escolher } from '../components/dialogo.js';
 import { blocoVazio } from '../components/ui.js';
 
-/** Estado da tela, guardado entre montagens. */
+/** Estado da tela (mantido entre montagens). */
 const estado = {
   exercicioId: null,
   periodo: PERIODO.TRES_MESES,
@@ -22,10 +20,10 @@ const estado = {
 };
 
 let raiz = null;
-/** Instância do Chart.js viva, para destruir antes de redesenhar. */
+/** Gráfico atual, para destruir antes de redesenhar. */
 let grafico = null;
 
-/** Métricas que o gráfico sabe desenhar. */
+/** Métricas do gráfico. */
 const METRICAS = [
   { id: 'cargaMaxima', rotulo: 'Carga máxima', unidade: 'kg' },
   { id: 'volume', rotulo: 'Volume', unidade: 'kg' },
@@ -38,10 +36,7 @@ const PERIODOS = [
   { id: PERIODO.TUDO, rotulo: 'Tudo' },
 ];
 
-/**
- * Carrega o Chart.js uma vez só.
- * @returns {Promise<Function>}
- */
+/** Carrega o Chart.js uma vez. */
 async function carregarChart() {
   if (window.Chart) return window.Chart;
   await new Promise((ok, erro) => {
@@ -54,20 +49,15 @@ async function carregarChart() {
   return window.Chart;
 }
 
-/**
- * Renderiza a aba Progresso.
- * @param {HTMLElement} elemento
- * @returns {Promise<void>}
- */
+/** Monta a aba Progresso. */
 export async function montarProgresso(elemento) {
   raiz = elemento;
   await desenhar();
 }
 
-/** Redesenha a partir do banco. */
+/** Redesenha com os dados do banco. */
 async function desenhar() {
-  // Um Chart.js vivo continua desenhando num canvas já removido do DOM,
-  // então ele precisa ser destruído antes de refazer a tela.
+  // Um gráfico vivo continua desenhando num canvas removido: destrói antes.
   if (grafico) {
     grafico.destroy();
     grafico = null;
@@ -80,7 +70,7 @@ async function desenhar() {
   return await desenharMusculos();
 }
 
-/** Seletor das três seções da aba. */
+/** Seletor das três seções. */
 function abas() {
   const div = document.createElement('div');
   div.className = 'pilulas';
@@ -104,9 +94,7 @@ function abas() {
   return div;
 }
 
-/* ------------------------------------------------------------------ */
-/* Gráfico por exercício                                               */
-/* ------------------------------------------------------------------ */
+/* --- Gráfico por exercício --- */
 
 async function desenharGrafico() {
   const disponiveis = await progresso.listarExerciciosComHistorico();
@@ -209,11 +197,7 @@ function filtros() {
   return div;
 }
 
-/**
- * Desenha a linha no canvas.
- * @param {HTMLCanvasElement} canvas
- * @param {Object} dados
- */
+/** Desenha a linha no canvas. */
 async function pintarGrafico(canvas, dados) {
   const Chart = await carregarChart();
   const metrica = METRICAS.find((m) => m.id === estado.metrica);
@@ -249,8 +233,7 @@ async function pintarGrafico(canvas, dados) {
           borderWidth: 2,
           tension: 0.25,
           fill: true,
-          // Liga os pontos por cima de uma sessão sem valor, em vez de
-          // cortar a linha em dois pedaços soltos.
+          // Liga os pontos por cima de uma sessão sem valor.
           spanGaps: true,
         },
       ],
@@ -272,8 +255,7 @@ async function pintarGrafico(canvas, dados) {
         y: {
           ticks: { color: corTexto },
           grid: { color: corGrade },
-          // Não força começar em zero: com cargas de 60 a 65, começar em
-          // zero achataria a linha e esconderia justamente a progressão.
+          // Não começa do zero, para a progressão aparecer.
           beginAtZero: false,
         },
       },
@@ -281,7 +263,7 @@ async function pintarGrafico(canvas, dados) {
   });
 }
 
-/** Variação entre o primeiro e o último ponto do período. */
+/** Variação do primeiro ao último ponto do período. */
 function cardDeVariacao(dados) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -326,7 +308,7 @@ function cardDeVariacao(dados) {
   return card;
 }
 
-/** Lista das sessões do período, do mais recente para o mais antigo. */
+/** Sessões do período, da mais recente para a mais antiga. */
 function tabelaDePontos(dados) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -369,9 +351,7 @@ function tabelaDePontos(dados) {
   return card;
 }
 
-/* ------------------------------------------------------------------ */
-/* Séries por músculo                                                  */
-/* ------------------------------------------------------------------ */
+/* --- Séries por músculo --- */
 
 async function desenharMusculos() {
   const dados = await progresso.seriesPorMusculo(estado.semana ?? undefined);
@@ -437,7 +417,7 @@ async function desenharMusculos() {
   raiz.appendChild(card);
 }
 
-/** Botão para navegar entre as semanas com treino. */
+/** Navega entre as semanas com treino. */
 async function seletorDeSemana(dados) {
   const div = document.createElement('div');
   div.style.marginTop = '12px';
@@ -466,15 +446,13 @@ async function seletorDeSemana(dados) {
   return div;
 }
 
-/** O início da semana de hoje, segundo a configuração. */
+/** Início da semana de hoje. */
 async function semanaDeHoje() {
   const dados = await progresso.seriesPorMusculo();
   return dados.inicio;
 }
 
-/* ------------------------------------------------------------------ */
-/* Resumo semanal                                                      */
-/* ------------------------------------------------------------------ */
+/* --- Resumo semanal --- */
 
 async function desenharSemanas() {
   const lista = await progresso.semanas();

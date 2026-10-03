@@ -1,32 +1,19 @@
 /**
  * Métricas de séries: carga efetiva, volume, 1RM e diferenças.
  *
- * Funções puras. São a base da comparação entre sessões (Etapa 4) e dos
- * gráficos de progressão (Etapa 5).
- *
- * O conceito central é a **carga efetiva**: o peso que o músculo realmente
- * moveu, que nem sempre é o número escrito na série.
- *
- *  - **Carga** (máquinas, barras): a carga efetiva é o kg registrado.
- *  - **Peso corporal** (barra fixa, paralelas): é o seu peso corporal mais
- *    o kg adicional da anilha ou do cinto.
- *  - **Assistido** (barra fixa na máquina): é o seu peso corporal *menos*
- *    a assistência. É isso que faz "menos assistência = progresso" virar
- *    "mais carga efetiva = progresso", sem precisar de regra invertida.
- *
- * Os dois últimos dependem do peso corporal registrado até a data da
- * sessão. Sem peso registrado a carga efetiva é desconhecida (`null`), e
- * quem chama decide o que fazer — a especificação manda comparar só reps,
- * carga adicional e assistência nesse caso.
+ * Carga efetiva é o peso que o músculo moveu:
+ * - carga: o kg registrado;
+ * - peso corporal: seu peso + o kg extra;
+ * - assistido: seu peso − a assistência.
+ * Sem peso corporal registrado, os dois últimos ficam `null`.
  */
 
 import { TIPOS_CARGA } from '../utils/constantes.js';
 
 /**
- * O peso corporal mais recente registrado até uma data (inclusive).
+ * Peso corporal mais recente até a data (inclusive), ou null.
  * @param {{data: string, kg: number}[]} pesos
  * @param {string} data AAAA-MM-DD
- * @returns {number|null} kg, ou null se não houver registro até a data
  */
 export function pesoCorporalEm(pesos, data) {
   const ateAData = pesos
@@ -36,11 +23,10 @@ export function pesoCorporalEm(pesos, data) {
 }
 
 /**
- * Carga efetiva de uma série.
+ * Carga efetiva de uma série, ou null se não dá para saber.
  * @param {Object} serie
  * @param {Object|undefined} exercicio
  * @param {number|null} pesoCorporal peso na data da sessão
- * @returns {number|null} null quando não dá para saber
  */
 export function cargaEfetiva(serie, exercicio, pesoCorporal) {
   const tipo = (exercicio && exercicio.tipoCarga) || TIPOS_CARGA.CARGA;
@@ -58,12 +44,7 @@ export function cargaEfetiva(serie, exercicio, pesoCorporal) {
     : pesoCorporal + adicional;
 }
 
-/**
- * 1RM estimado pela fórmula de Epley: carga × (1 + reps / 30).
- * @param {number|null} carga carga efetiva
- * @param {number|null} reps
- * @returns {number|null}
- */
+/** 1RM estimado (Epley): carga × (1 + reps / 30). */
 export function epley(carga, reps) {
   if (carga === null || carga === undefined) return null;
   if (reps === null || reps === undefined) return null;
@@ -71,14 +52,9 @@ export function epley(carga, reps) {
 }
 
 /**
- * Calcula as métricas de um conjunto de séries do mesmo exercício.
- *
- * Séries de aquecimento são descartadas antes de qualquer conta, como a
- * especificação pede. Séries sem carga efetiva conhecida entram na
- * contagem de séries e de reps, mas ficam fora das métricas de carga — e
- * a flag `semCargaEfetiva` avisa que o número está incompleto.
- *
- * @param {Object[]} series séries do exercício (podem incluir aquecimento)
+ * Métricas das séries de um exercício. Ignora aquecimento.
+ * Séries sem carga efetiva contam em séries e reps, mas não nas métricas de carga.
+ * @param {Object[]} series
  * @param {Object|undefined} exercicio
  * @param {number|null} pesoCorporal
  * @returns {{series: number, reps: number, volume: number|null, cargaMaxima: number|null, cargaMedia: number|null, rm: number|null, semCargaEfetiva: boolean, cargaRegistradaMaxima: number|null}}
@@ -94,9 +70,7 @@ export function metricasDeSeries(series, exercicio, pesoCorporal) {
   let cargaRegistradaMaxima = null;
   let comVolume = 0;
 
-  // Por que cada série ficou incompleta. Contar separado é o que permite a
-  // tela dizer a coisa certa: "registre seu peso corporal" e "faltou
-  // anotar as reps" são problemas diferentes, com soluções diferentes.
+  // O que faltou em cada série, para a tela dar o aviso certo.
   const faltando = { carga: 0, pesoCorporal: 0, reps: 0 };
 
   valendo.forEach((serie) => {
@@ -115,9 +89,7 @@ export function metricasDeSeries(series, exercicio, pesoCorporal) {
 
     const efetiva = cargaEfetiva(serie, exercicio, pesoCorporal);
     if (efetiva === null) {
-      // Exercício de carga sem kg anotado é um buraco no registro; peso
-      // corporal ou assistido sem peso registrado é falta de um dado que
-      // mora em outro lugar do app.
+      // Carga sem kg é falha do registro; peso corporal/assistido sem peso é outro aviso.
       const precisaPeso = (exercicio?.tipoCarga ?? TIPOS_CARGA.CARGA) !== TIPOS_CARGA.CARGA;
       if (precisaPeso && (pesoCorporal === null || pesoCorporal === undefined)) {
         faltando.pesoCorporal += 1;
@@ -129,9 +101,7 @@ export function metricasDeSeries(series, exercicio, pesoCorporal) {
 
     cargaMaxima = cargaMaxima === null ? efetiva : Math.max(cargaMaxima, efetiva);
 
-    // Volume e 1RM só entram com carga **e** reps conhecidas. Tratar reps
-    // em branco como zero somaria zero ao volume e faria a sessão parecer
-    // pior do que foi — exatamente o erro que o "não sei" evita.
+    // Volume e 1RM só com carga e reps conhecidas; reps em branco não contam como zero.
     if (temReps) {
       comVolume += 1;
       volume += efetiva * serie.reps;
@@ -146,19 +116,19 @@ export function metricasDeSeries(series, exercicio, pesoCorporal) {
     reps,
     volume: comVolume ? volume : null,
     cargaMaxima,
-    // Média ponderada pelas reps: uma série de 10 pesa o dobro de uma de 5.
+    // Média ponderada pelas reps.
     cargaMedia: repsNoVolume ? volume / repsNoVolume : null,
     rm,
     cargaRegistradaMaxima,
     faltando,
-    /** Alguma série ficou sem carga efetiva (por falta de kg ou de peso). */
+    /** Alguma série sem carga efetiva. */
     semCargaEfetiva: faltando.carga + faltando.pesoCorporal > 0,
-    /** Alguma série foi feita mas ficou sem reps anotadas. */
+    /** Alguma série sem reps. */
     semReps: faltando.reps > 0,
   };
 }
 
-/** Métricas de um exercício que não foi feito. */
+/** Métricas de um exercício não feito. */
 export function metricasVazias() {
   return {
     series: 0,
@@ -175,13 +145,7 @@ export function metricasVazias() {
 }
 
 /**
- * Soma as métricas de vários exercícios num total da sessão.
- *
- * Volume e reps somam. Carga máxima e 1RM **não** somam: o máximo de
- * exercícios diferentes não significa nada junto, então o total usa a
- * média das cargas ponderada pelas reps, que é comparável entre sessões.
- *
- * @param {Object[]} lista resultados de metricasDeSeries
+ * Total da sessão. Volume e reps somam; a carga vira média ponderada pelas reps.
  * @returns {{series: number, reps: number, volume: number|null, cargaMedia: number|null, semCargaEfetiva: boolean}}
  */
 export function somarMetricas(lista) {
@@ -220,10 +184,9 @@ export function somarMetricas(lista) {
 
 /**
  * Diferença entre dois valores, com percentual e direção.
- *
  * @param {number|null} antes
  * @param {number|null} depois
- * @param {boolean} [maiorEhMelhor] false para assistência, onde menos é melhor
+ * @param {boolean} [maiorEhMelhor] false no assistido
  * @returns {{antes: number|null, depois: number|null, absoluta: number|null, percentual: number|null, direcao: 'melhora'|'piora'|'igual'|'—'}}
  */
 export function diferenca(antes, depois, maiorEhMelhor = true) {
@@ -233,7 +196,7 @@ export function diferenca(antes, depois, maiorEhMelhor = true) {
   }
 
   const absoluta = depois - antes;
-  // Percentual só faz sentido com base diferente de zero.
+  // Sem percentual quando o valor de antes é zero.
   const percentual = antes === 0 ? null : (absoluta / Math.abs(antes)) * 100;
 
   let direcao = 'igual';

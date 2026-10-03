@@ -1,13 +1,6 @@
 /**
- * Telas de edição da dieta: índice de alimentos, pratos compostos e
- * refeições.
- *
- * As três moram no mesmo arquivo porque compartilham o mesmo vocabulário
- * (alimento, quantidade, unidade) e os mesmos diálogos — separar em três
- * arquivos duplicaria o formulário de quantidade em todos.
- *
- * Nenhuma delas guarda kcal: elas editam alimento e quantidade, e os
- * valores mostrados são sempre calculados na hora.
+ * Telas de edição da dieta: alimentos, pratos, plano, refeição e
+ * informação nutricional.
  */
 
 import * as dieta from '../services/dieta-service.js';
@@ -23,22 +16,16 @@ import {
 import { blocoVazio, textoFraco } from '../components/ui.js';
 import { abrir, definirTitulo, voltarUmaTela, recarregar } from '../navegacao.js';
 
-/** Opções de unidade nos formulários. */
+/** Unidades nos formulários. */
 const OPCOES_UNIDADE = [
   { valor: UNIDADES.G, rotulo: 'gramas (g)' },
   { valor: UNIDADES.ML, rotulo: 'mililitros (ml)' },
   { valor: UNIDADES.UNIDADE, rotulo: 'unidade (fatia, lata, ovo…)' },
 ];
 
-/* ================================================================== */
-/* Índice de alimentos                                                 */
-/* ================================================================== */
+/* --- Alimentos --- */
 
-/**
- * Lista do índice, com busca.
- * @param {HTMLElement} raiz
- * @returns {Promise<void>}
- */
+/** Lista de alimentos, com busca. */
 export async function montarAlimentos(raiz) {
   const lista = await dieta.listarAlimentos();
   raiz.innerHTML = '';
@@ -67,10 +54,7 @@ export async function montarAlimentos(raiz) {
       return;
     }
 
-    // Duas seções na mesma tela, não duas abas: separar o que veio do
-    // rótulo do produto do que é média de tabela evita tratar os dois com
-    // a mesma confiança, mas continuar vendo tudo de uma vez importa na
-    // hora de procurar um alimento.
+    // Rótulos e valores genéricos em seções separadas, na mesma tela.
     secao(container, 'Meus rótulos', visiveis.filter((a) => !a.generico));
     secao(container, 'Valores genéricos', visiveis.filter((a) => a.generico));
   };
@@ -91,13 +75,7 @@ export async function montarAlimentos(raiz) {
   raiz.appendChild(novo);
 }
 
-/**
- * Uma seção da lista de alimentos, com título.
- * Não desenha nada se a seção estiver vazia.
- * @param {HTMLElement} destino
- * @param {string} titulo
- * @param {Object[]} alimentos
- */
+/** Seção da lista (não desenha nada se vazia). */
 function secao(destino, titulo, alimentos) {
   if (!alimentos.length) return;
 
@@ -112,7 +90,7 @@ function secao(destino, titulo, alimentos) {
   alimentos.forEach((a) => destino.appendChild(cardDeAlimento(a)));
 }
 
-/** Card de um alimento na lista. */
+/** Card de um alimento. */
 function cardDeAlimento(alimento) {
   const card = document.createElement('div');
   card.className = 'card card-clicavel';
@@ -144,11 +122,7 @@ function cardDeAlimento(alimento) {
   return card;
 }
 
-/**
- * Formulário de alimento, usado ao criar e ao editar.
- * @param {Object} [alimento]
- * @returns {Promise<Object|null>}
- */
+/** Formulário de alimento (criar e editar). Devolve os dados ou null. */
 async function formularioDeAlimento(alimento) {
   const dados = await formulario(
     alimento ? 'Editar alimento' : 'Novo alimento',
@@ -216,10 +190,9 @@ async function formularioDeAlimento(alimento) {
 }
 
 /**
- * Editor de um alimento.
+ * Tela de um alimento.
  * @param {HTMLElement} raiz
  * @param {{alimentoId: string}} params
- * @returns {Promise<void>}
  */
 export async function montarEditorDeAlimento(raiz, params) {
   const alimento = await dieta.buscarAlimento(params.alimentoId);
@@ -318,15 +291,9 @@ export async function montarEditorDeAlimento(raiz, params) {
   raiz.appendChild(excluir);
 }
 
-/* ================================================================== */
-/* Pratos compostos                                                    */
-/* ================================================================== */
+/* --- Pratos compostos --- */
 
-/**
- * Lista de pratos compostos.
- * @param {HTMLElement} raiz
- * @returns {Promise<void>}
- */
+/** Lista de pratos. */
 export async function montarPratos(raiz) {
   const [pratos, indice] = await Promise.all([dieta.listarPratos(), dieta.carregarIndice()]);
   raiz.innerHTML = '';
@@ -387,10 +354,9 @@ export async function montarPratos(raiz) {
 }
 
 /**
- * Editor de um prato composto.
+ * Tela de um prato.
  * @param {HTMLElement} raiz
  * @param {{pratoId: string}} params
- * @returns {Promise<void>}
  */
 export async function montarEditorDePrato(raiz, params) {
   const r = await dieta.calcularPratoPorId(params.pratoId);
@@ -530,20 +496,12 @@ export async function montarEditorDePrato(raiz, params) {
   raiz.appendChild(excluir);
 }
 
-/* ================================================================== */
-/* Plano: as refeições que o compõem                                   */
-/* ================================================================== */
+/* --- Plano --- */
 
 /**
- * Editor de um plano: quais refeições ele tem, em que ordem.
- *
- * A ordem mora na lista do plano, não num campo da refeição, porque o
- * jantar é o mesmo objeto nos dois planos e pode ocupar posições
- * diferentes em cada um.
- *
+ * Tela de um plano: as refeições, na ordem.
  * @param {HTMLElement} raiz
  * @param {{planoId: string}} params
- * @returns {Promise<void>}
  */
 export async function montarEditorDePlano(raiz, params) {
   const [plano, dia] = await Promise.all([
@@ -605,12 +563,11 @@ export async function montarEditorDePlano(raiz, params) {
 }
 
 /**
- * Card de uma refeição dentro do editor do plano.
+ * Card de uma refeição no plano.
  * @param {Object} plano
  * @param {Object} r refeição calculada
- * @param {number} indice posição na lista
+ * @param {number} indice posição
  * @param {number} total quantas refeições o plano tem
- * @returns {HTMLElement}
  */
 function cardDeRefeicaoNoPlano(plano, r, indice, total) {
   const card = document.createElement('div');
@@ -655,7 +612,7 @@ function cardDeRefeicaoNoPlano(plano, r, indice, total) {
   return card;
 }
 
-/** Seta de reordenação da refeição dentro do plano. */
+/** Seta para subir ou descer a refeição. */
 function setaDeRefeicao(plano, r, direcao, ativo) {
   const btn = document.createElement('button');
   btn.className = 'btn btn-icone btn-mover';
@@ -670,7 +627,7 @@ function setaDeRefeicao(plano, r, direcao, ativo) {
   return btn;
 }
 
-/** Menu de uma refeição dentro do plano. */
+/** Menu de uma refeição no plano. */
 async function menuDaRefeicao(plano, r) {
   const planos = await dieta.planosComRefeicao(r.refeicaoId);
   const compartilhada = planos.length > 1;
@@ -717,7 +674,7 @@ async function menuDaRefeicao(plano, r) {
   }
 }
 
-/** Cria uma refeição nova ou traz uma que já existe. */
+/** Cria uma refeição nova ou usa uma que já existe. */
 async function adicionarRefeicao(plano) {
   const disponiveis = await dieta.refeicoesForaDoPlano(plano.id);
 
@@ -763,20 +720,13 @@ async function adicionarRefeicao(plano) {
   await recarregar();
 }
 
-/* ================================================================== */
-/* Detalhe nutricional de um item                                      */
-/* ================================================================== */
+/* --- Informação nutricional --- */
 
 /**
- * Tela de um item do plano: o que ele entrega na quantidade planejada.
- *
- * Mostra duas coisas lado a lado, porque são perguntas diferentes: "o que
- * esta banana me dá hoje" (a quantidade do plano) e "quanto vale por 100
- * g" (a referência do índice, que é o que está no rótulo).
- *
+ * Um item do plano: o que ele dá na quantidade planejada e o valor
+ * de referência do índice.
  * @param {HTMLElement} raiz
  * @param {{refeicaoId: string, itemId: string, opcaoId?: string}} params
- * @returns {Promise<void>}
  */
 export async function montarNutricional(raiz, params) {
   const [dados, indice] = await Promise.all([
@@ -807,7 +757,7 @@ export async function montarNutricional(raiz, params) {
   contexto.textContent = `Em ${dados.refeicao.nome}`;
   raiz.appendChild(contexto);
 
-  /* --- o que entrega na quantidade do plano --- */
+  /* --- na quantidade do plano --- */
   const card = document.createElement('div');
   card.className = 'card card-sugestao';
 
@@ -864,7 +814,7 @@ export async function montarNutricional(raiz, params) {
     return;
   }
 
-  /* --- a referência do índice --- */
+  /* --- referência do índice --- */
   const referencia = document.createElement('div');
   referencia.className = 'card';
 
@@ -934,7 +884,7 @@ export async function montarNutricional(raiz, params) {
   raiz.appendChild(referencia);
 }
 
-/** Valores de referência de um alimento, já como objeto de nutrientes. */
+/** Valores de referência do alimento. */
 function valoresDoAlimento(alimento) {
   return {
     kcal: alimento.kcal,
@@ -945,12 +895,7 @@ function valoresDoAlimento(alimento) {
   };
 }
 
-/**
- * Tabela de nutrientes: rótulo à esquerda, valor à direita.
- * Valor ausente aparece como "— em branco", não como zero.
- * @param {Object} valores
- * @returns {HTMLElement}
- */
+/** Tabela de nutrientes. Valor ausente aparece como "— em branco". */
 function tabelaDeNutrientes(valores) {
   const div = document.createElement('div');
 
@@ -984,15 +929,12 @@ function tabelaDeNutrientes(valores) {
   return div;
 }
 
-/* ================================================================== */
-/* Refeição                                                            */
-/* ================================================================== */
+/* --- Refeição --- */
 
 /**
- * Editor de uma refeição.
+ * Tela de uma refeição.
  * @param {HTMLElement} raiz
  * @param {{refeicaoId: string}} params
- * @returns {Promise<void>}
  */
 export async function montarEditorDeRefeicao(raiz, params) {
   const dados = await dieta.calcularRefeicaoPorId(params.refeicaoId);
@@ -1037,7 +979,7 @@ export async function montarEditorDeRefeicao(raiz, params) {
   raiz.appendChild(add);
 }
 
-/** Um item da refeição, com o que dá para editar nele. */
+/** Card de um item editável. */
 function cardDeItemEditavel(refeicao, item) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -1155,11 +1097,10 @@ function cardDeItemEditavel(refeicao, item) {
 }
 
 /**
- * Uma opção dentro de um grupo, na tela de edição.
+ * Linha de uma opção do grupo.
  * @param {Object} refeicao
  * @param {Object} item o grupo
  * @param {Object} opcao
- * @returns {HTMLElement}
  */
 function linhaDeOpcao(refeicao, item, opcao) {
   const linha = document.createElement('div');
@@ -1248,11 +1189,7 @@ function linhaDeOpcao(refeicao, item, opcao) {
   return linha;
 }
 
-/**
- * Acrescenta uma opção a um grupo existente.
- * @param {Object} refeicao
- * @param {Object} item
- */
+/** Acrescenta uma opção ao grupo. */
 async function adicionarOpcao(refeicao, item) {
   const tipo = await escolher('Nova opção de ' + item.nome, [
     { valor: TIPO_ITEM.ALIMENTO, rotulo: 'Um alimento do índice' },
@@ -1267,11 +1204,7 @@ async function adicionarOpcao(refeicao, item) {
   await recarregar();
 }
 
-/**
- * Pergunta alimento/prato e quantidade, devolvendo a opção pronta.
- * @param {string} tipo
- * @returns {Promise<Object|null>}
- */
+/** Pede alimento ou prato e a quantidade. Devolve a opção ou null. */
 async function montarOpcao(tipo) {
   if (tipo === TIPO_ITEM.PRATO) {
     const pratos = await dieta.listarPratos();
@@ -1301,7 +1234,7 @@ async function montarOpcao(tipo) {
   return { tipo: TIPO_ITEM.ALIMENTO, alimentoId, quantidade: paraNumero(dados.q) };
 }
 
-/** Adiciona um item à refeição. */
+/** Acrescenta um item à refeição. */
 async function adicionarItem(refeicao) {
   const tipo = await escolher('O que adicionar?', [
     { valor: TIPO_ITEM.ALIMENTO, rotulo: 'Um alimento do índice' },
@@ -1395,11 +1328,7 @@ async function adicionarItem(refeicao) {
   await recarregar();
 }
 
-/**
- * Abre a busca de alimentos do índice.
- * @param {string} titulo
- * @returns {Promise<string|null>}
- */
+/** Busca de alimentos. Devolve o id ou null. */
 async function escolherAlimento(titulo) {
   const lista = await dieta.listarAlimentos();
   if (!lista.length) {

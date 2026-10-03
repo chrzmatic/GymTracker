@@ -1,22 +1,7 @@
 /**
- * Exportar e importar (Etapa 7) depois de mexer em **tudo**.
- *
- * A pergunta que motivou este teste: se eu reformar o app inteiro — dieta,
- * músculos existentes, rotação, treino extra, exercícios apagados,
- * configurações, peso — o export/import quebra em algum lugar?
- *
- * Os testes de `progresso-backup-integracao.js` já cobrem o ciclo normal.
- * Este vai ao extremo de propósito, porque é onde moram os defeitos que
- * um ciclo normal não encontra:
- *
- *  - uma tabela que ficou de fora do export e só se percebe ao restaurar;
- *  - uma referência órfã (série apontando para exercício apagado, item de
- *    treino apontando para músculo que não existe mais);
- *  - ordem de listas (rotação, ordem dos músculos, itens do plano) que
- *    sobrevive à gravação mas não à releitura.
- *
- * A prova é forte: depois de esvaziar o banco inteiro e importar, o
- * retrato do banco tem que ser **idêntico**, campo por campo, ao de antes.
+ * Exportar e importar depois de mexer em tudo (dieta, músculos, rotação,
+ * exercícios apagados, configurações, peso).
+ * Depois de esvaziar o banco e importar, o banco tem que ficar idêntico ao de antes.
  *
  *   deno run -A tests/navegador/backup-extremo-integracao.js
  */
@@ -45,9 +30,7 @@ const cenario = String.raw`
   await backup.apagarTudo();
   await seed.carregarSeNecessario();
 
-  /* ================================================================ */
-  /* 1. Reforma total                                                  */
-  /* ================================================================ */
+  /* --- 1. Reforma total --- */
 
   // --- músculos: renomear um existente, criar, reordenar, apagar ---
   const musculos = await exSvc.listarMusculos();
@@ -118,14 +101,9 @@ const cenario = String.raw`
   await configRepo.salvarConfig('inicioSemana', 0);
   await configRepo.salvarConfig('diasParaReiniciarRotacao', 5);
 
-  /* ================================================================ */
-  /* 2. O retrato antes                                                */
-  /* ================================================================ */
+  /* --- 2. O retrato antes --- */
 
-  // A ordem que a tela mostra, que NÃO é a ordem bruta da tabela: o
-  // IndexedDB devolve por ID, e a lista de músculos é ordenada por
-  // posição. Comparar as duas é comparar coisas diferentes — a que
-  // interessa preservar é esta, a que você arrumou na mão.
+  // A ordem que a tela mostra (a lista de músculos é ordenada por posição, não por ID).
   const ordemMusculosAntes = (await exSvc.listarMusculos()).map((m) => m.id);
   const ordemTreinosAntes = (await trSvc.listarTreinos()).map((t) => t.id);
 
@@ -145,9 +123,7 @@ const cenario = String.raw`
   ok('e o alimento inventado', json.includes('Alimento Inventado'), true);
   ok('o que foi apagado não está', json.includes('Treino Que Some'), false);
 
-  /* ================================================================ */
-  /* 3. Esvaziar o banco inteiro e importar de volta                   */
-  /* ================================================================ */
+  /* --- 3. Esvaziar o banco inteiro e importar de volta --- */
 
   await backup.apagarTudo();
   for (const s of stores) {
@@ -157,7 +133,7 @@ const cenario = String.raw`
   }
   ok('banco realmente zerado', (await backup.montarBackup()).dados.sessoes.length, 0);
 
-  // Passa pelo mesmo caminho do "Importar JSON": texto → parse → validar.
+  // Mesmo caminho do "Importar JSON": texto → parse → validar.
   const relido = JSON.parse(json);
   const validacao = backup.validarBackup(relido);
   ok('o arquivo exportado passa na validação', validacao.ok, true);
@@ -166,9 +142,7 @@ const cenario = String.raw`
   const divergencias = await backup.conferirRestauracao(relido);
   ok('a conferência não acha divergência', divergencias, []);
 
-  /* ================================================================ */
-  /* 4. A prova: o retrato tem que ser idêntico                        */
-  /* ================================================================ */
+  /* --- 4. A prova: o retrato tem que ser idêntico --- */
 
   const depois = await backup.montarBackup();
 
@@ -180,9 +154,7 @@ const cenario = String.raw`
     );
   });
 
-  /* ================================================================ */
-  /* 5. E o app continua funcionando em cima do que foi restaurado     */
-  /* ================================================================ */
+  /* --- 5. E o app continua funcionando em cima do que foi restaurado --- */
 
   const musDepois = await exSvc.listarMusculos();
   ok('o músculo renomeado continua renomeado', musDepois.some((m) => m.nome === 'Peitoral Renomeado'), true);
@@ -201,8 +173,7 @@ const cenario = String.raw`
   const exApagado = await exSvc.buscarExercicio(exVitima.id);
   ok('o exercício apagado não ressuscitou', exApagado, undefined);
 
-  // A pergunta mais fina: o histórico guarda séries daquele exercício
-  // apagado. O app tem que conseguir abrir essa sessão assim mesmo.
+  // O histórico tem séries do exercício apagado; a sessão ainda tem que abrir.
   const hist = await sessoes.historico();
   ok('o histórico continua com as 3 sessões', hist.length, 3);
   const umaSessao = await sessoes.carregarSessao(hist[0].sessao.id);
@@ -219,9 +190,7 @@ const cenario = String.raw`
   const pesos = await peso.listarPesos();
   ok('os pesos voltaram', pesos.length, 2);
 
-  /* ================================================================ */
-  /* 6. Importar um backup mais pobre avisa em vez de apagar calado    */
-  /* ================================================================ */
+  /* --- 6. Importar um backup mais pobre avisa em vez de apagar calado --- */
 
   const pobre = JSON.parse(json);
   pobre.dados.sessoes = [];
@@ -229,8 +198,7 @@ const cenario = String.raw`
   const perdas = await backup.perdasAoRestaurar(pobre);
   ok('o app avisa que perderia as sessões', perdas.some((p) => p.includes('3 → 0')), true);
 
-  // Tabela ausente do arquivo não é esvaziada: um backup antigo, de antes
-  // de a dieta existir, não tem motivo para apagar a dieta de hoje.
+  // Store ausente do arquivo não é esvaziada.
   const antigo = JSON.parse(json);
   delete antigo.dados.alimentos;
   await backup.restaurar(antigo);
@@ -240,14 +208,14 @@ const cenario = String.raw`
     antes.dados.alimentos.length
   );
 
-  /* --- backup de versão futura é recusado com explicação ----------- */
+  /* --- backup de versão futura é recusado --- */
   const futuro = JSON.parse(json);
   futuro.versaoDb = 99;
   const recusa = backup.validarBackup(futuro);
   ok('backup de versão futura é recusado', recusa.ok, false);
   ok('e a recusa explica o motivo', recusa.erro.includes('99'), true);
 
-  /* --- arquivo de outro app é recusado ----------------------------- */
+  /* --- arquivo de outro app é recusado --- */
   ok('arquivo estranho é recusado', backup.validarBackup({ foo: 1 }).ok, false);
   ok('e null também', backup.validarBackup(null).ok, false);
 

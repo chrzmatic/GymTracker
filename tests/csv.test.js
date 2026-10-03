@@ -1,9 +1,4 @@
-/**
- * Testes da geração de CSV.
- *
- * O risco aqui é silencioso: um CSV mal escapado abre na planilha com as
- * colunas deslocadas e ninguém percebe até precisar dos dados.
- */
+/** Testes da geração de CSV (escape, números e arquivos). */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,7 +14,7 @@ import {
   BOM,
 } from '../js/domain/csv.js';
 
-/* ---- escape ---- */
+/* --- escape --- */
 
 test('texto simples não ganha aspas', () => {
   assert.equal(celula('Supino'), 'Supino');
@@ -44,7 +39,7 @@ test('quebra de linha dentro da célula é preservada entre aspas', () => {
   assert.equal(celula('linha 1\nlinha 2'), '"linha 1\nlinha 2"');
 });
 
-/* ---- números ---- */
+/* --- números --- */
 
 test('número sai com vírgula decimal, para o Excel em português', () => {
   assert.equal(numero(62.5), '62,5');
@@ -58,7 +53,7 @@ test('número ausente vira célula vazia, não zero', () => {
   assert.equal(numero(0), '0', 'zero de verdade continua zero');
 });
 
-/* ---- montagem ---- */
+/* --- montagem --- */
 
 test('o arquivo começa com BOM e usa ponto e vírgula', () => {
   const csv = montarCsv(['A', 'B'], [[1, 2]]);
@@ -75,7 +70,7 @@ test('csv sem linhas ainda traz o cabeçalho', () => {
   assert.equal(montarCsv(['A', 'B'], []), `${BOM}A;B\r\n`);
 });
 
-/* ---- CSV de treinos ---- */
+/* --- CSV de treinos --- */
 
 const sessoes = [
   {
@@ -101,7 +96,7 @@ const series = [
   { sessaoId: 's1', exercicioId: 'ex-barra', ordemItem: 1, numero: 1, carga: null, reps: 8, aquecimento: false, anotacao: '' },
 ];
 
-/** Quebra o CSV em linhas de células. */
+/** CSV em linhas de células. */
 function linhasDe(csv) {
   return csv
     .replace(BOM, '')
@@ -170,7 +165,7 @@ test('exercício apagado sai com o ID, para não perder o dado', () => {
   assert.equal(linhas[0][4], 'ex-sumiu');
 });
 
-/* ---- CSV de peso ---- */
+/* --- CSV de peso --- */
 
 test('o peso sai em ordem cronológica', () => {
   const csv = csvDePeso([
@@ -185,7 +180,7 @@ test('o peso sai em ordem cronológica', () => {
   ]);
 });
 
-/* ---- nome do arquivo ---- */
+/* --- nome do arquivo --- */
 
 test('o nome do arquivo leva a data', () => {
   assert.equal(nomeDeArquivo('gymtracker-treinos', '2025-09-21', 'csv'), 'gymtracker-treinos-2025-09-21.csv');

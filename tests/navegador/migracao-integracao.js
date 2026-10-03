@@ -1,9 +1,6 @@
 /**
- * Teste da migração do banco, num navegador de verdade.
- *
- * O app vai ser usado enquanto é construído, então cada mudança de estrutura
- * precisa preservar o que já está gravado. Este teste monta um banco na
- * versão antiga, com dados dentro, abre o app e confere que nada se perdeu.
+ * Migração do banco: monta um banco na versão antiga, abre o app e confere
+ * que nada se perdeu.
  *
  *   deno run -A tests/navegador/migracao-integracao.js
  */
@@ -13,7 +10,7 @@ import { conectar, lancarNavegador, servir } from './cdp.js';
 const raiz = new URL('../../', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
 const PORTA_DEVTOOLS = 9224;
 
-/* Roda dentro da página, numa aba em branco: o app ainda não abriu o banco. */
+/* Roda numa aba em branco, antes de o app abrir o banco. */
 const cenario = String.raw`
 (async () => {
   const log = [];
@@ -57,8 +54,7 @@ const cenario = String.raw`
         itens: [{ itemId: 'it-1', ordem: 0, tipo: 'exercicio', exercicioId: 'ex-supino' }],
       });
       const s = tx.objectStore('series');
-      // Numeração antiga: aquecimento dividia a sequência com as séries
-      // valendo e tinha sido adicionado por último (numero 4).
+      // Numeração antiga: aquecimento dividia a sequência com as séries valendo.
       s.put({ id: 'v1', sessaoId: 'ses-velha', itemId: 'it-1', ordemItem: 0, exercicioId: 'ex-supino', numero: 1, carga: 14, reps: 12, aquecimento: false });
       s.put({ id: 'v2', sessaoId: 'ses-velha', itemId: 'it-1', ordemItem: 0, exercicioId: 'ex-supino', numero: 2, carga: 16, reps: 8, aquecimento: false });
       s.put({ id: 'v3', sessaoId: 'ses-velha', itemId: 'it-1', ordemItem: 0, exercicioId: 'ex-supino', numero: 3, carga: 16, reps: 6, aquecimento: false });
@@ -115,16 +111,14 @@ const navegador = await lancarNavegador({
 });
 
 let codigoSaida = 1;
-// Declarado fora do try para o finally conseguir fechar o navegador pelo
-// protocolo, que e o unico jeito confiavel de soltar o perfil temporario.
+// Fora do try, para o finally fechar o navegador pelo protocolo.
 let cdp = null;
 try {
   cdp = await conectar(PORTA_DEVTOOLS);
   await cdp.enviar('Page.enable');
   await cdp.enviar('Runtime.enable');
 
-  // Garante que estamos na página do servidor (e não na aba inicial em
-  // branco, onde o navegador não deixa usar IndexedDB).
+  // Página do servidor (a aba em branco inicial não tem IndexedDB).
   const alvo = `http://localhost:${servidor.porta}/__vazio`;
   for (let i = 0; i < 40; i += 1) {
     const url = await cdp.avaliar('location.href');

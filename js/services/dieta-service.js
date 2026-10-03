@@ -1,10 +1,4 @@
-/**
- * Casos de uso da dieta.
- *
- * Junta índice, pratos, refeições e planos, e entrega o dia já calculado.
- * Como os planos guardam só alimento e quantidade, qualquer correção no
- * índice aparece na próxima leitura, sem nada para invalidar.
- */
+/** Dieta: índice, pratos, refeições, planos e o dia calculado. */
 
 import * as repo from '../data/dieta-repo.js';
 import { listarSessoesDaData } from '../data/sessoes-repo.js';
@@ -13,7 +7,7 @@ import { hojeIso } from '../utils/date.js';
 import { calcularPlano, calcularPrato, calcularRefeicao, TIPO_ITEM } from '../domain/nutricao.js';
 
 /**
- * O índice que os cálculos precisam: alimentos e pratos por ID.
+ * Alimentos e pratos por ID, para os cálculos.
  * @returns {Promise<{alimentos: Map, pratos: Map}>}
  */
 export async function carregarIndice() {
@@ -21,18 +15,12 @@ export async function carregarIndice() {
   return { alimentos, pratos };
 }
 
-/* ------------------------------------------------------------------ */
-/* O dia                                                               */
-/* ------------------------------------------------------------------ */
+/* --- O dia --- */
 
 /**
- * Qual plano vale numa data.
- *
- * Padrão: dia de treino se há qualquer sessão registrada naquele dia (da
- * rotação ou extra); senão, dia sem treino. Uma escolha manual salva para
- * aquela data tem prioridade — é para o caso de você saber de manhã que
- * vai treinar, antes de ter registrado nada.
- *
+ * Plano de uma data.
+ * Uma escolha manual vale primeiro; senão, dia de treino se há sessão
+ * naquele dia, ou dia sem treino.
  * @param {string} [data] AAAA-MM-DD
  * @returns {Promise<{plano: Object|null, automatico: boolean, treinou: boolean}>}
  */
@@ -57,11 +45,7 @@ export async function planoDoDia(data = hojeIso()) {
   return { plano, automatico: true, treinou };
 }
 
-/**
- * O dia inteiro calculado: refeições, totais, faixa e comparação com a meta.
- * @param {string} planoId
- * @returns {Promise<Object|null>}
- */
+/** O dia calculado: refeições, totais e metas. */
 export async function calcularDia(planoId) {
   const [plano, refeicoes, indice] = await Promise.all([
     repo.buscarPlano(planoId),
@@ -72,10 +56,8 @@ export async function calcularDia(planoId) {
 
   const porId = new Map(refeicoes.map((r) => [r.id, r]));
 
-  // A ordem vem da lista do **plano**, não de um campo na refeição: o
-  // jantar é o mesmo objeto nos dois planos e pode ser a 4ª refeição num
-  // e a 3ª no outro. Um campo `ordem` na refeição não conseguiria
-  // representar as duas posições.
+  // A ordem vem da lista do plano: a mesma refeição pode ter posições
+  // diferentes em cada plano.
   const doPlano = (plano.refeicoes ?? [])
     .map((id, i) => {
       const refeicao = porId.get(id);
@@ -86,16 +68,9 @@ export async function calcularDia(planoId) {
   return calcularPlano(plano, doPlano, indice);
 }
 
-/* ------------------------------------------------------------------ */
-/* Refeições de um plano                                               */
-/* ------------------------------------------------------------------ */
+/* --- Refeições de um plano --- */
 
-/**
- * Cria uma refeição e a acrescenta ao fim de um plano.
- * @param {string} planoId
- * @param {string} nome
- * @returns {Promise<Object>} a refeição criada
- */
+/** Cria uma refeição no fim do plano. */
 export async function criarRefeicaoNoPlano(planoId, nome) {
   const plano = await repo.buscarPlano(planoId);
   if (!plano) throw new Error('Plano não encontrado.');
@@ -111,13 +86,7 @@ export async function criarRefeicaoNoPlano(planoId, nome) {
   return refeicao;
 }
 
-/**
- * Acrescenta ao plano uma refeição que já existe — é assim que uma
- * refeição passa a ser compartilhada pelos dois dias.
- * @param {string} planoId
- * @param {string} refeicaoId
- * @returns {Promise<void>}
- */
+/** Põe uma refeição existente no plano (ela passa a ser compartilhada). */
 export async function adicionarRefeicaoAoPlano(planoId, refeicaoId) {
   const plano = await repo.buscarPlano(planoId);
   if (!plano || (plano.refeicoes ?? []).includes(refeicaoId)) return;
@@ -125,13 +94,7 @@ export async function adicionarRefeicaoAoPlano(planoId, refeicaoId) {
 }
 
 /**
- * Tira uma refeição de um plano.
- *
- * Se ela não estiver em nenhum outro plano, é apagada de vez: uma refeição
- * fora de todos os planos fica invisível no app e só ocuparia espaço.
- *
- * @param {string} planoId
- * @param {string} refeicaoId
+ * Tira a refeição do plano. Se não estiver em outro plano, apaga.
  * @returns {Promise<{apagada: boolean}>}
  */
 export async function removerRefeicaoDoPlano(planoId, refeicaoId) {
@@ -154,10 +117,7 @@ export async function removerRefeicaoDoPlano(planoId, refeicaoId) {
 }
 
 /**
- * Sobe ou desce uma refeição dentro de um plano.
- * @param {string} planoId
- * @param {string} refeicaoId
- * @param {-1|1} direcao
+ * Sobe (-1) ou desce (1) a refeição no plano.
  * @returns {Promise<boolean>} false se já estava na ponta
  */
 export async function moverRefeicaoNoPlano(planoId, refeicaoId, direcao) {
@@ -174,25 +134,14 @@ export async function moverRefeicaoNoPlano(planoId, refeicaoId, direcao) {
   return true;
 }
 
-/**
- * Renomeia uma refeição. Como ela pode ser compartilhada, o nome muda nos
- * dois planos — o que é o esperado: é a mesma refeição.
- * @param {string} refeicaoId
- * @param {string} nome
- * @returns {Promise<void>}
- */
+/** Renomeia a refeição (vale em todos os planos que a usam). */
 export async function renomearRefeicao(refeicaoId, nome) {
   const refeicao = await repo.buscarRefeicao(refeicaoId);
   if (!refeicao) return;
   await repo.salvarRefeicao({ ...refeicao, nome: nome.trim() });
 }
 
-/**
- * Refeições que existem mas não estão neste plano, para oferecer no
- * "usar uma refeição que já existe".
- * @param {string} planoId
- * @returns {Promise<Object[]>}
- */
+/** Refeições que não estão neste plano. */
 export async function refeicoesForaDoPlano(planoId) {
   const [plano, refeicoes] = await Promise.all([
     repo.buscarPlano(planoId),
@@ -202,46 +151,25 @@ export async function refeicoesForaDoPlano(planoId) {
   return refeicoes.filter((r) => !dentro.has(r.id));
 }
 
-/**
- * Renomeia um plano.
- * @param {string} planoId
- * @param {string} nome
- * @returns {Promise<void>}
- */
 export async function renomearPlano(planoId, nome) {
   const plano = await repo.buscarPlano(planoId);
   if (!plano) return;
   await repo.salvarPlano({ ...plano, nome: nome.trim() });
 }
 
-/**
- * Fixa manualmente o plano de uma data.
- * @param {string} data
- * @param {string} planoId
- * @returns {Promise<void>}
- */
+/** Fixa o plano de uma data. */
 export function escolherPlanoDoDia(data, planoId) {
   return repo.salvarTipoDia(data, planoId);
 }
 
-/**
- * Volta a decidir o plano automaticamente naquela data.
- * @param {string} data
- * @returns {Promise<void>}
- */
+/** Volta a escolher o plano automaticamente na data. */
 export function voltarAoAutomatico(data) {
   return repo.removerTipoDia(data);
 }
 
-/* ------------------------------------------------------------------ */
-/* Índice de alimentos                                                 */
-/* ------------------------------------------------------------------ */
+/* --- Alimentos --- */
 
-/**
- * Cria um alimento. O ID sai do nome, para ficar legível no backup.
- * @param {Object} dados
- * @returns {Promise<Object>}
- */
+/** Cria um alimento. O ID vem do nome. */
 export async function criarAlimento(dados) {
   const slug = paraSlug(dados.nome);
   const desejado = slug ? `alim-${slug}` : novoId('alim');
@@ -264,12 +192,7 @@ export async function criarAlimento(dados) {
   return alimento;
 }
 
-/**
- * Grava alterações de um alimento. Editar um valor tira o aviso de
- * [CONFERIR], que é o que a especificação pede.
- * @param {Object} alimento
- * @returns {Promise<Object>}
- */
+/** Grava um alimento editado e tira a marca "conferir". */
 export async function salvarAlimento(alimento) {
   const limpo = { ...alimento, nome: alimento.nome.trim(), conferir: false };
   await repo.salvarAlimento(limpo);
@@ -277,12 +200,7 @@ export async function salvarAlimento(alimento) {
 }
 
 /**
- * Onde um alimento é usado: pratos compostos e itens de refeição.
- *
- * A especificação proíbe excluir sem avisar onde ele está, porque apagar
- * um ingrediente silenciosamente mudaria o valor de um prato inteiro.
- *
- * @param {string} alimentoId
+ * Pratos e refeições que usam o alimento (para avisar antes de excluir).
  * @returns {Promise<{pratos: string[], refeicoes: string[]}>}
  */
 export async function ondeAlimentoEUsado(alimentoId) {
@@ -306,11 +224,7 @@ export async function ondeAlimentoEUsado(alimentoId) {
   return { pratos: nosPratos, refeicoes: [...new Set(nasRefeicoes)] };
 }
 
-/**
- * Exclui um alimento e o tira dos pratos e refeições que o usam.
- * @param {string} alimentoId
- * @returns {Promise<void>}
- */
+/** Exclui o alimento e tira dos pratos e refeições. */
 export async function excluirAlimento(alimentoId) {
   const [pratos, refeicoes] = await Promise.all([repo.listarPratos(), repo.listarRefeicoes()]);
 
@@ -348,15 +262,9 @@ export async function excluirAlimento(alimentoId) {
   await repo.removerAlimento(alimentoId);
 }
 
-/* ------------------------------------------------------------------ */
-/* Pratos compostos                                                    */
-/* ------------------------------------------------------------------ */
+/* --- Pratos compostos --- */
 
-/**
- * Cria um prato composto vazio.
- * @param {string} nome
- * @returns {Promise<Object>}
- */
+/** Cria um prato vazio. */
 export async function criarPrato(nome) {
   const slug = paraSlug(nome);
   const desejado = slug ? `prato-${slug}` : novoId('prato');
@@ -370,22 +278,14 @@ export async function criarPrato(nome) {
   return prato;
 }
 
-/**
- * Valores calculados de um prato, para mostrar na tela.
- * @param {string} pratoId
- * @returns {Promise<Object|null>}
- */
+/** Prato com os valores calculados. */
 export async function calcularPratoPorId(pratoId) {
   const [prato, indice] = await Promise.all([repo.buscarPrato(pratoId), carregarIndice()]);
   if (!prato) return null;
   return { prato, ...calcularPrato(prato, indice.alimentos) };
 }
 
-/**
- * Onde um prato é usado nas refeições.
- * @param {string} pratoId
- * @returns {Promise<string[]>} nomes das refeições
- */
+/** Nomes das refeições que usam o prato. */
 export async function ondePratoEUsado(pratoId) {
   const refeicoes = await repo.listarRefeicoes();
   return refeicoes
@@ -399,11 +299,7 @@ export async function ondePratoEUsado(pratoId) {
     .map((r) => r.nome);
 }
 
-/**
- * Exclui um prato e o tira das refeições.
- * @param {string} pratoId
- * @returns {Promise<void>}
- */
+/** Exclui o prato e tira das refeições. */
 export async function excluirPrato(pratoId) {
   const refeicoes = await repo.listarRefeicoes();
   const mudadas = refeicoes
@@ -428,18 +324,9 @@ export async function excluirPrato(pratoId) {
   await repo.removerPrato(pratoId);
 }
 
-/* ------------------------------------------------------------------ */
-/* Refeições e itens                                                   */
-/* ------------------------------------------------------------------ */
+/* --- Refeições e itens --- */
 
-/**
- * Troca a opção padrão de um grupo. A escolha fica salva, como a
- * especificação pede ("a troca altera o padrão salvo").
- * @param {string} refeicaoId
- * @param {string} itemId
- * @param {string} opcaoId
- * @returns {Promise<void>}
- */
+/** Troca a opção padrão de um grupo (fica salva). */
 export async function escolherOpcao(refeicaoId, itemId, opcaoId) {
   const refeicao = await repo.buscarRefeicao(refeicaoId);
   if (!refeicao) return;
@@ -450,11 +337,8 @@ export async function escolherOpcao(refeicaoId, itemId, opcaoId) {
 }
 
 /**
- * Muda um item da refeição, seja ele simples ou grupo.
- * @param {string} refeicaoId
- * @param {string} itemId
+ * Aplica `transformar` a um item da refeição.
  * @param {(item: Object) => Object} transformar
- * @returns {Promise<void>}
  */
 async function mexerNoItem(refeicaoId, itemId, transformar) {
   const refeicao = await repo.buscarRefeicao(refeicaoId);
@@ -463,13 +347,7 @@ async function mexerNoItem(refeicaoId, itemId, transformar) {
   await repo.salvarRefeicao({ ...refeicao, itens });
 }
 
-/**
- * Acrescenta uma opção a um grupo.
- * @param {string} refeicaoId
- * @param {string} itemId
- * @param {Object} opcao sem id
- * @returns {Promise<void>}
- */
+/** Acrescenta uma opção ao grupo (o id é gerado aqui). */
 export function adicionarOpcao(refeicaoId, itemId, opcao) {
   return mexerNoItem(refeicaoId, itemId, (item) => ({
     ...item,
@@ -477,17 +355,7 @@ export function adicionarOpcao(refeicaoId, itemId, opcao) {
   }));
 }
 
-/**
- * Tira uma opção de um grupo.
- *
- * Tirar a opção padrão promove a primeira que sobrar: um grupo sem padrão
- * não saberia o que somar no total do dia.
- *
- * @param {string} refeicaoId
- * @param {string} itemId
- * @param {string} opcaoId
- * @returns {Promise<void>}
- */
+/** Tira uma opção do grupo. Se era a padrão, a primeira que sobrar vira padrão. */
 export function removerOpcao(refeicaoId, itemId, opcaoId) {
   return mexerNoItem(refeicaoId, itemId, (item) => {
     const opcoes = (item.opcoes ?? []).filter((o) => o.id !== opcaoId);
@@ -498,14 +366,7 @@ export function removerOpcao(refeicaoId, itemId, opcaoId) {
   });
 }
 
-/**
- * Altera a quantidade de uma opção de grupo.
- * @param {string} refeicaoId
- * @param {string} itemId
- * @param {string} opcaoId
- * @param {number|null} quantidade
- * @returns {Promise<void>}
- */
+/** Muda a quantidade (ou porções) de uma opção. */
 export function alterarQuantidadeDaOpcao(refeicaoId, itemId, opcaoId, quantidade) {
   return mexerNoItem(refeicaoId, itemId, (item) => ({
     ...item,
@@ -517,22 +378,12 @@ export function alterarQuantidadeDaOpcao(refeicaoId, itemId, opcaoId, quantidade
   }));
 }
 
-/**
- * Renomeia um grupo de opções.
- * @param {string} refeicaoId
- * @param {string} itemId
- * @param {string} nome
- * @returns {Promise<void>}
- */
 export function renomearGrupo(refeicaoId, itemId, nome) {
   return mexerNoItem(refeicaoId, itemId, (item) => ({ ...item, nome: nome.trim() }));
 }
 
 /**
- * Busca um item de refeição pelo ID, com a opção escolhida se for grupo.
- * @param {string} refeicaoId
- * @param {string} itemId
- * @param {string} [opcaoId]
+ * Item da refeição, com a opção se houver.
  * @returns {Promise<{refeicao: Object, item: Object, opcao: Object|null}|null>}
  */
 export async function buscarItem(refeicaoId, itemId, opcaoId) {
@@ -544,13 +395,7 @@ export async function buscarItem(refeicaoId, itemId, opcaoId) {
   return { refeicao, item, opcao: opcao ?? null };
 }
 
-/**
- * Altera a quantidade de um item simples da refeição.
- * @param {string} refeicaoId
- * @param {string} itemId
- * @param {number|null} quantidade
- * @returns {Promise<void>}
- */
+/** Muda a quantidade (ou porções) de um item simples. */
 export async function alterarQuantidade(refeicaoId, itemId, quantidade) {
   const refeicao = await repo.buscarRefeicao(refeicaoId);
   if (!refeicao) return;
@@ -562,12 +407,6 @@ export async function alterarQuantidade(refeicaoId, itemId, quantidade) {
   await repo.salvarRefeicao({ ...refeicao, itens });
 }
 
-/**
- * Remove um item de uma refeição.
- * @param {string} refeicaoId
- * @param {string} itemId
- * @returns {Promise<void>}
- */
 export async function removerItem(refeicaoId, itemId) {
   const refeicao = await repo.buscarRefeicao(refeicaoId);
   if (!refeicao) return;
@@ -577,12 +416,7 @@ export async function removerItem(refeicaoId, itemId) {
   });
 }
 
-/**
- * Acrescenta um item a uma refeição.
- * @param {string} refeicaoId
- * @param {Object} item sem id; o id é gerado aqui
- * @returns {Promise<void>}
- */
+/** Acrescenta um item (o id é gerado aqui). */
 export async function adicionarItem(refeicaoId, item) {
   const refeicao = await repo.buscarRefeicao(refeicaoId);
   if (!refeicao) return;
@@ -592,33 +426,23 @@ export async function adicionarItem(refeicaoId, item) {
   });
 }
 
-/**
- * Uma refeição já calculada, para a tela de edição.
- * @param {string} refeicaoId
- * @returns {Promise<Object|null>}
- */
+/** Refeição com os valores calculados. */
 export async function calcularRefeicaoPorId(refeicaoId) {
   const [refeicao, indice] = await Promise.all([repo.buscarRefeicao(refeicaoId), carregarIndice()]);
   if (!refeicao) return null;
   return { refeicao, calculo: calcularRefeicao(refeicao, indice) };
 }
 
-/**
- * Em quais planos uma refeição aparece.
- * Serve para avisar que editar o jantar muda os dois dias.
- * @param {string} refeicaoId
- * @returns {Promise<string[]>} nomes dos planos
- */
+/** Nomes dos planos que usam a refeição. */
 export async function planosComRefeicao(refeicaoId) {
   const planos = await repo.listarPlanos();
   return planos.filter((p) => (p.refeicoes ?? []).includes(refeicaoId)).map((p) => p.nome);
 }
 
 /**
- * Grava as metas de um plano.
+ * Grava as metas do plano.
  * @param {string} planoId
  * @param {{kcal: number|null, proteina: number|null, gordura: number|null, carbo: number|null}} metas
- * @returns {Promise<void>}
  */
 export async function salvarMetas(planoId, metas) {
   const plano = await repo.buscarPlano(planoId);

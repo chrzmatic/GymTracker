@@ -1,13 +1,6 @@
 /**
- * Telas de exercícios: a lista com busca e o editor de um exercício.
- *
- * O editor é onde se define o **tipo de carga** (que decide quais campos a
- * série mostra) e o **mapeamento de músculos** (direto conta 1 série,
- * indireto conta uma fração), que é o que alimenta o contador de séries
- * semanais da Etapa 5.
- *
- * Renomear nunca muda o ID: é o ID que liga o histórico de sessões ao
- * exercício, então um exercício renomeado mantém todo o passado dele.
+ * Exercícios: lista com busca e editor (nome, tipo de carga e músculos).
+ * Renomear não muda o ID, então o histórico continua ligado.
  */
 
 import * as exercicios from '../services/exercicio-service.js';
@@ -17,15 +10,9 @@ import { num, paraNumero } from '../utils/format.js';
 import { confirmar, escolher, escolherComBusca, formulario, avisar } from '../components/dialogo.js';
 import { definirTitulo, abrir, voltarUmaTela, recarregar } from '../navegacao.js';
 
-/* ------------------------------------------------------------------ */
-/* Lista                                                               */
-/* ------------------------------------------------------------------ */
+/* --- Lista --- */
 
-/**
- * Lista todos os exercícios, com busca.
- * @param {HTMLElement} raiz
- * @returns {Promise<void>}
- */
+/** Lista de exercícios, com busca. */
 export async function montarExercicios(raiz) {
   const [lista, musculos] = await Promise.all([
     exercicios.listarExercicios(),
@@ -76,12 +63,7 @@ export async function montarExercicios(raiz) {
   raiz.appendChild(novo);
 }
 
-/**
- * Card de um exercício na lista.
- * @param {Object} ex
- * @param {Map<string, string>} nomeMusculo
- * @returns {HTMLElement}
- */
+/** Card de um exercício. */
 function cardDeExercicio(ex, nomeMusculo) {
   const card = document.createElement('div');
   card.className = 'card card-clicavel';
@@ -121,14 +103,12 @@ function descreverMusculos(ex, nomeMusculo) {
     .join(', ');
 }
 
-/* ------------------------------------------------------------------ */
-/* Editor                                                              */
-/* ------------------------------------------------------------------ */
+/* --- Editor --- */
 
 const estado = {
   exercicio: null,
   musculos: [],
-  /** Treino que pediu a criação, para já adicionar o exercício nele. */
+  /** Treino que pediu o exercício novo, para já adicioná-lo nele. */
   treinoId: null,
 };
 
@@ -138,7 +118,6 @@ let raizEditor = null;
  * Editor de um exercício (novo ou existente).
  * @param {HTMLElement} elemento
  * @param {{exercicioId?: string, novo?: boolean, treinoId?: string}} params
- * @returns {Promise<void>}
  */
 export async function montarEditorDeExercicio(elemento, params) {
   raizEditor = elemento;
@@ -185,7 +164,7 @@ export async function montarEditorDeExercicio(elemento, params) {
   desenharEditor();
 }
 
-/** Desenha o editor a partir do estado atual. */
+/** Desenha o editor. */
 function desenharEditor() {
   const ex = estado.exercicio;
   definirTitulo(ex.nome);
@@ -243,7 +222,7 @@ function cardIdentidade(ex) {
   return card;
 }
 
-/** Lista de músculos trabalhados, com tipo e fração. */
+/** Músculos trabalhados. */
 function cardMusculos(ex) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -282,7 +261,7 @@ function cardMusculos(ex) {
   return card;
 }
 
-/** Uma linha de músculo: nome, tipo/fração e remover. */
+/** Linha de um músculo: nome, tipo/fração e remover. */
 function linhaDeMusculo(ex, m, nomes) {
   const linha = document.createElement('div');
   linha.className = 'linha-musculo';
@@ -315,7 +294,7 @@ function linhaDeMusculo(ex, m, nomes) {
   return linha;
 }
 
-/** Diálogo de tipo e fração de um músculo já ligado ao exercício. */
+/** Tipo e fração de um músculo do exercício. */
 async function editarMusculo(ex, m) {
   const dados = await formulario(
     estado.musculos.find((x) => x.id === m.musculoId)?.nome ?? 'Músculo',
@@ -350,7 +329,7 @@ async function editarMusculo(ex, m) {
   desenharEditor();
 }
 
-/** Escolhe um músculo e o acrescenta ao exercício. */
+/** Acrescenta um músculo ao exercício. */
 async function adicionarMusculo(ex) {
   const jaTem = new Set((ex.musculos ?? []).map((m) => m.musculoId));
   const opcoes = estado.musculos
@@ -381,7 +360,7 @@ async function adicionarMusculo(ex) {
   desenharEditor();
 }
 
-/** Excluir o exercício, avisando onde ele é usado. */
+/** Excluir, avisando onde o exercício é usado. */
 function botaoExcluir(ex) {
   const btn = document.createElement('button');
   btn.className = 'btn btn-perigo btn-bloco';

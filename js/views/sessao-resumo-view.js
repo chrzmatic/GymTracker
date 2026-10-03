@@ -1,9 +1,6 @@
 /**
- * Visualização rápida de uma sessão: só leitura, pensada para bater o olho
- * e tirar print. Editar fica a um toque, na tela de registro de sempre.
- *
- * Tudo é relido do banco a cada desenho. Voltar da edição para cá
- * remonta a tela, então o que aparece é sempre o que está salvo.
+ * Resumo de uma sessão, só leitura, bom para print.
+ * Relê o banco a cada desenho, então reflete as edições.
  */
 
 import { carregarSessao } from '../services/sessao-service.js';
@@ -18,15 +15,14 @@ import { formulario } from '../components/dialogo.js';
 import { abrir, definirTitulo, voltarUmaTela } from '../navegacao.js';
 
 /**
- * Renderiza o resumo da sessão.
+ * Monta o resumo.
  * @param {HTMLElement} raiz
  * @param {{sessaoId: string}} params
- * @returns {Promise<void>}
  */
 export async function montarResumoDaSessao(raiz, params = {}) {
   const carregada = params.sessaoId ? await carregarSessao(params.sessaoId) : null;
   if (!carregada) {
-    // A sessão foi excluída (pela edição, por um backup restaurado…).
+    // A sessão foi excluída.
     await voltarUmaTela();
     return;
   }
@@ -99,7 +95,7 @@ function cabecalho(resumo) {
   return div;
 }
 
-/** Um exercício: nome e as séries em pílulas. */
+/** Um exercício com as séries em pílulas. */
 function blocoDoExercicio(e) {
   const bloco = document.createElement('div');
   bloco.className = 'resumo-exercicio';
@@ -140,7 +136,7 @@ function blocoDoExercicio(e) {
   return bloco;
 }
 
-/** Copiar o texto e abrir a edição. */
+/** Copiar texto e Editar. */
 function botoes(resumo) {
   const div = document.createElement('div');
   div.className = 'linha-botoes';
@@ -153,8 +149,7 @@ function botoes(resumo) {
     const texto = textoParaCopiar(resumo);
     const ok = await copiarTexto(texto);
     if (!ok) {
-      // Sem permissão para copiar, ao menos o texto fica à vista, com as
-      // quebras de linha, para selecionar na mão.
+      // Não conseguiu copiar: mostra o texto para copiar na mão.
       await formulario(
         'Não consegui copiar',
         [{ nome: 'texto', rotulo: 'Selecione e copie', tipo: 'textarea', valor: texto }],

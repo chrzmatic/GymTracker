@@ -1,15 +1,12 @@
 /**
  * Copiar texto para a área de transferência.
  *
- * A API moderna (`navigator.clipboard`) só existe em contexto seguro
- * (https ou localhost) e pode recusar sem motivo aparente em versões
- * antigas do Safari. Por isso há um plano B com um <textarea> escondido e
- * `execCommand('copy')`, que ainda é o que funciona em mais lugares.
+ * Usa `navigator.clipboard` e, se falhar, um <textarea> escondido com
+ * `execCommand('copy')`, que funciona em mais navegadores.
  */
 
 /**
- * Copia o texto. Precisa ser chamada dentro do toque do usuário.
- * @param {string} texto
+ * Copia o texto. Chamar dentro do toque do usuário.
  * @returns {Promise<boolean>} true se copiou
  */
 export async function copiarTexto(texto) {
@@ -24,20 +21,16 @@ export async function copiarTexto(texto) {
   return copiarComTextarea(texto);
 }
 
-/**
- * Plano B: seleciona o texto num <textarea> fora da tela e copia.
- * @param {string} texto
- * @returns {boolean}
- */
+/** Plano B: copia por um <textarea> fora da tela. */
 function copiarComTextarea(texto) {
   const area = document.createElement('textarea');
   area.value = texto;
   area.setAttribute('readonly', '');
-  // Fora da tela, mas não `display: none`: elemento invisível não seleciona.
+  // Fora da tela; com display: none não daria para selecionar.
   area.style.position = 'fixed';
   area.style.top = '-1000px';
   area.style.opacity = '0';
-  // Fonte de 16px evita o zoom automático do iPhone ao focar.
+  // 16px evita o zoom automático do iPhone.
   area.style.fontSize = '16px';
   document.body.appendChild(area);
   try {

@@ -1,13 +1,6 @@
-/**
- * Diálogos reutilizáveis: confirmação, escolha em lista e formulário curto.
- * Usa <dialog> nativo, que o Safari do iOS suporta.
- */
+/** Diálogos: confirmar, escolher, formulário e aviso. */
 
-/**
- * Cria e abre um <dialog>, resolvendo quando ele fechar.
- * @param {(dlg: HTMLDialogElement, fechar: (valor: *) => void) => void} montar
- * @returns {Promise<*>} valor passado a `fechar`
- */
+/** Abre um <dialog> e resolve com o valor passado a `fechar`. */
 function abrir(montar) {
   return new Promise((resolve) => {
     const dlg = document.createElement('dialog');
@@ -29,9 +22,6 @@ function abrir(montar) {
 
 /**
  * Pede confirmação antes de uma ação destrutiva.
- * @param {string} titulo
- * @param {string} [mensagem]
- * @param {string} [textoConfirmar]
  * @returns {Promise<boolean>}
  */
 export function confirmar(titulo, mensagem = '', textoConfirmar = 'Excluir') {
@@ -54,10 +44,9 @@ export function confirmar(titulo, mensagem = '', textoConfirmar = 'Excluir') {
 }
 
 /**
- * Mostra uma lista de opções e devolve o valor escolhido.
+ * Lista de opções. Devolve o valor escolhido, ou null se cancelar.
  * @param {string} titulo
  * @param {{valor: *, rotulo: string, detalhe?: string}[]} opcoes
- * @returns {Promise<*|null>} null se cancelar
  */
 export function escolher(titulo, opcoes) {
   return abrir((dlg, fechar) => {
@@ -89,15 +78,10 @@ export function escolher(titulo, opcoes) {
 }
 
 /**
- * Lista de opções com campo de busca, para listas longas.
- *
- * O `escolher` simples fica ruim com 20 exercícios numa tela de iPhone; aqui
- * dá para filtrar digitando parte do nome.
- *
+ * Como `escolher`, com campo de busca para listas longas.
  * @param {string} titulo
  * @param {{valor: *, rotulo: string, detalhe?: string}[]} opcoes
- * @param {string} [textoVazio] mensagem quando a busca não acha nada
- * @returns {Promise<*|null>} null se cancelar
+ * @param {string} [textoVazio] quando a busca não acha nada
  */
 export function escolherComBusca(titulo, opcoes, textoVazio = 'Nada encontrado.') {
   return abrir((dlg, fechar) => {
@@ -155,15 +139,14 @@ export function escolherComBusca(titulo, opcoes, textoVazio = 'Nada encontrado.'
 }
 
 /**
- * Formulário curto genérico.
+ * Formulário curto. Devolve os valores, ou null se cancelar.
  *
- * Tipos de campo: os do HTML (`text`, `number`, `date`…), mais `textarea`,
- * `select` (com `opcoes`) e `checkbox` (que devolve booleano).
+ * Tipos de campo: os do HTML, mais `textarea`, `select` (com `opcoes`),
+ * `checkbox` (devolve booleano) e `link`.
  *
  * @param {string} titulo
  * @param {{nome: string, rotulo: string, tipo?: string, valor?: *, placeholder?: string, opcoes?: {valor: *, rotulo: string}[], dica?: string}[]} campos
  * @param {string} [textoOk]
- * @returns {Promise<Object|null>} objeto com os valores, ou null se cancelar
  */
 export function formulario(titulo, campos, textoOk = 'Salvar') {
   return abrir((dlg, fechar) => {
@@ -196,23 +179,13 @@ export function formulario(titulo, campos, textoOk = 'Salvar') {
   });
 }
 
-/**
- * Monta uma linha de formulário conforme o tipo do campo.
- * @param {Object} c definição do campo
- * @returns {HTMLElement}
- */
+/** Uma linha do formulário, conforme o tipo do campo. */
 function montarCampo(c) {
   const linha = document.createElement('div');
   linha.className = 'form-linha';
 
-  // Um link de verdade, não um botão com onclick.
-  //
-  // O Safari só deixa abrir uma aba dentro do gesto do toque. Um
-  // `window.open` chamado depois de qualquer `await` — calcular um hash,
-  // ler o banco — já perdeu o gesto e é bloqueado sem aviso nenhum: nada
-  // abre e nada é dito. Um `<a>` tocado pelo dedo não tem esse problema,
-  // e no app da Tela de Início é o único jeito confiável de mandar o
-  // usuário para fora e trazer de volta.
+  // Um <a> de verdade: o Safari só abre aba dentro do toque, e um
+  // window.open depois de um await é bloqueado sem aviso.
   if (c.tipo === 'link') {
     const a = document.createElement('a');
     a.className = 'btn btn-bloco';
@@ -281,12 +254,7 @@ function dicaDoCampo(texto) {
   return p;
 }
 
-/**
- * Mensagem simples com um botão de OK.
- * @param {string} titulo
- * @param {string} mensagem
- * @returns {Promise<void>}
- */
+/** Mensagem com um botão OK. */
 export function avisar(titulo, mensagem) {
   return abrir((dlg, fechar) => {
     dlg.innerHTML = `

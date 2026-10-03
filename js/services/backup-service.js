@@ -1,14 +1,9 @@
 /**
- * Exportar e importar (especificação, seção 6.8).
+ * Exportar e importar.
  *
- * O backup JSON varre **todas as stores do banco**, em vez de listar as
- * entidades uma a uma. Assim, quando a Etapa 6 acrescentar as stores da
- * dieta, elas entram no backup sozinhas — não dá para esquecer de incluir
- * uma entidade nova, que é o jeito clássico de um backup sair incompleto.
- *
- * No iPhone, baixar arquivo pelo navegador é limitado; por isso a
- * exportação tenta primeiro o menu de compartilhar do iOS (Web Share), que
- * permite salvar no app Arquivos, e cai no download comum quando não há.
+ * O backup JSON leva todas as stores do banco, então uma store nova entra sozinha.
+ * No iPhone, a exportação usa o menu de compartilhar (para salvar no Arquivos);
+ * sem ele, faz download comum.
  */
 
 import { listarStores, lerTudo, contar, transacao, VERSAO_DB } from '../data/db.js';
@@ -19,13 +14,10 @@ import { listarTodasSeries } from '../data/series-repo.js';
 import { listarPesos } from '../data/peso-corporal-repo.js';
 import { csvDeTreinos, csvDePeso, nomeDeArquivo } from '../domain/csv.js';
 
-/** Identifica o formato do arquivo, para a importação validar. */
+/** Marca do formato, conferida ao importar. */
 export const FORMATO = 'gymtracker-backup';
 
-/**
- * Nome legível de cada store, para as telas falarem português em vez de
- * `pesoCorporal`. O que não estiver aqui aparece com o nome técnico mesmo.
- */
+/** Nome legível de cada store. As que não estão aqui aparecem com o nome técnico. */
 const NOMES = {
   musculos: 'músculos',
   exercicios: 'exercícios',
@@ -41,22 +33,14 @@ const NOMES = {
   tipoDia: 'dias marcados',
 };
 
-/** Quantos registros o backup traz numa store. */
 function quantos(backup, store) {
   const itens = backup && backup.dados ? backup.dados[store] : null;
   return Array.isArray(itens) ? itens.length : 0;
 }
 
 /**
- * Descreve num punhado de palavras o que o backup carrega **de seu**.
- *
- * Existe porque um backup exportado de uma instalação nova tem 79
- * registros — os treinos e alimentos padrão, que já vêm no app — e parece
- * cheio na contagem total. O que separa um backup útil de um inútil é o
- * histórico, então é o histórico que aparece primeiro.
- *
- * @param {Object} backup
- * @returns {string}
+ * Resumo do que o backup tem, com o histórico primeiro.
+ * Um backup de instalação nova parece cheio, mas só tem os dados padrão.
  */
 export function descreverBackup(backup) {
   const sessoes = quantos(backup, 'sessoes');
@@ -77,14 +61,7 @@ export function descreverBackup(backup) {
 }
 
 /**
- * O que existe hoje no app e **não** existe no backup.
- *
- * Restaurar substitui, então tudo que o arquivo tem a menos some. Antes a
- * tela só avisava isso no genérico ("os dados serão substituídos"); com a
- * lista na frente dá para ver que o backup de teste que você pegou não tem
- * as suas 27 sessões antes de mandá-las embora.
- *
- * @param {Object} backup já validado
+ * O que o app tem hoje e o backup não tem (some ao restaurar).
  * @returns {Promise<string[]>} ex.: ['sessões de treino: 27 → 0']
  */
 export async function perdasAoRestaurar(backup) {
@@ -102,14 +79,9 @@ export async function perdasAoRestaurar(backup) {
   return perdas;
 }
 
-/* ------------------------------------------------------------------ */
-/* Exportar                                                            */
-/* ------------------------------------------------------------------ */
+/* --- Exportar --- */
 
-/**
- * Monta o backup completo: todas as stores do banco.
- * @returns {Promise<Object>}
- */
+/** Backup completo: todas as stores. */
 export async function montarBackup() {
   const stores = await listarStores();
   const dados = {};
@@ -126,7 +98,7 @@ export async function montarBackup() {
 }
 
 /**
- * Backup completo como texto JSON.
+ * Backup como arquivo JSON.
  * @returns {Promise<{nome: string, conteudo: string, tipo: string}>}
  */
 export async function exportarJson() {
@@ -170,12 +142,7 @@ export async function exportarPesoCsv() {
 }
 
 /**
- * Entrega o arquivo ao usuário.
- *
- * No iPhone, o Web Share abre o menu do sistema e deixa salvar no app
- * Arquivos, que é o que a especificação pede. Quando não há Web Share (ou
- * o usuário cancela), cai no download comum do navegador.
- *
+ * Entrega o arquivo: menu de compartilhar se houver, senão download.
  * @param {{nome: string, conteudo: string, tipo: string}} arquivo
  * @returns {Promise<'compartilhado'|'baixado'|'cancelado'>}
  */
@@ -189,8 +156,7 @@ export async function entregar(arquivo) {
         await navigator.share({ files: [file], title: arquivo.nome });
         return 'compartilhado';
       } catch (erro) {
-        // AbortError = o usuário fechou o menu; qualquer outro erro cai
-        // no download, para não deixá-lo sem o arquivo.
+        // AbortError = o usuário fechou o menu. Outro erro cai no download.
         if (erro && erro.name === 'AbortError') return 'cancelado';
       }
     }
@@ -207,13 +173,10 @@ export async function entregar(arquivo) {
   return 'baixado';
 }
 
-/* ------------------------------------------------------------------ */
-/* Importar                                                            */
-/* ------------------------------------------------------------------ */
+/* --- Importar --- */
 
 /**
- * Confere se um objeto parece mesmo um backup deste app.
- * @param {*} backup
+ * Confere se o objeto é um backup deste app.
  * @returns {{ok: boolean, erro?: string, resumo?: Object}}
  */
 export function validarBackup(backup) {
@@ -241,26 +204,12 @@ export function validarBackup(backup) {
 }
 
 /**
- * Restaura um backup, **substituindo** os dados locais.
+ * Restaura um backup, substituindo os dados (mesclar criaria duplicatas).
  *
- * Substitui em vez de mesclar porque mesclar dois históricos de treino
- * criaria duplicatas silenciosas, e não há como decidir qual versão de um
- * registro editado nos dois lados deve vencer. A tela avisa e pede
- * confirmação antes.
- *
- * **Tudo numa transação só.** Antes era uma transação por store, uma
- * dúzia no total, e isso tinha dois defeitos: se o banco falhasse no meio
- * — ou o iPhone descartasse o app entre uma transação e a seguinte, que é
- * fácil logo depois de você voltar do app Arquivos — metade dos dados
- * ficava apagada e a outra metade antiga, e mesmo assim o app anunciava
- * sucesso. Com uma transação só, ou entra tudo ou não entra nada.
- *
- * Stores que o backup **não traz** ficam como estão, em vez de serem
- * esvaziadas: um backup antigo, de antes de a dieta existir, não tem
- * motivo para apagar a sua dieta de hoje.
- *
+ * Tudo numa transação só: ou entra tudo, ou nada.
+ * Stores que o backup não traz ficam como estão.
  * @param {Object} backup já validado
- * @returns {Promise<Object>} quantos registros por store
+ * @returns {Promise<Object>} registros por store
  */
 export async function restaurar(backup) {
   const stores = (await listarStores()).filter((s) => Array.isArray(backup.dados[s]));
@@ -284,15 +233,8 @@ export async function restaurar(backup) {
 }
 
 /**
- * Relê o banco e confere se o backup realmente entrou.
- *
- * Existe porque "a transação terminou" não provou ser o bastante: o app
- * anunciava sucesso e os dados não estavam lá. Uma contagem de verdade,
- * numa transação nova, é a única resposta confiável — e quando o número
- * não bate, a tela diz o que faltou em vez de dar parabéns.
- *
- * @param {Object} backup o mesmo que acabou de ser restaurado
- * @returns {Promise<string[]>} as divergências; lista vazia = tudo certo
+ * Relê o banco e confere se o backup entrou inteiro.
+ * @returns {Promise<string[]>} divergências; vazia = tudo certo
  */
 export async function conferirRestauracao(backup) {
   const stores = (await listarStores()).filter((s) => Array.isArray(backup.dados[s]));
@@ -310,40 +252,26 @@ export async function conferirRestauracao(backup) {
 }
 
 /**
- * Esvazia **todas** as stores do banco.
- *
- * Usa a lista de stores do banco em vez de uma lista escrita na mão, pelo
- * mesmo motivo do backup: uma entidade nova acrescentada numa etapa futura
- * entra aqui sozinha, e não fica um resto de dado escondido depois de um
- * "apagar tudo".
- *
- * Quem chama é responsável por recarregar a carga inicial e a tela.
- *
+ * Esvazia todas as stores. Quem chama recarrega os dados padrão e a tela.
  * @returns {Promise<string[]>} as stores esvaziadas
  */
 export async function apagarTudo() {
   const stores = await listarStores();
-  // Uma transação só, pelo mesmo motivo do `restaurar`: um "apagar tudo"
-  // que apaga metade é pior do que um que não apaga nada.
+  // Uma transação só: ou apaga tudo, ou nada.
   await transacao(stores, 'readwrite', (tx) => {
     stores.forEach((store) => tx.objectStore(store).clear());
   });
   return stores;
 }
 
-/**
- * Lê um arquivo escolhido pelo usuário e devolve o JSON.
- * @param {File} arquivo
- * @returns {Promise<Object>}
- */
+/** Lê o JSON de um arquivo escolhido. */
 export async function lerArquivo(arquivo) {
   const texto = await arquivo.text();
   return JSON.parse(texto);
 }
 
 /**
- * Abre o seletor de arquivos e devolve o escolhido.
- * @param {string} [accept]
+ * Abre o seletor de arquivos.
  * @returns {Promise<File|null>}
  */
 export function escolherArquivo(accept = 'application/json,.json') {

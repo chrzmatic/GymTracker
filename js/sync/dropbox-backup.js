@@ -1,25 +1,11 @@
 /**
- * O backup automático em si: quando enviar, o que enviar, o que apagar e
- * como trazer de volta (especificação, seção 6.9).
+ * Backup automático: quando enviar, o que manter e como restaurar.
  *
- * ## O que este arquivo *não* faz
+ * Montar e restaurar o backup fica em services/backup-service.js (o mesmo
+ * do Exportar/Importar JSON). Aqui é só o transporte.
  *
- * Não monta o backup nem o restaura. Isso já existe e já foi testado em
- * `services/backup-service.js`, que é o mesmo caminho do "Exportar JSON" e
- * do "Importar JSON" — inclusive a conferência que relê o banco depois de
- * gravar. O Dropbox aqui é só o transporte: leva e traz o mesmo arquivo.
- * Se um dia o formato do backup mudar, muda num lugar só.
- *
- * ## A fila de pendentes
- *
- * Academia com internet ruim é o caso normal, não a exceção. Quando o
- * envio falha por falta de rede, o app marca `pendente` e segue a vida —
- * nada de aviso vermelho no meio de uma série. O pendente sai na próxima
- * vez que o app abrir com conexão, ou no backup seguinte.
- *
- * A fila guarda só o *fato* de haver algo a enviar, não o conteúdo: o
- * backup é sempre o banco inteiro no momento do envio, então uma fila com
- * três backups velhos não teria utilidade nenhuma — o último cobre todos.
+ * Sem rede, o envio fica `pendente` e sai na próxima oportunidade.
+ * Guarda só que há algo pendente; o backup é sempre o banco inteiro.
  */
 
 import { montarBackup, validarBackup, restaurar, conferirRestauracao } from '../services/backup-service.js';
@@ -41,18 +27,17 @@ import {
   ordenarParaRestaurar,
 } from './rotacao-backups.js';
 
-/** Quem quer saber quando o estado muda (a tela de configurações, o aviso). */
+/** Quem quer saber quando o estado muda. */
 const ouvintes = new Set();
 
-/** Evita dois envios ao mesmo tempo, que gastariam rede à toa. */
+/** Envio em andamento, para não mandar dois ao mesmo tempo. */
 let enviando = null;
 
-/** Timer do debounce das alterações. */
+/** Timer do debounce. */
 let agendado = null;
 
 /**
- * Avisa quem estiver ouvindo que o estado mudou.
- * @param {Function} ouvinte
+ * Registra um ouvinte.
  * @returns {Function} para parar de ouvir
  */
 export function aoMudar(ouvinte) {
@@ -60,7 +45,7 @@ export function aoMudar(ouvinte) {
   return () => ouvintes.delete(ouvinte);
 }
 
-/** Dispara os ouvintes com o estado atual. */
+/** Chama os ouvintes com o estado atual. */
 function avisar() {
   const atual = estado();
   ouvintes.forEach((o) => {
@@ -73,7 +58,7 @@ function avisar() {
 }
 
 /**
- * Estado atual, do jeito que as telas precisam ver.
+ * Estado para as telas.
  * @returns {{conectado: boolean, conta: string, ultimoEm: string|null, pendente: boolean, ultimoErro: string|null, enviando: boolean}}
  */
 export function estado() {
@@ -89,15 +74,9 @@ export function estado() {
 }
 
 /**
- * Envia o backup agora, sem perguntar nada.
- *
- * A ordem importa: o `backup-atual.json` vai **primeiro**. Se a rede cair
- * no meio, o que eu quero garantido é o arquivo mais recente; a cópia
- * diária é conveniência. E a rotação vem por último, depois de o arquivo
- * novo já estar gravado — apagar antes de ter o substituto é como se
- * perdem backups.
- *
- * @param {string} [motivo] só para o log e para a decisão de enviar
+ * Envia o backup agora.
+ * Ordem: backup-atual.json, cópia do dia e só depois apaga as antigas.
+ * @param {string} [motivo]
  * @returns {Promise<{ok: boolean, pendente?: boolean, erro?: string, bytes?: number}>}
  */
 export async function fazerBackup(motivo = 'manual') {
@@ -112,7 +91,7 @@ export async function fazerBackup(motivo = 'manual') {
   return await enviando;
 }
 
-/** O trabalho de verdade do `fazerBackup`. */
+/** O trabalho do `fazerBackup`. */
 async function executarBackup(motivo) {
   try {
     const backup = await montarBackup();
@@ -131,7 +110,7 @@ async function executarBackup(motivo) {
     return { ok: true, bytes: conteudo.length };
   } catch (erro) {
     if (erro instanceof SemInternet) {
-      // Sem rede não é falha: é "depois eu mando".
+      // Sem rede: fica pendente.
       salvarEstado({ pendente: true, ultimoErro: null });
       console.info('[dropbox] sem internet, backup fica pendente (' + motivo + ')');
       return { ok: false, pendente: true };
@@ -142,13 +121,7 @@ async function executarBackup(motivo) {
   }
 }
 
-/**
- * Mantém só as últimas cópias diárias, apagando as mais antigas.
- *
- * Falhar aqui não derruba o backup: o arquivo novo já está gravado, e
- * sobrar uma cópia velha a mais é muito menos grave do que o app dizer
- * que o backup falhou quando ele funcionou.
- */
+/** Mantém só as últimas cópias diárias. Falhar aqui não derruba o backup. */
 async function rotacionarDiarios() {
   try {
     const entradas = await listar(PASTA_DIARIO);
@@ -161,24 +134,15 @@ async function rotacionarDiarios() {
 }
 
 /**
- * Pede um backup por causa de uma alteração nos dados.
- *
- * Espera você parar de mexer (`DEBOUNCE_MS`) antes de mandar, e respeita
- * a espera mínima entre envios automáticos. Não devolve promessa de
- * propósito: quem salvou um alimento não deve ficar esperando a rede.
- *
+ * Pede backup depois de uma alteração.
+ * Espera você parar de mexer e respeita a espera mínima. Não espera a rede.
  * @param {string} [motivo] `alteracao` (padrão) ou `sessao`
  */
 export function agendarBackup(motivo = 'alteracao') {
   if (!conectado()) return;
 
-  // Marca pendente **agora**, não quando o envio sair.
-  //
-  // O timer abaixo vive na memória da página, e no iPhone o app é
-  // descartado a qualquer momento: mudar a rotação inteira e trocar de
-  // app dez segundos depois matava o agendamento, e a alteração ficava
-  // sem backup até a próxima sessão finalizada ou as 24 horas. Com a
-  // marca no disco, a próxima abertura vê que há coisa a mandar.
+  // Marca pendente já, no disco: no iPhone o app pode ser descartado
+  // antes do timer disparar.
   salvarEstado({ pendente: true });
   avisar();
 
@@ -189,16 +153,7 @@ export function agendarBackup(motivo = 'alteracao') {
   );
 }
 
-/**
- * Manda o backup se a espera mínima já passou; senão, remarca para
- * quando ela passar.
- *
- * Remarcar em vez de desistir importa: desistindo, uma alteração feita
- * logo após um backup só sairia na próxima abertura do app, mesmo com o
- * app aberto na sua frente a tarde inteira.
- *
- * @param {string} motivo
- */
+/** Envia se a espera mínima já passou; senão, remarca. */
 function dispararSeJaPode(motivo) {
   agendado = null;
   const e = lerEstado();
@@ -213,14 +168,7 @@ function dispararSeJaPode(motivo) {
   agendado = setTimeout(() => dispararSeJaPode(motivo), Math.max(falta, 1000));
 }
 
-/**
- * Sair do app com algo agendado tenta mandar antes de o iPhone
- * descartar a página.
- *
- * Não é garantia — o envio pode não terminar —, mas é de graça, e quando
- * termina evita que a alteração espere até a próxima abertura. O que
- * garante mesmo é a marca de pendente lá em cima.
- */
+/** Ao sair do app com envio agendado, tenta mandar antes. */
 if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'hidden') return;
@@ -232,13 +180,8 @@ if (typeof document !== 'undefined') {
 }
 
 /**
- * Chamado na abertura do app.
- *
- * Duas tarefas da especificação num lugar só: mandar o que ficou pendente
- * e refazer o backup se o último passou de 24 horas. Nunca estoura para
- * fora — um Dropbox fora do ar não pode impedir o app de abrir.
- *
- * @returns {Promise<void>}
+ * Na abertura: envia o pendente e refaz o backup se passou de 24h.
+ * Nunca lança erro: o Dropbox fora do ar não pode impedir o app de abrir.
  */
 export async function aoAbrirApp() {
   if (!conectado()) return;
@@ -255,7 +198,7 @@ export async function aoAbrirApp() {
 }
 
 /**
- * Lista os backups guardados no Dropbox, para a tela de restauração.
+ * Backups no Dropbox, para a tela de restauração.
  * @returns {Promise<{nome: string, caminho: string, modificadoEm: string, rotulo: string, atual: boolean}[]>}
  */
 export async function listarBackups() {
@@ -265,14 +208,8 @@ export async function listarBackups() {
 }
 
 /**
- * Baixa um backup do Dropbox sem gravar nada ainda.
- *
- * Separado do `restaurarDoDropbox` porque a tela precisa mostrar o que há
- * dentro do arquivo **antes** de pedir confirmação. Restaurar substitui os
- * dados locais; confirmar às cegas é como se perde um histórico.
- *
- * @param {string} caminho
- * @returns {Promise<Object>} o backup já validado
+ * Baixa e valida um backup sem gravar, para a tela mostrar o conteúdo antes de confirmar.
+ * @returns {Promise<Object>} o backup validado
  */
 export async function baixarBackup(caminho) {
   const texto = await baixar(caminho);
@@ -290,11 +227,7 @@ export async function baixarBackup(caminho) {
 }
 
 /**
- * Grava no banco um backup já baixado e confere se entrou mesmo.
- *
- * Reaproveita `restaurar` e `conferirRestauracao` — os mesmos do
- * "Importar JSON", inclusive a releitura do banco numa transação nova.
- *
+ * Grava um backup baixado e confere se entrou inteiro.
  * @param {Object} backup vindo de `baixarBackup`
  * @returns {Promise<{gravados: Object, divergencias: string[]}>}
  */

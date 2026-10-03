@@ -1,17 +1,11 @@
 /**
- * Mini cliente do Chrome DevTools Protocol.
- *
- * Serve para rodar código *dentro* do app num navegador de verdade, com
- * IndexedDB real e os mesmos módulos que o iPhone vai carregar. Os testes de
- * `tests/*.test.js` cobrem a camada domain (funções puras); este arquivo é o
- * que permite testar também services + data, que dependem do navegador.
- *
- * Sem dependências externas: o protocolo é só JSON sobre WebSocket.
+ * Cliente mínimo do Chrome DevTools Protocol, para rodar código dentro do
+ * app num navegador de verdade (IndexedDB real). Sem dependências.
  */
 
 /**
- * Espera o navegador abrir a porta de depuração e conecta na primeira aba.
- * @param {number} [porta] porta passada em --remote-debugging-port
+ * Espera a porta de depuração e conecta na primeira aba.
+ * @param {number} [porta] a de --remote-debugging-port
  * @returns {Promise<{avaliar: (expressao: string) => Promise<*>, enviar: Function, fechar: Function}>}
  */
 export async function conectar(porta = 9222) {
@@ -44,11 +38,7 @@ export async function conectar(porta = 9222) {
     enviar,
     fechar: () => ws.close(),
 
-    /**
-     * Roda uma expressão (pode ser async) na página e devolve o valor.
-     * @param {string} expressao
-     * @returns {Promise<*>}
-     */
+    /** Roda uma expressão (pode ser async) na página e devolve o valor. */
     async avaliar(expressao) {
       const r = await enviar('Runtime.evaluate', {
         expression: expressao,
@@ -64,7 +54,7 @@ export async function conectar(porta = 9222) {
   };
 }
 
-/** Tenta ler a lista de alvos do DevTools até o navegador responder. */
+/** Lê a lista de alvos até o navegador responder. */
 async function esperarPagina(porta, tentativas = 40) {
   for (let i = 0; i < tentativas; i += 1) {
     try {
@@ -73,19 +63,15 @@ async function esperarPagina(porta, tentativas = 40) {
       const pagina = alvos.find((a) => a.type === 'page' && a.webSocketDebuggerUrl);
       if (pagina) return pagina;
     } catch {
-      /* navegador ainda subindo */
+      /* Navegador ainda subindo. */
     }
     await new Promise((r) => setTimeout(r, 250));
   }
   throw new Error('O navegador não abriu a porta de depuração.');
 }
 
-/**
- * Caminho do Edge ou do Chrome instalado no Windows.
- * @returns {string}
- */
+/** Caminho do navegador: GYMTRACKER_NAVEGADOR, ou o Edge/Chrome do Windows. */
 export function acharNavegador() {
-  // Fora do Windows (ou para forçar outro navegador), o caminho vem de fora.
   const doAmbiente = Deno.env.get('GYMTRACKER_NAVEGADOR');
   if (doAmbiente) return doAmbiente;
 
@@ -104,29 +90,20 @@ export function acharNavegador() {
       Deno.statSync(caminho);
       return caminho;
     } catch {
-      /* próximo */
     }
   }
   throw new Error('Não achei o Edge nem o Chrome instalados.');
 }
 
 /**
- * Flags do navegador de teste.
- *
- * As primeiras são o básico de headless. O resto existe por um motivo
- * concreto: um perfil recém-criado faz o Chromium baixar dados de
- * componente — listas de Safe Browsing, modelos de otimização, caches de
- * shader — que pesam muito mais que o perfil em si. Como cada execução
- * cria um perfil novo, isso se multiplicava por dezenas de rodadas e
- * enchia o disco. Nada disso é necessário para abrir uma página local.
+ * Flags do navegador de teste. Além do headless, cortam downloads de fundo
+ * que enchiam o disco a cada perfil novo.
  */
 const FLAGS = [
   '--headless=new',
   '--disable-gpu',
   '--no-first-run',
   '--no-default-browser-check',
-  // Corta as conexões de fundo: atualização de componentes, Safe
-  // Browsing, telemetria. É o que mais engordava o perfil.
   '--disable-background-networking',
   '--disable-component-update',
   '--disable-client-side-phishing-detection',
@@ -140,22 +117,13 @@ const FLAGS = [
   '--disable-features=Translate,OptimizationHints,MediaRouter,InterestFeedContentSuggestions',
 ];
 
-/**
- * Flags extras vindas do ambiente, separadas por espaço. Servem para rodar
- * fora do Windows (ex.: `--no-sandbox` num contêiner Linux como root).
- * @returns {string[]}
- */
+/** Flags extras de GYMTRACKER_NAVEGADOR_FLAGS (ex.: `--no-sandbox` como root no Linux). */
 function flagsDoAmbiente() {
   return (Deno.env.get('GYMTRACKER_NAVEGADOR_FLAGS') ?? '').split(' ').filter(Boolean);
 }
 
 /**
- * Sobe um navegador de teste num perfil descartável.
- *
- * O perfil é apagado por `encerrar()`. Antes isso não existia e cada
- * rodada deixava uma pasta para trás no Temp — depois de algumas dezenas
- * de execuções, vira gigabytes de lixo que ninguém vai limpar na mão.
- *
+ * Sobe um navegador num perfil temporário, apagado por `encerrar()`.
  * @param {{url: string, porta: number}} opcoes
  * @returns {Promise<{perfil: string, encerrar: () => Promise<void>}>}
  */
@@ -179,27 +147,21 @@ export async function lancarNavegador({ url, porta }) {
 
     /**
      * Fecha o navegador e apaga o perfil.
-     *
-     * Receber o cliente CDP importa: o jeito confiável de derrubar o
-     * navegador é pedir para ele mesmo se fechar (`Browser.close`), que
-     * encerra todos os processos filhos e solta os arquivos do perfil.
-     * Matar pelo PID não basta, porque o Edge relança a si próprio — o
-     * processo que o Deno conhece morre em seguida ao início, e o
-     * navegador de verdade fica rodando com outro PID.
-     *
-     * @param {Object} [cdp] cliente devolvido por `conectar`
+     * Pede `Browser.close` ao navegador: matar pelo PID não basta, porque o
+     * Edge se relança com outro PID.
+     * @param {Object} [cdp] cliente de `conectar`
      */
     async encerrar(cdp) {
       if (cdp) {
         try {
           await cdp.enviar('Browser.close');
         } catch {
-          /* já pode ter caído */
+          /* Já pode ter caído. */
         }
         try {
           cdp.fechar();
         } catch {
-          /* websocket já fechado */
+          /* WebSocket já fechado. */
         }
       }
 
@@ -211,17 +173,8 @@ export async function lancarNavegador({ url, porta }) {
 }
 
 /**
- * Encerra o navegador **e os processos filhos dele**.
- *
- * O navegador dos testes é o Edge (ou o Chrome, se o Edge não estiver
- * instalado). Os dois são feitos sobre o Chromium, que se divide em
- * vários processos: renderizador, GPU, crashpad. Matar só o processo pai
- * deixa os filhos vivos por alguns instantes, e enquanto eles existem
- * seguram arquivos abertos dentro do perfil — o que faz a remoção da
- * pasta falhar em silêncio. No Windows, `taskkill /T` derruba a árvore
- * inteira de uma vez.
- *
- * @param {Deno.ChildProcess} processo
+ * Encerra o navegador e os processos filhos (no Windows, `taskkill /T`).
+ * Filhos vivos seguram arquivos do perfil e impedem apagá-lo.
  */
 async function matarArvore(processo) {
   if (Deno.build.os === 'windows') {
@@ -233,23 +186,19 @@ async function matarArvore(processo) {
       }).output();
       return;
     } catch {
-      /* sem taskkill, cai no kill comum abaixo */
+      /* Sem taskkill: usa o kill comum. */
     }
   }
   try {
     processo.kill();
   } catch {
-    /* já encerrou sozinho */
+    /* Já encerrou. */
   }
 }
 
 /**
- * Apaga a pasta do perfil, insistindo enquanto o sistema ainda a segura.
- *
- * Falhar em limpar não pode derrubar o resultado do teste, então o erro
- * final vira um aviso e não uma exceção.
- *
- * @param {string} caminho
+ * Apaga a pasta do perfil, tentando de novo enquanto ela estiver presa.
+ * Se não conseguir, só avisa.
  */
 async function apagarComInsistencia(caminho) {
   for (let tentativa = 0; tentativa < 15; tentativa += 1) {
@@ -264,8 +213,7 @@ async function apagarComInsistencia(caminho) {
 }
 
 /**
- * Servidor de arquivos estáticos para o teste, igual ao servir.ps1 mas
- * embutido, para o teste rodar com um comando só.
+ * Servidor de arquivos para os testes.
  * @param {string} raiz pasta do projeto
  * @returns {{porta: number, parar: () => Promise<void>}}
  */
@@ -281,8 +229,8 @@ export function servir(raiz) {
   const servidor = Deno.serve({ port: 0, onListen: () => {} }, async (req) => {
     let caminho = new URL(req.url).pathname;
     if (caminho === '/') caminho = '/index.html';
-    // Página em branco do mesmo domínio: usada pelo teste de migração, que
-    // precisa mexer no banco *antes* de o app abrir a conexão.
+    // Página em branco do mesmo domínio, para o teste de migração mexer
+    // no banco antes de o app abrir.
     if (caminho === '/__vazio') {
       return new Response('<!doctype html><meta charset="utf-8"><title>vazio</title>', {
         headers: { 'content-type': 'text/html; charset=utf-8' },

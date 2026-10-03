@@ -1,10 +1,6 @@
 /**
- * Teste de integração da Etapa 6: a dieta contra o IndexedDB real.
- *
- * A matemática já está coberta em `tests/nutricao.test.js`. O que este
- * verifica é a ligação: a carga inicial do DIETA-DADOS.md, o plano certo
- * para o dia, a escolha de opções persistindo, e a exclusão sem deixar
- * dado órfão.
+ * Dieta no IndexedDB real: dados padrão, plano do dia, escolha de opções
+ * e exclusão sem deixar dado órfão.
  *
  *   deno run -A tests/navegador/dieta-integracao.js
  */
@@ -60,7 +56,7 @@ const cenario = String.raw`
   await dieta.voltarAoAutomatico(hoje);
   ok('voltando ao automatico, o treino manda de novo', (await dieta.planoDoDia(hoje)).plano.tipoDia, 'treino');
 
-  /* --- calculo do dia, conferido na mao --- */
+  /* --- cálculo do dia, conferido à mão --- */
   const dia = await dieta.calcularDia('plano-dia-de-treino');
   ok('o dia tem quatro refeicoes', dia.refeicoes.length, 4);
 
@@ -74,7 +70,7 @@ const cenario = String.raw`
   const livre = jantar.itens.find((i) => i.livre);
   ok('o item livre nao soma nada', livre.valores.kcal, 0);
 
-  // Carboidrato padrao = arroz 200 g = 260 kcal.
+  // Carboidrato padrão = arroz 200 g = 260 kcal.
   const carbo = jantar.itens.find((i) => i.nome === 'Carboidrato');
   ok('o grupo usa a opcao padrao', Math.round(carbo.valores.kcal), 260);
   ok('e conhece a faixa das opcoes', carbo.maximo.kcal > carbo.minimo.kcal, true);
@@ -82,16 +78,16 @@ const cenario = String.raw`
   ok('a meta de kcal do dia de treino', dia.diferencas.kcal.meta, 2650);
   ok('o dia esta marcado como incompleto', dia.incompleto, true, 'os sanduiches tem quantidade [PREENCHER]');
 
-  /* --- trocar a opcao do grupo persiste --- */
+  /* --- trocar a opção do grupo persiste --- */
   const opcaoMassa = carbo.opcoes.find((o) => o.nome === 'Massa cozida');
   await dieta.escolherOpcao('ref-jantar', 'it-jantar-carbo', opcaoMassa.opcaoId);
   const depois = await dieta.calcularDia('plano-dia-de-treino');
   const carboDepois = depois.refeicoes.find((r) => r.nome === 'Jantar').itens.find((i) => i.nome === 'Carboidrato');
   ok('a troca de opcao fica salva', carboDepois.escolhida.nome, 'Massa cozida');
-  // massa 180 g = 1,8 x 158 = 284,4
+  // massa 180 g = 1,8 × 158 = 284,4
   ok('e muda o total do dia', Math.round(carboDepois.valores.kcal * 10) / 10, 284.4);
 
-  /* --- o jantar e compartilhado pelos dois planos --- */
+  /* --- o jantar é compartilhado pelos dois planos --- */
   const semTreino = await dieta.calcularDia('plano-dia-sem-treino');
   const jantarSemTreino = semTreino.refeicoes.find((r) => r.nome === 'Jantar');
   ok(
@@ -103,15 +99,15 @@ const cenario = String.raw`
 
   await dieta.escolherOpcao('ref-jantar', 'it-jantar-carbo', 'op-carbo-arroz');
 
-  /* --- corrigir o indice muda o dia --- */
+  /* --- corrigir o índice muda o dia --- */
   const antesDaCorrecao = (await dieta.calcularDia('plano-dia-de-treino')).total.kcal;
   await dieta.salvarAlimento({ ...aveia, kcal: 400 });
   const depoisDaCorrecao = (await dieta.calcularDia('plano-dia-de-treino')).total.kcal;
-  // aveia aparece 2x no dia de treino: 40 g no cafe e 40 g no lanche 2.
+  // Aveia aparece 2x no dia de treino: 40 g no café e 40 g no lanche 2.
   ok('corrigir um valor do indice recalcula o dia', Math.round(depoisDaCorrecao - antesDaCorrecao), 16);
   await dieta.salvarAlimento({ ...aveia, kcal: 380 });
 
-  /* --- onde um alimento e usado --- */
+  /* --- onde um alimento é usado --- */
   const usoAveia = await dieta.ondeAlimentoEUsado('alim-aveia');
   ok('o app sabe em que refeicoes a aveia esta', usoAveia.refeicoes.length > 0, true);
   const usoArroz = await dieta.ondeAlimentoEUsado('alim-arroz-branco');
@@ -119,7 +115,7 @@ const cenario = String.raw`
   const usoPao = await dieta.ondeAlimentoEUsado('alim-pao-turco');
   ok('e dentro de pratos compostos', usoPao.pratos.length, 2);
 
-  /* --- excluir sem deixar orfao --- */
+  /* --- excluir sem deixar órfão --- */
   const novo = await dieta.criarAlimento({ nome: 'Alimento de teste', quantidadeRef: 100, unidade: 'g', kcal: 100 });
   await dieta.adicionarItem('ref-jantar', { tipo: 'alimento', alimentoId: novo.id, quantidade: 50 });
   ok('o item entrou no jantar', (await dieta.ondeAlimentoEUsado(novo.id)).refeicoes, ['Jantar']);
@@ -130,7 +126,7 @@ const cenario = String.raw`
   const jantarFinal = (await dieta.calcularDia('plano-dia-de-treino')).refeicoes.find((r) => r.nome === 'Jantar');
   ok('o jantar volta a ter 4 itens', jantarFinal.itens.length, 4);
 
-  /* --- editar as refeicoes de um plano --- */
+  /* --- editar as refeições de um plano --- */
   const antesDoPlano = (await dieta.buscarPlano('plano-dia-de-treino')).refeicoes.length;
   const nova = await dieta.criarRefeicaoNoPlano('plano-dia-de-treino', 'Ceia');
   ok('a refeicao nova entra no fim do plano', (await dieta.buscarPlano('plano-dia-de-treino')).refeicoes.length, antesDoPlano + 1);
@@ -140,7 +136,7 @@ const cenario = String.raw`
   const depoisDeMover = await dieta.calcularDia('plano-dia-de-treino');
   ok('subir muda a ordem dentro do plano', depoisDeMover.refeicoes.at(-2).nome, 'Ceia');
 
-  // A ordem e do plano, nao da refeicao: o jantar segue no lugar dele no outro plano.
+  // A ordem é do plano: no outro plano o jantar continua no lugar dele.
   const outroPlano = await dieta.calcularDia('plano-dia-sem-treino');
   ok('o outro plano nao foi afetado', outroPlano.refeicoes.at(-1).nome, 'Jantar');
 
@@ -161,7 +157,7 @@ const cenario = String.raw`
     false
   );
 
-  /* --- editar um grupo de opcoes --- */
+  /* --- editar um grupo de opções --- */
   const antesOpcoes = (await dieta.calcularDia('plano-dia-de-treino')).refeicoes.find((x) => x.nome === 'Jantar').itens.find((i) => i.nome === 'Carboidrato').opcoes.length;
   await dieta.adicionarOpcao('ref-jantar', 'it-jantar-carbo', { tipo: 'alimento', alimentoId: 'alim-batata-doce', quantidade: 200 });
   const grupoDepois = (await dieta.calcularDia('plano-dia-de-treino')).refeicoes.find((x) => x.nome === 'Jantar').itens.find((i) => i.nome === 'Carboidrato');
@@ -192,8 +188,7 @@ const navegador = await lancarNavegador({
 });
 
 let codigoSaida = 1;
-// Declarado fora do try para o finally conseguir fechar o navegador pelo
-// protocolo, que e o unico jeito confiavel de soltar o perfil temporario.
+// Fora do try, para o finally fechar o navegador pelo protocolo.
 let cdp = null;
 try {
   cdp = await conectar(PORTA_DEVTOOLS);

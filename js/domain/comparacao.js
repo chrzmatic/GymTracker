@@ -1,19 +1,9 @@
 /**
- * Comparação entre duas sessões (especificação, seção 6.5).
+ * Comparação entre duas sessões.
  *
- * Função pura: recebe as duas sessões com suas séries, os exercícios e o
- * peso corporal de cada data, e devolve a tabela pronta.
- *
- * **Como os exercícios são pareados.** Primeiro pelo `itemId`, que é o ID
- * do item no modelo do treino e sobrevive a trocas de exercício. Depois,
- * para o que sobrou, pelo `exercicioId` — assim um exercício avulso
- * adicionado na mão em cada sessão ainda pareia. O que não parear de jeito
- * nenhum é "adicionado" ou "removido".
- *
- * Parear pelo item, e não só pelo exercício, é o que permite dizer
- * "alternativas diferentes" em vez de mostrar um exercício removido e
- * outro adicionado quando você escolheu o face pull num dia e o voador no
- * outro.
+ * Os exercícios são pareados primeiro pelo item do treino (`itemId`) e
+ * depois pelo exercício. Assim, trocar a alternativa aparece como
+ * "alternativa diferente", e não como um removido e um adicionado.
  */
 
 import { metricasDeSeries, metricasVazias, somarMetricas, diferenca } from './metricas.js';
@@ -21,24 +11,19 @@ import { TIPOS_CARGA } from '../utils/constantes.js';
 
 /** Situação de um exercício na comparação. */
 export const ESTADO = {
-  /** Feito nas duas sessões, com o mesmo exercício. */
+  /** Feito nas duas, com o mesmo exercício. */
   COMPARADO: 'comparado',
-  /** Mesmo item, exercícios diferentes (alternativas, ou troca na sessão). */
+  /** Mesmo item, exercícios diferentes. */
   DIFERENTE: 'diferente',
-  /** Existe só na sessão mais nova. */
+  /** Só na sessão mais nova. */
   ADICIONADO: 'adicionado',
-  /** Existe só na sessão mais antiga. */
+  /** Só na sessão mais antiga. */
   REMOVIDO: 'removido',
-  /** Está nas duas, mas ficou sem série numa delas, e é opcional. */
+  /** Opcional e sem séries numa das sessões. */
   PULADO: 'pulado',
 };
 
-/**
- * Nome de exibição de um item da sessão.
- * @param {Object} item
- * @param {Map<string, Object>} exercicios
- * @returns {string}
- */
+/** Nome do item: o exercício ou o nome do grupo. */
 function nomeDoItem(item, exercicios) {
   const ex = exercicios.get(item.exercicioId);
   if (ex) return ex.nome;
@@ -46,11 +31,7 @@ function nomeDoItem(item, exercicios) {
   return 'Exercício removido';
 }
 
-/**
- * Agrupa as séries de uma sessão por item.
- * @param {Object[]} series
- * @returns {Map<string, Object[]>}
- */
+/** Séries agrupadas por item. */
 function seriesPorItem(series) {
   const mapa = new Map();
   series.forEach((s) => {
@@ -61,16 +42,14 @@ function seriesPorItem(series) {
 }
 
 /**
- * Pareia os itens das duas sessões.
- * @param {Object[]} itensA itens da sessão mais antiga
- * @param {Object[]} itensB itens da sessão mais nova
+ * Pareia os itens da sessão antiga (A) com os da nova (B).
  * @returns {{a: Object|null, b: Object|null}[]}
  */
 function parear(itensA, itensB) {
   const pares = [];
   const usadosB = new Set();
 
-  // 1ª passada: mesmo itemId (mesmo item do modelo de treino).
+  // 1ª passada: mesmo item do treino.
   const porItemB = new Map(itensB.map((i) => [i.itemId, i]));
   itensA.forEach((a) => {
     const b = porItemB.get(a.itemId);
@@ -82,7 +61,7 @@ function parear(itensA, itensB) {
     }
   });
 
-  // 2ª passada: para o que sobrou de A, tenta casar pelo exercício.
+  // 2ª passada: o que sobrou, pelo exercício.
   const sobrandoB = itensB.filter((i) => !usadosB.has(i.itemId));
   pares.forEach((par) => {
     if (par.b || !par.a.exercicioId) return;
@@ -103,21 +82,12 @@ function parear(itensA, itensB) {
   return pares;
 }
 
-/**
- * Decide a situação de um par.
- * @param {Object|null} a item da sessão antiga
- * @param {Object|null} b item da sessão nova
- * @param {number} seriesA quantas séries valendo em A
- * @param {number} seriesB quantas séries valendo em B
- * @returns {string} um valor de ESTADO
- */
+/** Situação de um par (um valor de ESTADO). */
 function estadoDoPar(a, b, seriesA, seriesB) {
   if (!a) return ESTADO.ADICIONADO;
   if (!b) return ESTADO.REMOVIDO;
 
-  // Está nas duas, mas ficou sem série numa delas: se é opcional, foi
-  // pulado de propósito — a especificação pede que não apareça como
-  // "removido".
+  // Opcional sem séries numa das sessões: foi pulado, não removido.
   const pulouEmA = seriesA === 0 && a.opcional;
   const pulouEmB = seriesB === 0 && b.opcional;
   if (pulouEmA || pulouEmB) return ESTADO.PULADO;
@@ -128,16 +98,14 @@ function estadoDoPar(a, b, seriesA, seriesB) {
 
 /**
  * Compara duas sessões.
- *
  * @param {Object} params
- * @param {Object} params.sessaoA sessão mais antiga
+ * @param {Object} params.sessaoA a mais antiga
  * @param {Object[]} params.seriesA
- * @param {Object} params.sessaoB sessão mais nova
+ * @param {Object} params.sessaoB a mais nova
  * @param {Object[]} params.seriesB
  * @param {Map<string, Object>} params.exercicios
  * @param {number|null} params.pesoA peso corporal na data de A
  * @param {number|null} params.pesoB peso corporal na data de B
- * @returns {{itens: Object[], total: Object, semPesoCorporal: boolean}}
  */
 export function compararSessoes({
   sessaoA,
@@ -172,17 +140,13 @@ export function compararSessoes({
       estado,
       itemId: referencia.itemId,
       nome: nomeDoItem(referencia, exercicios),
-      /** Nome em cada sessão, quando o exercício mudou entre elas. */
+      /** Nome em cada sessão, quando o exercício mudou. */
       nomeA: a ? nomeDoItem(a, exercicios) : null,
       nomeB: b ? nomeDoItem(b, exercicios) : null,
-      /**
-       * Se a diferença veio de um grupo de alternativas ou de uma
-       * substituição feita na hora. A tela usa isso para escrever
-       * "alternativa diferente" ou "exercício substituído".
-       */
+      /** true se veio de um grupo de alternativas; false se foi substituído na hora. */
       eraGrupo: Boolean(a?.alternativas?.length || b?.alternativas?.length),
       opcional: Boolean(referencia.opcional),
-      /** Posição do exercício em cada sessão (a ordem influi no rendimento). */
+      /** Posição do exercício em cada sessão. */
       ordemA: a ? a.ordem + 1 : null,
       ordemB: b ? b.ordem + 1 : null,
       a: mA,
@@ -210,11 +174,7 @@ export function compararSessoes({
         linha('Carga média', totalA.cargaMedia, totalB.cargaMedia, 'kg'),
       ],
     },
-    /**
-     * Cada buraco tem causa e solução diferentes, então vão separados:
-     * falta peso corporal (registrar nas configurações), falta o kg de
-     * alguma série, ou falta anotar as reps de alguma série.
-     */
+    /** Séries sem peso corporal, sem kg ou sem reps (cada uma tem um aviso). */
     faltando: {
       pesoCorporal: totalA.faltando.pesoCorporal + totalB.faltando.pesoCorporal,
       carga: totalA.faltando.carga + totalB.faltando.carga,
@@ -224,25 +184,14 @@ export function compararSessoes({
   };
 }
 
-/** Só estes estados têm números dos dois lados para comparar. */
+/** Estados que têm números dos dois lados. */
 function comparaveis(estado) {
   return estado === ESTADO.COMPARADO;
 }
 
 /**
- * Monta as linhas de métrica de um exercício.
- *
- * Quando falta peso corporal (exercício de peso corporal ou assistido sem
- * registro de peso), a especificação manda comparar só reps e o kg
- * registrado — que é a carga adicional ou a assistência. Nesse caso a
- * direção se inverte no assistido: menos assistência é melhor.
- *
- * @param {Object} mA
- * @param {Object} mB
- * @param {Object|undefined} exercicio
- * @param {number|null} pesoA
- * @param {number|null} pesoB
- * @returns {Object[]}
+ * Linhas de métrica de um exercício.
+ * Sem peso corporal, compara só reps e o kg registrado; no assistido, menos é melhor.
  */
 function compararMetricas(mA, mB, exercicio, pesoA, pesoB) {
   const tipo = (exercicio && exercicio.tipoCarga) || TIPOS_CARGA.CARGA;
@@ -269,15 +218,7 @@ function compararMetricas(mA, mB, exercicio, pesoA, pesoB) {
   ];
 }
 
-/**
- * Uma linha da tabela de comparação.
- * @param {string} rotulo
- * @param {number|null} antes
- * @param {number|null} depois
- * @param {string} [unidade]
- * @param {boolean} [maiorEhMelhor]
- * @returns {Object}
- */
+/** Uma linha da tabela de comparação. */
 function linha(rotulo, antes, depois, unidade = '', maiorEhMelhor = true) {
   return { rotulo, unidade, ...diferenca(antes, depois, maiorEhMelhor) };
 }

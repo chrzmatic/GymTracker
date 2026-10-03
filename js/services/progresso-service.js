@@ -1,11 +1,6 @@
 /**
- * Casos de uso da aba Progresso: gráficos por exercício, resumo semanal e
- * contador de séries por músculo.
- *
- * Tudo é recalculado a cada leitura, como nas outras abas: a especificação
- * pede que a contagem se atualize sozinha sempre que um treino, exercício
- * ou mapeamento de músculos for editado, e recalcular é a forma simples de
- * garantir isso.
+ * Aba Progresso: gráficos, resumo semanal e séries por músculo.
+ * Sempre recalculado, então edições aparecem na hora.
  */
 
 import { listarSessoes } from '../data/sessoes-repo.js';
@@ -31,10 +26,7 @@ import {
   arredondarTabela,
 } from '../domain/series-semanais.js';
 
-/**
- * Lê tudo que as telas de progresso precisam, numa passada só pelo banco.
- * @returns {Promise<Object>}
- */
+/** Tudo que a aba precisa, numa leitura só. */
 async function carregarTudo() {
   const [sessoes, series, treinos, musculos, exercicios, pesos, config] = await Promise.all([
     listarSessoes(),
@@ -48,19 +40,16 @@ async function carregarTudo() {
   return { sessoes, series, treinos, musculos, exercicios, pesos, config };
 }
 
-/**
- * Exercícios que já têm histórico, para a escolha do gráfico.
- * @returns {Promise<Object[]>}
- */
+/** Exercícios com histórico, para escolher o gráfico. */
 export async function listarExerciciosComHistorico() {
   const { sessoes, series, exercicios } = await carregarTudo();
   return exerciciosComHistorico(sessoes, series, exercicios);
 }
 
 /**
- * Série histórica de um exercício, já filtrada pelo período.
+ * Histórico de um exercício no período.
  * @param {string} exercicioId
- * @param {string} [periodo] valor de PERIODO
+ * @param {string} [periodo] um valor de PERIODO
  * @returns {Promise<{pontos: Object[], nome: string, variacoes: Object}>}
  */
 export async function progressaoDoExercicio(exercicioId, periodo = PERIODO.TRES_MESES) {
@@ -82,21 +71,15 @@ export async function progressaoDoExercicio(exercicioId, periodo = PERIODO.TRES_
   };
 }
 
-/**
- * Resumo por semana: treinos e volume.
- * @returns {Promise<Object[]>}
- */
+/** Treinos e volume por semana. */
 export async function semanas() {
   const { sessoes, series, exercicios, pesos, config } = await carregarTudo();
   return resumoSemanal(sessoes, series, exercicios, pesos, config.inicioSemana);
 }
 
 /**
- * Séries por músculo: planejado do ciclo contra realizado de uma semana.
- *
- * @param {string} [semana] AAAA-MM-DD do primeiro dia da semana desejada
- *   (padrão: a semana de hoje)
- * @returns {Promise<Object>}
+ * Séries por músculo: planejado do ciclo contra realizado na semana.
+ * @param {string} [semana] AAAA-MM-DD do início da semana (padrão: a atual)
  */
 export async function seriesPorMusculo(semana) {
   const { sessoes, series, treinos, musculos, exercicios, config } = await carregarTudo();
@@ -124,14 +107,14 @@ export async function seriesPorMusculo(semana) {
       arredondarTabela(planejadoPorMusculo(rotacao, exercicios, musculos)),
       arredondarTabela(realizadoPorMusculo(seriesDaSemana, exercicios, musculos))
     ),
-    /** Quantos treinos tem um ciclo, para o rótulo deixar claro o que é. */
+    /** Treinos num ciclo, para o rótulo. */
     treinosPorCiclo: rotacao.length,
   };
 }
 
 /**
- * As semanas que têm treino, para navegar no histórico do contador.
- * @returns {Promise<string[]>} início de cada semana, da mais recente para a mais antiga
+ * Semanas com treino, da mais recente para a mais antiga.
+ * @returns {Promise<string[]>} início de cada semana
  */
 export async function semanasComTreino() {
   const { sessoes, config } = await carregarTudo();

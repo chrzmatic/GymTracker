@@ -1,14 +1,6 @@
 /**
- * Inicialização do app e barra de abas.
- *
- * Responsabilidades:
- *  - abrir o banco e rodar a carga inicial na primeira abertura
- *  - desenhar a barra de abas e o botão de configurações
- *  - reabrir o app exatamente onde você parou
- *
- * A troca de telas em si vive em js/navegacao.js, que também cuida das
- * sub-telas (editar treino, exercícios, histórico), do botão de voltar e
- * de guardar onde você estava — aba, sub-tela e posição da rolagem.
+ * Início do app: carga inicial, barra de abas e reabrir onde você parou.
+ * A troca de telas fica em navegacao.js.
  */
 
 import { carregarSeNecessario } from './services/seed-service.js';
@@ -20,7 +12,7 @@ import {
   voltarParaRaiz,
 } from './navegacao.js';
 
-/** Definição das abas, na ordem da barra inferior. */
+/** Abas, na ordem da barra. */
 const ABAS = [
   { id: 'treino', rotulo: 'Treino', icone: '🏋️' },
   { id: 'calendario', rotulo: 'Calendário', icone: '📅' },
@@ -31,7 +23,7 @@ const ABAS = [
 
 let abaAtual = null;
 
-/** Marca visualmente a aba ativa. Quem guarda qual é é a navegação. */
+/** Marca a aba ativa na barra. */
 function marcarAba(id) {
   abaAtual = id;
   document.querySelectorAll('.abas button').forEach((b) => {
@@ -40,7 +32,7 @@ function marcarAba(id) {
   });
 }
 
-/** Desenha a barra de abas inferior. */
+/** Desenha a barra de abas. */
 function montarBarraDeAbas() {
   const barra = document.querySelector('.abas');
   barra.innerHTML = '';
@@ -55,7 +47,7 @@ function montarBarraDeAbas() {
   });
 }
 
-/** Mostra um erro fatal em vez de uma tela em branco. */
+/** Mostra um erro em vez de uma tela em branco. */
 function mostrarErro(erro) {
   console.error(erro);
   const destino = document.getElementById('conteudo');
@@ -66,17 +58,12 @@ function mostrarErro(erro) {
   );
 }
 
-/**
- * Liga o ícone de engrenagem do cabeçalho.
- * As configurações entram como sub-tela da aba atual, então o "voltar"
- * devolve você exatamente para onde estava.
- */
+/** Engrenagem do cabeçalho: abre as configurações por cima da aba atual. */
 function montarBotaoConfig() {
   const btn = document.getElementById('btn-config');
   btn.onclick = () => abrir('configuracoes').catch(mostrarErro);
 }
 
-/** Ponto de entrada. */
 async function iniciar() {
   montarBarraDeAbas();
   montarBotaoConfig();
@@ -89,10 +76,8 @@ async function iniciar() {
     return;
   }
 
-  // Um login do Dropbox que voltou por redirecionamento chega como
-  // `?code=` na URL, antes de qualquer tela existir. Tem que ser tratado
-  // aqui, e antes de desenhar: senão a tela de configurações abre dizendo
-  // "não conectado" enquanto o código ainda está na barra de endereços.
+  // Login do Dropbox que voltou por redirecionamento (`?code=` na URL).
+  // Precisa vir antes de desenhar qualquer tela.
   await concluirLoginDoDropbox();
 
   const inicial = salva && ABAS.some((a) => a.id === salva) ? salva : 'treino';
@@ -100,9 +85,8 @@ async function iniciar() {
   try {
     await irParaAba(inicial);
   } catch (erro) {
-    // A tela guardada pode não existir mais — um treino apagado, uma
-    // sessão que sumiu num backup restaurado. Em vez de abrir num erro,
-    // volta para a raiz da aba e tenta de novo.
+    // A tela guardada pode não existir mais (sessão apagada, backup restaurado).
+    // Nesse caso, abre a raiz da aba.
     console.warn('[app] não consegui reabrir onde você estava:', erro);
     voltarParaRaiz(inicial);
     try {
@@ -112,16 +96,11 @@ async function iniciar() {
     }
   }
 
-  // Depois da tela no ar, nunca antes: manda o que ficou pendente e refaz
-  // o backup se o último passou de 24 horas. Não é esperado de propósito —
-  // abrir o app na academia não pode depender do Dropbox responder.
+  // Só depois da tela no ar e sem esperar: abrir o app não pode depender do Dropbox.
   backupDeAbertura();
 }
 
-/**
- * Conclui um login do Dropbox que voltou pela URL.
- * Só carrega o código do Dropbox se houver mesmo um `?code=` esperando.
- */
+/** Conclui um login do Dropbox que voltou pela URL. */
 async function concluirLoginDoDropbox() {
   if (!window.location.search.includes('code=')) return;
   try {
@@ -132,7 +111,7 @@ async function concluirLoginDoDropbox() {
   }
 }
 
-/** Backup de abertura, se houver conexão configurada. */
+/** Backup de abertura, se o Dropbox estiver conectado. */
 function backupDeAbertura() {
   import('./sync/dropbox-estado.js')
     .then(({ conectado }) => {
@@ -142,7 +121,7 @@ function backupDeAbertura() {
     .catch((erro) => console.warn('[app] backup de abertura falhou:', erro));
 }
 
-// Reconstrói a tela ao voltar do segundo plano, para refletir o banco atual.
+// Ao voltar do segundo plano, redesenha com os dados atuais.
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && abaAtual) {
     recarregar().catch(mostrarErro);

@@ -1,9 +1,6 @@
 /**
- * Testes da comparação entre sessões (especificação, seção 6.5).
- *
- * O que mais pode dar errado aqui é o pareamento: um exercício que trocou
- * de alternativa não pode virar "removido + adicionado", e um opcional
- * pulado não pode virar "removido".
+ * Testes da comparação entre sessões, principalmente o pareamento:
+ * trocar a alternativa não vira removido + adicionado, e opcional pulado não vira removido.
  */
 
 import test from 'node:test';
@@ -21,7 +18,6 @@ const exercicios = new Map([
   ['ex-assist', { id: 'ex-assist', nome: 'Barra assistida', tipoCarga: 'assistido' }],
 ]);
 
-/** Item de sessão. */
 const item = (itemId, exercicioId, ordem, opcional = false) => ({
   itemId,
   exercicioId,
@@ -29,7 +25,6 @@ const item = (itemId, exercicioId, ordem, opcional = false) => ({
   opcional,
 });
 
-/** Série de sessão. */
 const serie = (itemId, exercicioId, carga, reps, aquecimento = false) => ({
   itemId,
   exercicioId,
@@ -38,7 +33,7 @@ const serie = (itemId, exercicioId, carga, reps, aquecimento = false) => ({
   aquecimento,
 });
 
-/** Monta o par de sessões para comparar. */
+/** Compara duas sessões montadas a partir dos itens e séries. */
 function comparar(itensA, seriesA, itensB, seriesB, pesoA = null, pesoB = null) {
   return compararSessoes({
     sessaoA: { id: 'a', data: '2025-09-01', itens: itensA },
@@ -51,14 +46,12 @@ function comparar(itensA, seriesA, itensB, seriesB, pesoA = null, pesoB = null) 
   });
 }
 
-/** Acha o item da comparação pelo nome mostrado. */
+/** Item da comparação pelo nome. */
 const achar = (r, nome) => r.itens.find((i) => i.nome === nome);
-/** Acha uma linha de métrica pelo rótulo. */
+/** Linha de métrica pelo rótulo. */
 const metrica = (item, rotulo) => item.metricas.find((m) => m.rotulo === rotulo);
 
-/* ------------------------------------------------------------------ */
-/* Comparação básica                                                   */
-/* ------------------------------------------------------------------ */
+/* --- Comparação básica --- */
 
 test('mesmo exercício nas duas sessões é comparado', () => {
   const r = comparar(
@@ -114,9 +107,7 @@ test('a posição do exercício em cada sessão aparece na comparação', () => 
   assert.equal(supino.ordemB, 2, 'virou o segundo');
 });
 
-/* ------------------------------------------------------------------ */
-/* Adicionado, removido e pulado                                       */
-/* ------------------------------------------------------------------ */
+/* --- Adicionado, removido e pulado --- */
 
 test('exercício só na sessão nova é "adicionado"', () => {
   const r = comparar(
@@ -166,9 +157,7 @@ test('exercício não-opcional sem série é comparado com zero, não "pulado"',
   assert.equal(metrica(remada, 'Séries').direcao, 'piora');
 });
 
-/* ------------------------------------------------------------------ */
-/* Grupos de alternativas                                              */
-/* ------------------------------------------------------------------ */
+/* --- Grupos de alternativas --- */
 
 test('alternativas diferentes não viram removido + adicionado', () => {
   const r = comparar(
@@ -200,7 +189,7 @@ test('mesma alternativa nas duas sessões compara normalmente', () => {
 });
 
 test('exercício avulso pareia pelo exercício quando o itemId não bate', () => {
-  // O mesmo exercício adicionado na mão em cada sessão ganha itemId próprio.
+  // O mesmo exercício adicionado na mão ganha itemId próprio em cada sessão.
   const r = comparar(
     [item('avulso-1', 'ex-remada', 0)],
     [serie('avulso-1', 'ex-remada', 40, 10)],
@@ -212,9 +201,7 @@ test('exercício avulso pareia pelo exercício quando o itemId não bate', () =>
   assert.equal(metrica(r.itens[0], 'Carga máxima').depois, 45);
 });
 
-/* ------------------------------------------------------------------ */
-/* Peso corporal e assistido                                           */
-/* ------------------------------------------------------------------ */
+/* --- Peso corporal e assistido --- */
 
 test('assistido compara pela carga efetiva: menos assistência é melhora', () => {
   const r = comparar(
@@ -297,9 +284,7 @@ test('peso corporal em só uma das sessões ainda cai no modo sem peso', () => {
   );
 });
 
-/* ------------------------------------------------------------------ */
-/* Total da sessão                                                     */
-/* ------------------------------------------------------------------ */
+/* --- Total da sessão --- */
 
 test('o total soma todos os exercícios das duas sessões', () => {
   const r = comparar(
@@ -348,12 +333,10 @@ test('sessão idêntica dá tudo igual', () => {
   });
 });
 
-/* ------------------------------------------------------------------ */
-/* Substituir um exercício mantendo a vaga no treino                   */
-/* ------------------------------------------------------------------ */
+/* --- Substituir um exercício mantendo a vaga no treino --- */
 
 test('substituir mantém a vaga: um item só, marcado como diferente', () => {
-  // Mesmo itemId nas duas sessões, exercícios diferentes, sem alternativas.
+  // Mesmo itemId, exercícios diferentes, sem alternativas.
   const r = comparar(
     [item('i1', 'ex-supino', 0)],
     [serie('i1', 'ex-supino', 60, 10)],
@@ -395,9 +378,7 @@ test('remover e adicionar continua sendo removido + adicionado', () => {
   );
 });
 
-/* ------------------------------------------------------------------ */
-/* Avisos de dados que faltam                                          */
-/* ------------------------------------------------------------------ */
+/* --- Avisos de dados que faltam --- */
 
 test('a comparação separa as três causas de dado faltando', () => {
   const r = comparar(

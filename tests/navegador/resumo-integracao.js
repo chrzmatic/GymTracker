@@ -1,15 +1,7 @@
 /**
- * Teste de integração das telas novas, tocando na interface de verdade:
- *
- *  - resumo da sessão (visualização rápida) e "copiar texto";
- *  - editar pela tela de registro e voltar: o resumo tem que refletir;
- *  - excluir a sessão a partir do resumo não pode deixar tela quebrada;
- *  - calendário e histórico abrindo o resumo;
- *  - comparar: trocar as sessões tocando nas caixas do topo;
- *  - dieta: kcal da refeição = opções escolhidas, prato sem "incompleto"
- *    por causa só da fibra, cadastro em kJ convertido para kcal;
- *  - versão nas configurações;
- *  - backup: ver o resumo não grava nada, e restaurar mantém o resumo.
+ * Telas novas, tocando na interface: resumo da sessão e copiar, edição
+ * refletindo no resumo, exclusão, calendário, histórico, comparar, dieta (kcal,
+ * prato incompleto, kJ), versão e backup.
  *
  *   deno run -A tests/navegador/resumo-integracao.js
  */
@@ -19,7 +11,7 @@ import { conectar, lancarNavegador, servir } from './cdp.js';
 const raiz = new URL('../../', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
 const PORTA_DEVTOOLS = 9236;
 
-/* O código abaixo roda dentro da página, não aqui. */
+/* Roda dentro da página. */
 const cenario = String.raw`
 (async () => {
   const log = [];
@@ -224,9 +216,8 @@ const cenario = String.raw`
   await esperar(() => botaoComTexto('Excluir sessão'));
   botaoComTexto('Excluir sessão').click();
   await tocarNoDialogo('Excluir');
-  // A pilha era: calendário → resumo da outra sessão → resumo desta →
-  // registro. Excluir pula o resumo desta (que não existe mais) e cai no
-  // resumo anterior.
+  // Pilha: calendário → resumo da outra sessão → resumo desta → registro.
+  // Excluir pula o resumo desta e cai no anterior.
   await esperar(() => telaAtual() === 'sessao-resumo' && topoDaPilha().params.sessaoId === sessao.id);
   await pausa(200);
   ok('excluir pela edição pula o resumo da sessão apagada', [telaAtual(), topoDaPilha().params.sessaoId], ['sessao-resumo', sessao.id]);
@@ -292,8 +283,7 @@ const cenario = String.raw`
   await esperar(() => caixa('idA').textContent.includes(formatarLongo(somarDias(hoje, -3))));
   ok('tocar na caixa "antes" troca o antes', caixa('idA').textContent.includes(formatarLongo(somarDias(hoje, -3))), true);
   ok('o "depois" ficou como estava', caixa('idB').textContent, depoisAntes);
-  // Escolher para o "depois" uma sessão mais antiga que o "antes": a tela
-  // reordena e as caixas continuam coerentes com o que mostram.
+  // "Depois" mais antigo que o "antes": a tela reordena e as caixas acompanham.
   caixa('idB').click();
   await esperar(() => dialogo());
   await tocarNoDialogo(formatarLongo(ontem));

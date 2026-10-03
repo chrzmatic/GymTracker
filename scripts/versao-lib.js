@@ -1,16 +1,12 @@
 /**
- * Regras da versão do app, sem acesso a disco nem a git (para testar).
- *
- * Formato: MAJOR.MINOR.BUILD, no estilo de versionamento semântico.
- * MAJOR.MINOR vêm do `package.json` e mudam à mão, quando fizer sentido;
- * BUILD é o número do commit (quantos commits a branch tem), então sobe
- * sozinho a cada commit e nunca se repete.
+ * Regras da versão do app (puras, para testar).
+ * Formato MAJOR.MINOR.BUILD: MAJOR.MINOR do package.json, BUILD = número do commit.
  */
 
 /**
- * Monta a versão a partir do package.json e da contagem de commits.
+ * Versão a partir do package.json e do número do commit.
  * @param {string} versaoDoPacote ex.: '1.0.0'
- * @param {number} build número do commit
+ * @param {number} build
  * @returns {string} ex.: '1.0.10'
  */
 export function montarVersao(versaoDoPacote, build) {
@@ -21,11 +17,7 @@ export function montarVersao(versaoDoPacote, build) {
   return `${Number.isInteger(major) ? major : 0}.${Number.isInteger(minor) ? minor : 0}.${build}`;
 }
 
-/**
- * Conteúdo do js/versao.js.
- * @param {{versao: string, build: number, data: string}} info
- * @returns {string}
- */
+/** Conteúdo do js/versao.js. */
 export function conteudoDoArquivo({ versao, build, data }) {
   return [
     '/**',
@@ -39,13 +31,7 @@ export function conteudoDoArquivo({ versao, build, data }) {
   ].join('\n');
 }
 
-/**
- * Troca a versão do cache no service worker. Mudar este texto é o que faz
- * o navegador baixar a versão nova e o app mostrar "Nova versão disponível".
- * @param {string} codigo conteúdo do service-worker.js
- * @param {string} versao
- * @returns {string}
- */
+/** Troca a versão do cache no service worker (é o que dispara a atualização no app). */
 export function atualizarServiceWorker(codigo, versao) {
   const padrao = /const VERSAO = '[^']*';/;
   if (!padrao.test(codigo))

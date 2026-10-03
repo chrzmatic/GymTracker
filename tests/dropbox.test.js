@@ -1,12 +1,4 @@
-/**
- * Testes das regras do backup no Dropbox (especificação, seção 6.9).
- *
- * O que está aqui é o que decide **apagar** arquivo e **quando** gastar
- * rede. Erro nessas duas contas não aparece na tela: some um backup, ou o
- * app manda o banco inteiro a cada tecla digitada. Por isso elas moram em
- * `js/sync/rotacao-backups.js`, longe de rede e de banco, e são provadas
- * aqui.
- */
+/** Testes das regras do backup no Dropbox: o que apagar e quando enviar. */
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -20,7 +12,7 @@ import {
   ordenarParaRestaurar,
 } from '../js/sync/rotacao-backups.js';
 
-/** Monta a lista como o `files/list_folder` do Dropbox devolveria. */
+/** Entrada como o `files/list_folder` do Dropbox devolve. */
 function diario(data, modificadoEm = data + 'T12:00:00Z') {
   return {
     nome: 'backup-' + data + '.json',
@@ -62,10 +54,8 @@ test('com 10 cópias, as 3 mais antigas saem e as 7 mais novas ficam', () => {
 });
 
 test('a escolha do que apagar usa a data do nome, não a do arquivo', () => {
-  // O caso real: restaurar o backup de 16/09 e mandar um novo logo depois
-  // deixa o arquivo *de hoje* com horário mais antigo no Dropbox do que o
-  // de 16/09, que acabou de ser tocado. Pela data de modificação, o app
-  // apagaria o backup de hoje.
+  // Caso real: depois de restaurar e enviar, o arquivo de hoje fica com horário
+  // mais antigo que o de 16/09. Pela data de modificação, apagaria o de hoje.
   const entradas = [
     diario('2026-09-22', '2026-09-22T08:00:00Z'),
     diario('2026-09-21', '2026-09-22T09:00:00Z'),
@@ -140,9 +130,7 @@ test('o primeiro backup não espera nada', () => {
 });
 
 test('uma reforma inteira do treino vira um backup só, não vinte', () => {
-  // O caso concreto: reordenar a rotação, apagar exercícios e mexer nos
-  // músculos numa sentada. Cada gravação agenda um backup; com a espera
-  // valendo, o banco inteiro sobe uma vez, não a cada toque.
+  // Muitas alterações seguidas: com a espera, o banco sobe uma vez só.
   const espera = 5 * 60 * 1000;
   const inicio = Date.parse('2026-09-22T10:00:00Z');
   let ultimoEm = '2026-09-22T10:00:00Z';

@@ -1,35 +1,21 @@
 /**
- * Registro do service worker e aviso de versão nova.
+ * Service worker e aviso de versão nova.
  *
- * Quando eu publico uma versão nova, o navegador baixa o service worker
- * novo e o deixa **esperando** — ele só assume quando todas as abas do app
- * fecham. Como o app fica na Tela de Início e raramente "fecha", a
- * atualização poderia demorar dias para aparecer.
- *
- * Por isso a barra: ao detectar um worker esperando, o app mostra "Nova
- * versão disponível" com um botão. O botão manda o worker assumir e
- * recarrega a página. Nada de dados se perde — eles estão no IndexedDB,
- * que o service worker não toca.
+ * A versão nova fica esperando até todas as abas do app fecharem, o que no
+ * iPhone pode levar dias. Por isso a barra "Nova versão disponível", que
+ * manda o worker assumir e recarrega. Os dados ficam no IndexedDB e não se perdem.
  */
 
-/** Evita recarregar em laço se o controlador trocar mais de uma vez. */
+/** Evita recarregar em laço. */
 let jaRecarregou = false;
 
 /**
- * Só recarrega quando **você** pediu, tocando em "Recarregar".
- *
- * Sem isso o app recarregaria sozinho na primeira visita: o service worker
- * novo chama `clients.claim()` ao ativar, o que dispara `controllerchange`
- * mesmo sem haver atualização nenhuma. Recarregar no meio de um treino,
- * sem ninguém ter pedido, seria o pior momento possível.
+ * Só recarrega quando o usuário pede. Na primeira visita o worker também
+ * dispara `controllerchange`, e recarregar no meio do treino seria ruim.
  */
 let pediuAtualizar = false;
 
-/**
- * Registra o service worker e liga a detecção de atualização.
- * Em `file://` (e em navegador sem suporte) não faz nada.
- * @returns {Promise<void>}
- */
+/** Registra o service worker e vigia atualizações. Não faz nada em `file://`. */
 export async function registrarServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   if (location.protocol !== 'http:' && location.protocol !== 'https:') return;
@@ -37,7 +23,7 @@ export async function registrarServiceWorker() {
   try {
     const registro = await navigator.serviceWorker.register('./service-worker.js');
 
-    // Já havia uma versão nova esperando quando o app abriu.
+    // Já havia versão nova esperando ao abrir.
     if (registro.waiting && navigator.serviceWorker.controller) {
       mostrarBarra(registro.waiting);
     }
@@ -46,8 +32,7 @@ export async function registrarServiceWorker() {
       const novo = registro.installing;
       if (!novo) return;
       novo.addEventListener('statechange', () => {
-        // `controller` existente significa que já havia uma versão rodando:
-        // sem ele, é a primeira instalação e não há nada a avisar.
+        // Sem `controller` é a primeira instalação: não há nada a avisar.
         if (novo.state === 'installed' && navigator.serviceWorker.controller) {
           mostrarBarra(novo);
         }
@@ -60,8 +45,7 @@ export async function registrarServiceWorker() {
       location.reload();
     });
 
-    // Procura atualização ao voltar para o app, que é quando o usuário
-    // costuma reabrir da Tela de Início.
+    // Procura atualização ao voltar para o app.
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') registro.update().catch(() => {});
     });
@@ -70,10 +54,7 @@ export async function registrarServiceWorker() {
   }
 }
 
-/**
- * Mostra a barra de atualização.
- * @param {ServiceWorker} worker o worker que está esperando
- */
+/** Mostra a barra de atualização. */
 function mostrarBarra(worker) {
   if (document.querySelector('.faixa-atualizacao')) return;
 

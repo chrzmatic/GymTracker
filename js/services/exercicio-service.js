@@ -1,12 +1,7 @@
 /**
- * Casos de uso de exercícios e músculos.
- *
- * O cuidado central aqui é não deixar dado órfão: excluir um exercício que
- * está num treino, ou um músculo que está num exercício, precisa avisar
- * onde ele é usado e limpar as referências junto.
- *
- * Renomear nunca muda o ID — é isso que mantém o histórico de sessões
- * ligado ao exercício certo (spec seção 4).
+ * Exercícios e músculos.
+ * Excluir avisa onde o item é usado e limpa as referências.
+ * Renomear nunca muda o ID, que liga o histórico ao exercício.
  */
 
 import {
@@ -34,21 +29,14 @@ import {
   tirarMusculoDosExercicios,
 } from '../domain/treino.js';
 
-/* ------------------------------------------------------------------ */
-/* Exercícios                                                          */
-/* ------------------------------------------------------------------ */
+/* --- Exercícios --- */
 
 /**
- * Cria um exercício novo.
- *
- * O ID vem do nome (ex.: `ex-supino-reto`), para ficar legível num export
- * CSV ou num backup. Se já existir um exercício com esse ID, cai para um ID
- * aleatório em vez de sobrescrever o antigo.
- *
+ * Cria um exercício. O ID vem do nome (ex.: `ex-supino-reto`);
+ * se já existir, usa um ID aleatório.
  * @param {string} nome
  * @param {string} tipoCarga
  * @param {Object[]} [musculos]
- * @returns {Promise<Object>} o exercício criado
  */
 export async function criar(nome, tipoCarga, musculos = []) {
   const slug = paraSlug(nome);
@@ -64,11 +52,7 @@ export async function criar(nome, tipoCarga, musculos = []) {
   return exercicio;
 }
 
-/**
- * Grava alterações de um exercício. O ID nunca muda.
- * @param {Object} exercicio
- * @returns {Promise<Object>} o exercício gravado
- */
+/** Grava um exercício editado. */
 export async function salvar(exercicio) {
   const limpo = {
     ...exercicio,
@@ -80,12 +64,7 @@ export async function salvar(exercicio) {
 }
 
 /**
- * Onde um exercício é usado: modelos de treino e sessões já registradas.
- *
- * As sessões contam separado porque elas *não* são alteradas ao excluir: o
- * histórico fica como estava, só perde o nome do exercício na tela.
- *
- * @param {string} exercicioId
+ * Onde o exercício é usado: treinos e quantas séries já registradas.
  * @returns {Promise<{treinos: Object[], series: number}>}
  */
 export async function ondeEUsado(exercicioId) {
@@ -96,12 +75,7 @@ export async function ondeEUsado(exercicioId) {
   };
 }
 
-/**
- * Exclui um exercício e o tira dos treinos que o usam.
- * O histórico de sessões não é tocado.
- * @param {string} exercicioId
- * @returns {Promise<void>}
- */
+/** Exclui e tira dos treinos. O histórico não muda. */
 export async function excluir(exercicioId) {
   const treinos = await listarTreinos();
   const afetados = tirarExercicioDosTreinos(treinos, exercicioId);
@@ -109,15 +83,9 @@ export async function excluir(exercicioId) {
   await removerExercicio(exercicioId);
 }
 
-/* ------------------------------------------------------------------ */
-/* Músculos                                                            */
-/* ------------------------------------------------------------------ */
+/* --- Músculos --- */
 
-/**
- * Cria um músculo novo, no fim da lista.
- * @param {string} nome
- * @returns {Promise<Object>}
- */
+/** Cria um músculo no fim da lista. */
 export async function criarMusculo(nome) {
   const existentes = await listarMusculos();
   const slug = paraSlug(nome);
@@ -132,29 +100,16 @@ export async function criarMusculo(nome) {
   return musculo;
 }
 
-/**
- * Renomeia um músculo. O ID não muda, então os exercícios continuam ligados.
- * @param {Object} musculo
- * @returns {Promise<void>}
- */
+/** Grava um músculo editado (o ID não muda). */
 export function salvarMusculoEditado(musculo) {
   return salvarMusculo({ ...musculo, nome: musculo.nome.trim() });
 }
 
-/**
- * Quais exercícios usam um músculo.
- * @param {string} musculoId
- * @returns {Promise<Object[]>}
- */
 export async function exerciciosComMusculo(musculoId) {
   return usosDoMusculo(await listarExercicios(), musculoId);
 }
 
-/**
- * Exclui um músculo e o remove dos exercícios que o citam.
- * @param {string} musculoId
- * @returns {Promise<void>}
- */
+/** Exclui o músculo e tira dos exercícios. */
 export async function excluirMusculo(musculoId) {
   const exercicios = await listarExercicios();
   const afetados = tirarMusculoDosExercicios(exercicios, musculoId);
@@ -163,10 +118,7 @@ export async function excluirMusculo(musculoId) {
 }
 
 /**
- * Sobe ou desce um músculo na lista.
- * A ordem é a que vai aparecer na tabela de séries semanais da Etapa 5.
- * @param {string} musculoId
- * @param {-1|1} direcao
+ * Sobe (-1) ou desce (1) um músculo na lista.
  * @returns {Promise<boolean>} false se já estava na ponta
  */
 export async function moverMusculo(musculoId, direcao) {

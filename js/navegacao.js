@@ -1,26 +1,13 @@
 /**
- * Navegação do app: abas embaixo e uma pilha de sub-telas por cima.
+ * Navegação: abas embaixo e uma pilha de telas em cada aba.
  *
- * As 5 abas da especificação (Treino, Calendário, Comparar, Progresso,
- * Dieta) não dão conta sozinhas: editar um treino, mexer nos exercícios ou
- * abrir o histórico são telas que nascem de dentro de uma aba e precisam de
- * um "voltar". Então cada aba tem uma pilha própria: a raiz é a tela da aba,
- * e `abrir()` empilha por cima.
- *
- * Trocar de aba não perde onde você estava na outra — a pilha de cada aba
- * fica guardada, o que importa quando você sai para conferir uma coisa e
- * volta no meio de um treino.
- *
- * Sair do app também não perde: a aba, a pilha de cada aba e a posição da
- * rolagem de cada tela vão para o `localStorage`. No iPhone o app da Tela
- * de Início é descartado da memória a qualquer momento, então voltar para
- * ele é quase sempre uma abertura do zero — sem isso, cada ida ao WhatsApp
- * no meio do treino devolvia você ao topo da primeira aba.
+ * `abrir()` empilha uma tela; o "voltar" desempilha. Cada aba guarda a
+ * sua pilha, e tudo (aba, pilhas e rolagem) vai para o localStorage,
+ * porque o iPhone descarta o app em segundo plano.
  */
 
 /**
- * Telas disponíveis. Cada uma carrega sob demanda, então uma tela quebrada
- * ou ainda não escrita não impede o app de abrir.
+ * Telas do app. Cada uma carrega sob demanda.
  * @type {Object<string, {titulo: string, carregar: () => Promise<Function>}>}
  */
 const TELAS = {
@@ -118,23 +105,22 @@ const TELAS = {
   },
 };
 
-/** Pilha de telas por aba. A posição 0 é sempre a tela raiz da aba. */
+/** Pilha de telas por aba. A posição 0 é a raiz da aba. */
 const pilhas = new Map();
 
 let abaAtual = null;
 let aoTrocarDeAba = () => {};
 
-/** Onde a navegação inteira (aba, pilhas e rolagem) fica guardada. */
+/** Chave do localStorage com o estado da navegação. */
 const CHAVE_ESTADO = 'gymtracker:navegacao';
 
 /**
- * Enquanto uma tela é desenhada o conteúdo é esvaziado, a página encolhe e
- * o navegador dispara um `scroll` para o topo. Sem esta trava, esse zero
- * apagaria justamente a posição que estamos tentando devolver.
+ * Trava durante o desenho: esvaziar a tela dispara um `scroll` para o topo
+ * que apagaria a posição guardada.
  */
 let desenhando = false;
 
-/** Grava o estado da navegação, para o app voltar onde estava. */
+/** Grava o estado da navegação. */
 function salvarEstado() {
   if (!abaAtual) return;
   try {
@@ -143,19 +129,13 @@ function salvarEstado() {
       JSON.stringify({ aba: abaAtual, pilhas: Object.fromEntries(pilhas) })
     );
   } catch {
-    /* modo privado pode bloquear o localStorage; não é crítico */
+    /* localStorage bloqueado (modo privado): não é crítico. */
   }
 }
 
 /**
- * Lê o estado guardado na última vez que o app foi usado.
- *
- * Só aceita o que ainda faz sentido: telas que existem e entradas com a
- * forma esperada. Uma versão nova do app pode ter perdido uma tela que
- * estava na pilha, e aí é melhor cair na raiz da aba do que quebrar na
- * abertura.
- *
- * @returns {string|null} a aba que estava aberta, ou null
+ * Lê o estado guardado, descartando telas que não existem mais.
+ * @returns {string|null} a aba que estava aberta
  */
 function lerEstado() {
   let bruto = null;
@@ -175,7 +155,7 @@ function lerEstado() {
       const limpa = itens.filter(
         (e) => e && typeof e === 'object' && typeof e.tela === 'string' && TELAS[e.tela]
       );
-      // A raiz tem que ser a própria aba; se não for, a pilha veio torta.
+      // A raiz tem que ser a própria aba.
       if (!limpa.length || limpa[0].tela !== aba) return;
       pilhas.set(
         aba,
@@ -193,43 +173,32 @@ function lerEstado() {
   }
 }
 
-/** A entrada do topo da pilha atual: a tela que está à vista. */
+/** A tela à vista. */
 function topo() {
   const p = pilha();
   return p[p.length - 1];
 }
 
-/**
- * Descarta a pilha de uma aba, deixando só a tela raiz.
- *
- * É a rede de segurança da restauração: se a tela guardada não conseguir
- * montar — um treino que foi apagado, uma sessão que sumiu num backup
- * restaurado — o app abre na raiz da aba em vez de num erro.
- *
- * @param {string} abaId
- */
+/** Deixa só a raiz da aba (quando a tela guardada não abre mais). */
 export function voltarParaRaiz(abaId) {
   pilhas.set(abaId, [{ tela: abaId, params: {}, rolagem: 0 }]);
   salvarEstado();
 }
 
 /**
- * Liga a navegação aos elementos da página e recupera o estado guardado.
- * @param {(abaId: string) => void} callbackAba chamado para marcar a aba ativa
- * @returns {string|null} a aba que estava aberta da última vez
+ * Liga a navegação à página e lê o estado guardado.
+ * @param {(abaId: string) => void} callbackAba marca a aba ativa
+ * @returns {string|null} a aba que estava aberta
  */
 export function iniciarNavegacao(callbackAba) {
   aoTrocarDeAba = callbackAba;
   const voltar = document.getElementById('btn-voltar');
   voltar.onclick = () => voltarUmaTela();
 
-  // O navegador tem uma restauração de rolagem própria, que briga com a
-  // nossa: ele devolve a posição antes de a tela ser remontada, quando a
-  // página ainda não tem altura, e o resultado é sempre o topo.
+  // A restauração de rolagem do navegador briga com a nossa.
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
-  // Anota a rolagem enquanto você rola, e não só ao trocar de tela: o app
-  // pode ser descartado sem aviso nenhum.
+  // Anota a rolagem enquanto rola: o app pode ser descartado sem aviso.
   let agendado = 0;
   addEventListener(
     'scroll',
@@ -245,9 +214,8 @@ export function iniciarNavegacao(callbackAba) {
     { passive: true }
   );
 
-  // `pagehide` é o último momento garantido no Safari do iPhone;
-  // `beforeunload` não é confiável lá, e `visibilitychange` cobre o caso
-  // de você só trocar de app sem fechar nada.
+  // `pagehide` é o último evento garantido no Safari; `visibilitychange`
+  // cobre a troca de app.
   const guardar = () => {
     if (abaAtual) topo().rolagem = window.scrollY;
     salvarEstado();
@@ -260,7 +228,7 @@ export function iniciarNavegacao(callbackAba) {
   return lerEstado();
 }
 
-/** Pilha da aba atual, criada na primeira visita. */
+/** Pilha da aba atual (criada na primeira visita). */
 function pilha() {
   if (!pilhas.has(abaAtual)) {
     pilhas.set(abaAtual, [{ tela: abaAtual, params: {}, rolagem: 0 }]);
@@ -268,11 +236,7 @@ function pilha() {
   return pilhas.get(abaAtual);
 }
 
-/**
- * Abre uma aba. Volta para onde você estava nela, se já tinha entrado antes.
- * @param {string} abaId
- * @returns {Promise<void>}
- */
+/** Abre uma aba, voltando à tela em que você estava nela. */
 export async function irParaAba(abaId) {
   anotarRolagem();
   abaAtual = abaId;
@@ -281,10 +245,9 @@ export async function irParaAba(abaId) {
 }
 
 /**
- * Empilha uma sub-tela por cima da atual.
+ * Empilha uma tela.
  * @param {string} telaId
- * @param {Object} [params] repassado para a view
- * @returns {Promise<void>}
+ * @param {Object} [params] repassado para a tela
  */
 export async function abrir(telaId, params = {}) {
   anotarRolagem();
@@ -292,22 +255,14 @@ export async function abrir(telaId, params = {}) {
   await desenhar();
 }
 
-/**
- * Troca a tela do topo sem empilhar (para não acumular "voltar" à toa).
- * @param {string} telaId
- * @param {Object} [params]
- * @returns {Promise<void>}
- */
+/** Troca a tela do topo sem empilhar. */
 export async function trocar(telaId, params = {}) {
   const p = pilha();
   p[p.length - 1] = { tela: telaId, params, rolagem: 0 };
   await desenhar();
 }
 
-/**
- * Volta uma tela. Na raiz da aba, não faz nada.
- * @returns {Promise<void>}
- */
+/** Volta uma tela. Na raiz, não faz nada. */
 export async function voltarUmaTela() {
   const p = pilha();
   if (p.length <= 1) return;
@@ -315,36 +270,22 @@ export async function voltarUmaTela() {
   await desenhar();
 }
 
-/** Guarda onde a tela atual está rolada, antes de sair dela. */
+/** Guarda a rolagem da tela atual. */
 function anotarRolagem() {
   if (abaAtual) topo().rolagem = window.scrollY;
 }
 
-/**
- * Redesenha a tela atual, relendo o banco.
- * Usada depois de gravar algo, e ao voltar do segundo plano.
- * @returns {Promise<void>}
- */
+/** Redesenha a tela atual com os dados do banco. */
 export async function recarregar() {
   if (!abaAtual) return;
-  // Redesenhar a mesma tela não é navegar: a posição da rolagem é para
-  // ficar onde está. Sem isto, voltar de outro app no meio de uma lista
-  // longa jogava você de volta para o topo dela.
+  // Redesenhar mantém a rolagem.
   anotarRolagem();
   await desenhar();
 }
 
 /**
- * Joga a navegação toda fora e abre uma aba do zero.
- *
- * É o que vem depois de restaurar um backup ou apagar tudo: as telas
- * empilhadas apontam para sessões e treinos que podem não existir mais.
- * Antes isso era resolvido com `location.reload()`, mas recarregar a
- * página logo depois de escrever no banco é justamente o que fazia a
- * importação parecer que não tinha funcionado no iPhone.
- *
- * @param {string} [abaId]
- * @returns {Promise<void>}
+ * Descarta todas as pilhas e abre uma aba do zero.
+ * Usado depois de restaurar backup ou apagar tudo, sem recarregar a página.
  */
 export async function recomecar(abaId = 'treino') {
   pilhas.clear();
@@ -352,11 +293,7 @@ export async function recomecar(abaId = 'treino') {
   await irParaAba(abaId);
 }
 
-/**
- * Troca o título do cabeçalho.
- * Views que mostram algo específico ("Treino A") chamam isso ao montar.
- * @param {string} texto
- */
+/** Troca o título do cabeçalho. */
 export function definirTitulo(texto) {
   document.getElementById('titulo').textContent = texto;
 }
@@ -386,8 +323,7 @@ async function desenhar() {
     await montar(destino, atual.params);
     devolverRolagem(atual.rolagem ?? 0);
   } finally {
-    // Só solta a trava no quadro seguinte: o `scroll` que o navegador
-    // dispara por causa da troca de conteúdo chega depois do desenho.
+    // Solta a trava no quadro seguinte, depois do `scroll` do navegador.
     requestAnimationFrame(() => {
       desenhando = false;
     });
@@ -395,16 +331,7 @@ async function desenhar() {
   }
 }
 
-/**
- * Devolve a rolagem da tela recém-desenhada.
- *
- * Vai duas vezes de propósito: na hora, e no quadro seguinte. A altura
- * final da página só existe depois do primeiro layout — um gráfico ou uma
- * lista longa ainda não ocupam espaço quando `montar` termina, e o
- * navegador corta o `scrollTo` no fim da página que existia até então.
- *
- * @param {number} y
- */
+/** Devolve a rolagem. Repete no quadro seguinte, quando a página já tem a altura final. */
 function devolverRolagem(y) {
   window.scrollTo(0, y);
   if (y > 0) requestAnimationFrame(() => window.scrollTo(0, y));

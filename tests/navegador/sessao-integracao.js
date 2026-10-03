@@ -1,12 +1,6 @@
 /**
- * Teste de integração da sessão de treino, num navegador de verdade.
+ * Sessão de treino com o app inteiro num navegador de verdade.
  *
- * Diferença para `tests/sessao.test.js`: aquele testa as funções puras da
- * camada domain; este sobe o app inteiro (services + IndexedDB + carga
- * inicial) num Edge/Chrome invisível e exercita o mesmo caminho que o dedo
- * percorre na tela.
- *
- * Um comando só, sem instalar nada:
  *   deno run -A tests/navegador/sessao-integracao.js
  */
 
@@ -15,7 +9,7 @@ import { conectar, lancarNavegador, servir } from './cdp.js';
 const raiz = new URL('../../', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
 const PORTA_DEVTOOLS = 9223;
 
-/* O código abaixo roda dentro da página, não aqui. */
+/* Roda dentro da página. */
 const cenario = String.raw`
 (async () => {
   const log = [];
@@ -126,15 +120,14 @@ const navegador = await lancarNavegador({
 });
 
 let codigoSaida = 1;
-// Declarado fora do try para o finally conseguir fechar o navegador pelo
-// protocolo, que e o unico jeito confiavel de soltar o perfil temporario.
+// Fora do try, para o finally fechar o navegador pelo protocolo.
 let cdp = null;
 try {
   cdp = await conectar(PORTA_DEVTOOLS);
   await cdp.enviar('Page.enable');
   await cdp.enviar('Runtime.enable');
 
-  // Garante que estamos na página do app, e não na aba inicial em branco.
+  // Página do app, não a aba em branco inicial.
   const alvo = `http://localhost:${servidor.porta}/`;
   for (let i = 0; i < 40; i += 1) {
     const url = await cdp.avaliar('location.href');
@@ -143,7 +136,7 @@ try {
     await new Promise((r) => setTimeout(r, 250));
   }
 
-  // Espera a carga inicial terminar (o seed roda na primeira abertura).
+  // Espera os dados padrão carregarem.
   for (let i = 0; i < 60; i += 1) {
     const quantos = await cdp.avaliar(
       `(async () => { try { const t = await import('/js/data/treinos-repo.js'); return (await t.listarTreinos()).length; } catch { return 0; } })()`

@@ -1,7 +1,4 @@
-/**
- * Testes da versão do app (scripts/versao-lib.js) e da coerência entre o
- * arquivo gerado, o service worker e a tela de configurações.
- */
+/** Testes da versão do app e da coerência com o service worker. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';

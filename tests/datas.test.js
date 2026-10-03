@@ -1,9 +1,6 @@
 /**
- * Testes das utilidades de data.
- *
- * O que importa aqui: datas locais nunca viram UTC, e diferenças são contadas
- * em dias de calendário (imunes a horário de verão). Na Nova Zelândia o
- * horário de verão muda no último domingo de setembro e no primeiro de abril.
+ * Testes das datas: nunca viram UTC e as contas usam dias de calendário.
+ * Na Nova Zelândia o horário de verão muda no fim de setembro e no começo de abril.
  */
 
 import test from 'node:test';
@@ -24,7 +21,7 @@ import {
 } from '../js/utils/date.js';
 
 test('paraIso usa a data local, não a UTC', () => {
-  // 1h da manhã de 15/03/2025 no fuso do aparelho.
+  // 1h da manhã de 15/03/2025, horário local.
   const d = new Date(2025, 2, 15, 1, 0, 0);
   assert.equal(paraIso(d), '2025-03-15');
 });
@@ -55,10 +52,10 @@ test('diffEmDias atravessa mês e ano', () => {
 });
 
 test('diffEmDias não erra na virada do horário de verão da Nova Zelândia', () => {
-  // Fim do horário de verão (abril): um dia tem 25 horas.
+  // Fim do horário de verão: dia de 25 horas.
   assert.equal(diffEmDias('2025-04-05', '2025-04-06'), 1);
   assert.equal(diffEmDias('2025-04-04', '2025-04-07'), 3);
-  // Início do horário de verão (setembro): um dia tem 23 horas.
+  // Início do horário de verão: dia de 23 horas.
   assert.equal(diffEmDias('2025-09-27', '2025-09-28'), 1);
   assert.equal(diffEmDias('2025-09-26', '2025-09-29'), 3);
 });
@@ -90,13 +87,13 @@ test('inicioDaSemana com semana começando no domingo', () => {
 });
 
 test('mesmaSemana e semanaPosterior', () => {
-  // Domingo 21/09 e segunda 22/09: semanas diferentes quando começa na segunda.
+  // Domingo 21/09 e segunda 22/09: semanas diferentes (semana começa na segunda).
   assert.equal(mesmaSemana('2025-09-21', '2025-09-22', 1), false);
   assert.equal(semanaPosterior('2025-09-21', '2025-09-22', 1), true);
-  // Mesma semana: quarta e sexta.
+  // Quarta e sexta: mesma semana.
   assert.equal(mesmaSemana('2025-09-24', '2025-09-26', 1), true);
   assert.equal(semanaPosterior('2025-09-24', '2025-09-26', 1), false);
-  // Com a semana começando no domingo, 21 e 22 ficam juntos.
+  // Semana começando no domingo: 21 e 22 ficam juntos.
   assert.equal(mesmaSemana('2025-09-21', '2025-09-22', 0), true);
 });
 

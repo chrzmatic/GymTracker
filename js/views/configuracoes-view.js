@@ -1,10 +1,4 @@
-/**
- * Tela de configurações.
- *
- * Nesta etapa entram só as duas que a lógica da rotação usa: o dia em que
- * a semana começa e o X de dias para reiniciar a rotação. O resto (peso
- * corporal, restaurar dados padrão, Dropbox) chega nas etapas 5, 6 e 9.
- */
+/** Tela de configurações. */
 
 import { lerTodasConfigs, salvarConfig, CONFIG_PADRAO } from '../data/config-repo.js';
 import { NOMES_DIA_SEMANA, formatarDataHora, formatarLongo } from '../utils/date.js';
@@ -23,11 +17,6 @@ import {
 import { abrir, recarregar, recomecar } from '../navegacao.js';
 import { VERSAO, DATA_DA_VERSAO } from '../versao.js';
 
-/**
- * Renderiza a tela de configurações.
- * @param {HTMLElement} raiz
- * @returns {Promise<void>}
- */
 export async function montarConfiguracoes(raiz) {
   const config = await lerTodasConfigs();
   raiz.innerHTML = '';
@@ -48,13 +37,7 @@ function rodapeDaVersao() {
   return p;
 }
 
-/**
- * Atalho para o backup no Dropbox, com o status resumido.
- *
- * O status aparece aqui, e não só lá dentro, porque backup é uma coisa em
- * que ninguém toca até precisar: se o app parou de enviar há duas semanas,
- * eu preciso tropeçar nessa informação, não ir procurar por ela.
- */
+/** Atalho do Dropbox, com o status à vista (para notar se o backup parou). */
 function cardDropbox() {
   const card = document.createElement('div');
   card.className = 'card';
@@ -62,8 +45,7 @@ function cardDropbox() {
   const estado = lerEstadoDropbox();
   let resumo;
   if (!lerAppKeyDropbox()) {
-    // "não conectado" mandaria você tocar em conectar e esbarrar num
-    // pedido de app key sem explicação. Melhor dizer o que falta.
+    // Sem app key, diz o que falta.
     resumo = 'falta o app key';
   } else if (!estado.refreshToken) {
     resumo = 'não conectado';
@@ -81,15 +63,8 @@ function cardDropbox() {
 }
 
 /**
- * Restaurar os dados padrão e apagar tudo.
- *
- * São duas coisas diferentes, e a diferença importa:
- *
- *  - **Restaurar treinos padrão** devolve os treinos, exercícios e
- *    músculos do `TREINO-DADOS.md`, e **não toca no histórico**. Serve
- *    para desfazer uma bagunça na edição sem perder o que você treinou.
- *  - **Apagar tudo** zera o banco inteiro, inclusive o histórico, e
- *    recarrega os dados padrão. Serve para testar do zero.
+ * Restaurar dados padrão e apagar tudo.
+ * Restaurar não toca no histórico; apagar tudo zera o banco inteiro.
  */
 function cardRecomecar() {
   const card = document.createElement('div');
@@ -140,8 +115,7 @@ function cardRecomecar() {
     );
     if (!ok) return;
 
-    // Segunda confirmação: é a única ação do app que apaga histórico sem
-    // volta, e um toque errado aqui custaria meses de registro.
+    // Segunda confirmação: apaga o histórico sem volta.
     const mesmo = await confirmar(
       'Tem certeza?',
       'Última chance. Todo o histórico de treino será perdido.',
@@ -158,12 +132,7 @@ function cardRecomecar() {
   return card;
 }
 
-/**
- * Exportar e importar (especificação, seção 6.8).
- *
- * No iPhone a exportação abre o menu de compartilhar do sistema, que deixa
- * salvar no app Arquivos; no computador, baixa direto.
- */
+/** Exportar e importar. */
 function cardBackup() {
   const card = document.createElement('div');
   card.className = 'card';
@@ -194,14 +163,8 @@ function cardBackup() {
 }
 
 /**
- * Gera o arquivo e entrega ao usuário, dizendo o que foi dentro dele.
- *
- * O "o que foi dentro" não é firula: um backup tirado de uma instalação
- * nova tem 79 registros só de treinos e alimentos padrão, e parece cheio.
- * Sem esta linha dá para guardar durante meses um arquivo que não tem
- * nenhuma sessão sua — e só descobrir na hora de restaurar.
- *
- * @param {Promise<Object>} promessa
+ * Gera e entrega o arquivo, dizendo o que há dentro.
+ * Assim um backup sem nenhuma sessão não passa despercebido.
  */
 async function exportar(promessa) {
   try {
@@ -231,7 +194,7 @@ async function exportar(promessa) {
   }
 }
 
-/** Escolhe um arquivo, valida e restaura com confirmação. */
+/** Escolhe, valida e restaura um backup, com confirmação. */
 async function importar() {
   const arquivo = await backup.escolherArquivo();
   if (!arquivo) return;
@@ -250,14 +213,12 @@ async function importar() {
     return;
   }
 
-  // O que este app perde se o arquivo for adiante. Restaurar substitui,
-  // então tudo que o backup tem a menos some — e é isso que precisa estar
-  // na frente dos olhos, não a contagem total.
+  // Mostra o que o app perde com a restauração.
   let perdas = [];
   try {
     perdas = await backup.perdasAoRestaurar(conteudo);
   } catch {
-    /* sem a comparação, o aviso genérico abaixo ainda vale */
+    /* Sem a comparação, vale o aviso genérico. */
   }
 
   const ok = await confirmar(
@@ -278,9 +239,7 @@ async function importar() {
     return;
   }
 
-  // Relê o banco antes de comemorar. O app já disse "restaurado" para um
-  // backup que não tinha entrado; agora, se a contagem não bater, quem
-  // avisa é a tela — e com o nome do que faltou.
+  // Relê o banco antes de dizer que deu certo.
   let divergencias = [];
   try {
     divergencias = await backup.conferirRestauracao(conteudo);
@@ -310,7 +269,7 @@ async function importar() {
   await recomecar();
 }
 
-/** Atalho para o peso corporal, que alimenta os cálculos de carga efetiva. */
+/** Atalho para o peso corporal. */
 function cardPeso() {
   const card = document.createElement('div');
   card.className = 'card';
@@ -329,7 +288,7 @@ function cardPeso() {
   return card;
 }
 
-/** As duas configurações que mudam a sugestão do próximo treino. */
+/** Configurações da rotação. */
 function cardRotacao(config) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -389,13 +348,7 @@ function cardRotacao(config) {
   return card;
 }
 
-/**
- * Uma linha "rótulo / valor atual", que abre o editor ao ser tocada.
- * @param {string} rotulo
- * @param {string} valor
- * @param {() => void} aoTocar
- * @returns {HTMLElement}
- */
+/** Linha "rótulo / valor" que abre o editor ao tocar. */
 function linha(rotulo, valor, aoTocar) {
   const btn = document.createElement('button');
   btn.className = 'linha-config';

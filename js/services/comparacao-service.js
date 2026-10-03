@@ -1,9 +1,4 @@
-/**
- * Casos de uso da comparação entre sessões.
- *
- * Carrega as duas sessões com suas séries, resolve o peso corporal válido
- * na data de cada uma e entrega a comparação pronta para a tela.
- */
+/** Comparação entre sessões: carrega os dados e o peso corporal de cada data. */
 
 import { listarSessoes, buscarSessao } from '../data/sessoes-repo.js';
 import { listarSeriesDaSessao } from '../data/series-repo.js';
@@ -13,14 +8,7 @@ import { pesoCorporalEm } from '../domain/metricas.js';
 import { compararSessoes } from '../domain/comparacao.js';
 
 /**
- * Compara duas sessões pelos IDs.
- *
- * A ordem é normalizada pela data: a mais antiga vira o "antes" e a mais
- * nova o "depois", independente de qual você escolheu primeiro. Assim uma
- * seta verde sempre significa progresso no tempo.
- *
- * @param {string} idA
- * @param {string} idB
+ * Compara duas sessões. A mais antiga sempre vira o "antes".
  * @returns {Promise<Object|null>}
  */
 export async function comparar(idA, idB) {
@@ -52,20 +40,12 @@ export async function comparar(idA, idB) {
   return { ...resultado, sessaoA, sessaoB };
 }
 
-/**
- * Sessões disponíveis para escolher, da mais recente para a mais antiga.
- * @returns {Promise<Object[]>}
- */
+/** Sessões para escolher, da mais recente para a mais antiga. */
 export function listarParaComparar() {
   return listarSessoes();
 }
 
-/**
- * O atalho da especificação: a última sessão do mesmo treino, anterior a
- * uma sessão dada.
- * @param {Object} sessao
- * @returns {Promise<Object|null>}
- */
+/** Última sessão do mesmo treino antes desta, ou null. */
 export async function anteriorDoMesmoTreino(sessao) {
   const todas = await listarSessoes();
   const candidatas = todas
@@ -79,8 +59,7 @@ export async function anteriorDoMesmoTreino(sessao) {
 }
 
 /**
- * As duas sessões mais recentes do mesmo treino, para a tela abrir já
- * mostrando algo útil.
+ * As duas sessões mais recentes do mesmo treino, para a tela abrir com algo.
  * @returns {Promise<{a: Object, b: Object}|null>}
  */
 export async function sugestaoDeComparacao() {

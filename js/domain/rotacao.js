@@ -1,58 +1,32 @@
 /**
- * Sugestão do próximo treino (especificação, seção 6.4).
+ * Sugestão do próximo treino.
  *
- * Nada de A/B/C fixo no código: a rotação é a lista ordenada de treinos
- * marcados como `naRotacao`, e pode ter qualquer tamanho e qualquer ordem.
- * Mudar a rotação na tela de edição muda a sugestão na hora.
- *
- * A regra tem duas partes:
- *
- *  1. **Sequência.** O sugerido é o treino seguinte ao último feito, na
- *     ordem da rotação, dando a volta no fim (…, C, A, B, …).
- *
- *  2. **Reinício.** Volta para o primeiro da rotação só quando as DUAS
- *     condições valem: o dia está numa semana posterior à do último treino,
- *     E passaram pelo menos X dias de calendário desde ele. As duas juntas
- *     são o que separa "semana nova de verdade" de "treinei domingo e hoje
- *     é segunda" — neste segundo caso a semana virou, mas foi ontem, então
- *     a sequência continua.
- *
- * Treinos extras são ignorados por completo: não contam como "último
- * treino" nem avançam a sequência.
+ * A rotação é a lista ordenada dos treinos com `naRotacao`.
+ * 1. Sequência: o próximo depois do último feito, dando a volta no fim.
+ * 2. Reinício: volta ao primeiro se o dia está numa semana posterior à do
+ *    último treino e passaram pelo menos X dias.
+ * Treinos extras não contam.
  */
 
 import { diffEmDias, semanaPosterior, somarDias } from '../utils/date.js';
 
-/** Por que aquele treino foi sugerido. A tela usa isto para explicar. */
+/** Motivo da sugestão, para a tela explicar. */
 export const MOTIVO = {
-  /** Nada registrado ainda: começa do começo. */
+  /** Nada registrado ainda. */
   PRIMEIRO: 'primeiro',
-  /** Semana nova e tempo suficiente: reinicia a rotação. */
+  /** Semana nova e tempo suficiente. */
   REINICIO: 'reinicio',
-  /** Segue a sequência a partir do último treino. */
+  /** Segue a sequência. */
   SEQUENCIA: 'sequencia',
 };
 
 /**
- * A última sessão de um treino da rotação feita **antes** de um dia.
- *
- * Duas escolhas que valem explicar:
- *
- * - O corte é `data < dia`, exclusivo, porque a especificação diz que a
- *   sugestão para um dia considera apenas as sessões registradas antes
- *   dele. Consequência: se você já treinou hoje e quiser uma segunda
- *   sessão no mesmo dia, a sugestão não conta a primeira — aí é escolher
- *   na mão.
- *
- * - "Da rotação" é decidido pela rotação **atual**, não pelo campo
- *   `naRotacao` congelado na sessão. Se um treino saiu da rotação depois,
- *   as sessões antigas dele deixam de contar, porque ele não tem mais
- *   lugar na sequência.
- *
- * @param {Object[]} sessoes todas as sessões
+ * Última sessão de um treino da rotação antes do dia (exclusivo).
+ * Usa a rotação atual: treino que saiu dela deixa de contar.
+ * @param {Object[]} sessoes
  * @param {Object[]} rotacao treinos da rotação, na ordem
  * @param {string} dia AAAA-MM-DD
- * @returns {Object|null} a sessão mais recente que conta, ou null
+ * @returns {Object|null}
  */
 export function ultimaSessaoDaRotacao(sessoes, rotacao, dia) {
   const naRotacao = new Set(rotacao.map((t) => t.id));
@@ -65,11 +39,10 @@ export function ultimaSessaoDaRotacao(sessoes, rotacao, dia) {
 }
 
 /**
- * Diz se a rotação deve reiniciar no primeiro treino.
- * @param {string} dataUltimo AAAA-MM-DD do último treino
- * @param {string} dia AAAA-MM-DD do dia sugerido
+ * true se a rotação deve voltar ao primeiro treino.
+ * @param {string} dataUltimo AAAA-MM-DD
+ * @param {string} dia AAAA-MM-DD
  * @param {{inicioSemana: number, diasParaReiniciarRotacao: number}} config
- * @returns {boolean}
  */
 export function deveReiniciar(dataUltimo, dia, config) {
   const semanaNova = semanaPosterior(dataUltimo, dia, config.inicioSemana);
@@ -78,14 +51,12 @@ export function deveReiniciar(dataUltimo, dia, config) {
 }
 
 /**
- * Sugere o treino de um dia.
- *
- * @param {Object[]} sessoes todas as sessões registradas
- * @param {Object[]} rotacao treinos da rotação, na ordem definida pelo usuário
+ * Treino sugerido para um dia, ou null se a rotação está vazia.
+ * @param {Object[]} sessoes
+ * @param {Object[]} rotacao treinos da rotação, na ordem
  * @param {string} dia AAAA-MM-DD
  * @param {{inicioSemana: number, diasParaReiniciarRotacao: number}} config
  * @returns {{treino: Object, motivo: string, ultima: Object|null, diasDesde: number|null}|null}
- *   null quando não há nenhum treino na rotação
  */
 export function sugerirTreino(sessoes, rotacao, dia, config) {
   if (!rotacao.length) return null;
@@ -107,26 +78,14 @@ export function sugerirTreino(sessoes, rotacao, dia, config) {
 }
 
 /**
- * Para que dia a tela inicial deve sugerir um treino.
- *
- * Se ainda não treinou hoje, a pergunta é "o que faço hoje?". Se já
- * treinou, a pergunta vira "o que faço na próxima" — e a sugestão passa
- * para amanhã, já contando o treino de hoje na sequência. Sugerir para
- * hoje um treino que já foi feito não ajuda em nada.
- *
- * @param {string} hoje AAAA-MM-DD
- * @param {Object[]} sessoesDeHoje sessões registradas hoje
- * @returns {string} AAAA-MM-DD do dia a sugerir
+ * Dia da sugestão: hoje, ou amanhã se já treinou hoje.
+ * @returns {string} AAAA-MM-DD
  */
 export function diaDaProximaSugestao(hoje, sessoesDeHoje) {
   return sessoesDeHoje.length ? somarDias(hoje, 1) : hoje;
 }
 
-/**
- * Frase curta explicando a sugestão, para mostrar embaixo do nome do treino.
- * @param {{motivo: string, ultima: Object|null, diasDesde: number|null}} sugestao
- * @returns {string}
- */
+/** Frase curta explicando a sugestão. */
 export function explicarSugestao(sugestao) {
   if (!sugestao) return '';
   if (sugestao.motivo === MOTIVO.PRIMEIRO) {

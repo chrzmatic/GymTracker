@@ -1,10 +1,6 @@
 /**
- * Coerência entre os arquivos do projeto e o que o app carrega.
- *
- * Um arquivo novo esquecido na lista do service worker funciona no
- * computador e quebra no iPhone offline, na academia, sem erro nenhum na
- * hora de publicar. Uma tela registrada apontando para um arquivo ou
- * função que não existe só aparece quando alguém toca nela.
+ * Coerência entre os arquivos do projeto e o que o app carrega:
+ * lista offline do service worker e telas registradas na navegação.
  */
 
 import test from 'node:test';
@@ -14,7 +10,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 const raiz = new URL('../', import.meta.url);
 const ler = (caminho) => readFileSync(new URL(caminho, raiz), 'utf8');
 
-/** Todos os .js e .json dentro de js/, com caminho relativo à raiz. */
+/** Todos os .js e .json de js/, com caminho relativo à raiz. */
 function arquivosDoApp(pasta = 'js/') {
   return readdirSync(new URL(pasta, raiz), { withFileTypes: true }).flatMap((e) =>
     e.isDirectory()

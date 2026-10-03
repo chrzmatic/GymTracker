@@ -1,31 +1,18 @@
 /**
- * Service worker: faz o app funcionar offline e avisar quando há versão nova.
+ * Service worker: app offline e aviso de versão nova.
  *
- * Estratégia: **cache primeiro** para os arquivos do app. Eles mudam só
- * quando eu publico uma versão nova, e na academia a conexão costuma ser
- * ruim — esperar a rede para abrir a tela de registro seria o pior lugar
- * possível para travar.
+ * Cache primeiro: abrir o app não depende da rede.
+ * Os dados ficam no IndexedDB, fora deste cache.
  *
- * Os dados do usuário não passam por aqui: ficam no IndexedDB, que é
- * independente do cache.
- *
- * ## Ao publicar uma versão nova
- *
- * `VERSAO` abaixo é trocada sozinha a cada commit pelo hook de pre-commit
- * (scripts/versao.mjs), com o mesmo número mostrado nas configurações.
- * Isso cria um cache novo, faz o service worker novo instalar em paralelo,
- * e o app mostra "Nova versão disponível" com um botão de recarregar. Os
- * caches antigos são apagados na ativação.
- *
- * Se acrescentar arquivos ao projeto (a Etapa 6 vai acrescentar os da
- * dieta), incluí-los em `ARQUIVOS` — senão eles não ficam disponíveis
- * offline.
+ * `VERSAO` é atualizada a cada commit pelo hook (scripts/versao.mjs).
+ * Versão nova = cache novo; os antigos são apagados ao ativar.
+ * Arquivo novo no projeto precisa entrar em `ARQUIVOS` (tests/arquivos.test.js confere).
  */
 
-const VERSAO = '1.0.10';
+const VERSAO = '1.0.11';
 const CACHE = `gymtracker-${VERSAO}`;
 
-/** Tudo que o app precisa para abrir sem rede. */
+/** Arquivos para abrir sem rede. */
 const ARQUIVOS = [
   './',
   './index.html',
@@ -118,8 +105,7 @@ self.addEventListener('install', (evento) => {
   evento.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE);
-      // addAll falha inteiro se um arquivo faltar, o que esconderia o
-      // culpado. Guardando um a um dá para seguir e registrar qual falhou.
+      // Um a um, para um arquivo faltando não derrubar os outros.
       await Promise.all(
         ARQUIVOS.map(async (arquivo) => {
           try {
@@ -159,15 +145,14 @@ self.addEventListener('fetch', (evento) => {
 
       try {
         const daRede = await fetch(req);
-        // Guarda o que vier novo (um arquivo esquecido na lista, por ex.).
+        // Guarda o que vier da rede.
         if (daRede && daRede.ok && daRede.type === 'basic') {
           const cache = await caches.open(CACHE);
           cache.put(req, daRede.clone());
         }
         return daRede;
       } catch (erro) {
-        // Offline e fora do cache: numa navegação, devolve a casca do app
-        // em vez da tela de dinossauro.
+        // Offline e fora do cache: devolve o app em vez da tela de erro.
         if (req.mode === 'navigate') {
           const index = await caches.match('./index.html');
           if (index) return index;
@@ -178,7 +163,7 @@ self.addEventListener('fetch', (evento) => {
   );
 });
 
-/** A página pede para o service worker novo assumir agora. */
+/** A página pede para a versão nova assumir agora. */
 self.addEventListener('message', (evento) => {
   if (evento.data === 'assumir-agora') self.skipWaiting();
 });

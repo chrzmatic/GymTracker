@@ -1,10 +1,4 @@
-/**
- * Testes do resumo de sessão (visualização rápida e "copiar texto").
- *
- * O resumo é só leitura, mas é o que vai para fora do app: um número
- * trocado aqui vira um registro errado colado numa conversa. Por isso os
- * testes conferem o texto inteiro, linha a linha.
- */
+/** Testes do resumo de sessão e do texto copiado, conferido linha a linha. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -79,7 +73,7 @@ const sessao = {
 };
 
 const series = [
-  // fora de ordem de propósito: o resumo tem que ordenar
+  // Fora de ordem de propósito.
   serie('b2', 'i2', 'ex-barra', 1, 2, 5, 6),
   serie('a2', 'i1', 'ex-supino', 0, 2, 16, 9),
   serie('a1', 'i1', 'ex-supino', 0, 1, 16, 10),
@@ -87,9 +81,7 @@ const series = [
   serie('b1', 'i2', 'ex-barra', 1, 1, null, 8),
 ];
 
-/* ------------------------------------------------------------------ */
-/* Texto de uma série                                                  */
-/* ------------------------------------------------------------------ */
+/* --- Texto de uma série --- */
 
 test('série com carga: "16 kg × 10", com vírgula decimal', () => {
   assert.equal(textoDaSerie({ carga: 16, reps: 10 }), '16 kg × 10');
@@ -138,9 +130,7 @@ test('carga com dízima é arredondada em duas casas', () => {
   assert.equal(textoDaSerie({ carga: 22.675, reps: 1 }), '22,68 kg × 1');
 });
 
-/* ------------------------------------------------------------------ */
-/* Estrutura do resumo                                                 */
-/* ------------------------------------------------------------------ */
+/* --- Estrutura do resumo --- */
 
 test('exercícios na ordem da sessão, séries ordenadas com aquecimento primeiro', () => {
   const r = resumirSessao({ sessao, series, exercicios });
@@ -256,9 +246,7 @@ test('editar uma série muda o resumo seguinte (ele reflete o que está salvo)',
   assert.doesNotMatch(depois, /- 16 kg × 10\n/);
 });
 
-/* ------------------------------------------------------------------ */
-/* Texto para copiar                                                   */
-/* ------------------------------------------------------------------ */
+/* --- Texto para copiar --- */
 
 test('texto completo, linha a linha', () => {
   const texto = textoParaCopiar(resumirSessao({ sessao, series, exercicios }));

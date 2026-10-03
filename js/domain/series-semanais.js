@@ -1,36 +1,18 @@
 /**
- * Contador de séries por músculo (especificação, seção 6.6).
+ * Séries por músculo.
  *
- * Duas visões:
+ * - Planejado: um ciclo da rotação, com a alternativa padrão de cada grupo.
+ * - Realizado: as séries registradas no período, sem aquecimento.
  *
- *  - **Planejado**: um ciclo completo da rotação (cada treino uma vez),
- *    usando as séries planejadas e a alternativa padrão de cada grupo.
- *    Hoje um ciclo é uma semana, mas isso pode mudar se a frequência
- *    mudar — por isso o rótulo na tela fala em "ciclo", não em "semana".
- *
- *  - **Realizado**: as séries registradas de fato num período, sem
- *    aquecimento.
- *
- * A conta em si é a mesma nos dois casos: cada série feita num exercício
- * rende 1 para cada músculo **direto** dele e a fração definida para cada
- * músculo **indireto**. Quatro séries de supino com tríceps indireto 0,5
- * valem 2 séries indiretas de tríceps.
+ * Cada série conta 1 para músculo direto e a fração para indireto
+ * (4 séries de supino com tríceps 0,5 = 2 séries de tríceps).
  */
 
-/**
- * Soma vazia para um músculo.
- * @returns {{diretas: number, indiretas: number, total: number}}
- */
 function zero() {
   return { diretas: 0, indiretas: 0, total: 0 };
 }
 
-/**
- * Acrescenta N séries de um exercício ao acumulador por músculo.
- * @param {Map<string, Object>} acumulador
- * @param {Object|undefined} exercicio
- * @param {number} quantasSeries
- */
+/** Soma N séries de um exercício aos músculos dele. */
 function somarExercicio(acumulador, exercicio, quantasSeries) {
   if (!exercicio || !quantasSeries) return;
   (exercicio.musculos ?? []).forEach((m) => {
@@ -46,13 +28,7 @@ function somarExercicio(acumulador, exercicio, quantasSeries) {
 }
 
 /**
- * Transforma o acumulador numa lista ordenada, com o nome de cada músculo.
- *
- * Todos os músculos cadastrados aparecem, mesmo zerados: um músculo que
- * ficou em zero na semana é exatamente o que interessa ver.
- *
- * @param {Map<string, Object>} acumulador
- * @param {Object[]} musculos lista de músculos, na ordem do usuário
+ * Lista ordenada com nomes. Músculos zerados também aparecem.
  * @returns {{musculoId: string, nome: string, diretas: number, indiretas: number, total: number}[]}
  */
 function comNomes(acumulador, musculos) {
@@ -64,13 +40,11 @@ function comNomes(acumulador, musculos) {
 }
 
 /**
- * Séries planejadas num ciclo completo da rotação.
- *
- * @param {Object[]} treinos treinos da rotação, na ordem
+ * Séries planejadas num ciclo da rotação, uma linha por músculo.
+ * @param {Object[]} treinos da rotação, na ordem
  * @param {Map<string, Object>} exercicios
  * @param {Object[]} musculos
  * @param {{incluirOpcionais?: boolean}} [opcoes]
- * @returns {Object[]} uma linha por músculo
  */
 export function planejadoPorMusculo(treinos, exercicios, musculos, opcoes = {}) {
   const incluirOpcionais = opcoes.incluirOpcionais !== false;
@@ -79,8 +53,7 @@ export function planejadoPorMusculo(treinos, exercicios, musculos, opcoes = {}) 
   treinos.forEach((treino) => {
     (treino.itens ?? []).forEach((item) => {
       if (item.opcional && !incluirOpcionais) return;
-      // Num grupo de alternativas vale a alternativa padrão, que é a que
-      // a próxima sessão vai começar usando.
+      // Num grupo, vale a alternativa padrão.
       const exercicioId =
         item.tipo === 'alternativas' ? item.exercicioPadraoId : item.exercicioId;
       somarExercicio(acumulador, exercicios.get(exercicioId), item.seriesPlanejadas ?? 0);
@@ -90,17 +63,7 @@ export function planejadoPorMusculo(treinos, exercicios, musculos, opcoes = {}) 
   return comNomes(acumulador, musculos);
 }
 
-/**
- * Séries realmente registradas, a partir de uma lista de séries.
- *
- * Aquecimento fica de fora, como a especificação pede: ele não conta como
- * volume de trabalho para músculo nenhum.
- *
- * @param {Object[]} series séries registradas (podem incluir aquecimento)
- * @param {Map<string, Object>} exercicios
- * @param {Object[]} musculos
- * @returns {Object[]} uma linha por músculo
- */
+/** Séries registradas, sem aquecimento, uma linha por músculo. */
 export function realizadoPorMusculo(series, exercicios, musculos) {
   const acumulador = new Map();
   series
@@ -110,9 +73,7 @@ export function realizadoPorMusculo(series, exercicios, musculos) {
 }
 
 /**
- * Junta planejado e realizado, com a diferença por músculo.
- * @param {Object[]} planejado
- * @param {Object[]} realizado
+ * Planejado e realizado lado a lado, com a diferença.
  * @returns {{musculoId: string, nome: string, planejado: Object, realizado: Object, diferenca: number}[]}
  */
 export function compararPlanejadoRealizado(planejado, realizado) {
@@ -129,24 +90,12 @@ export function compararPlanejadoRealizado(planejado, realizado) {
   });
 }
 
-/**
- * Arredonda para no máximo duas casas, matando o lixo de ponto flutuante.
- *
- * Existe porque 0,5 + 0,5 + 0,25 em binário não dá exatamente 1,25, e a
- * tabela de séries semanais soma muitas frações.
- *
- * @param {number} valor
- * @returns {number}
- */
+/** Duas casas, para somas de frações não virarem 1,2499999. */
 export function arredondar(valor) {
   return Math.round(valor * 100) / 100;
 }
 
-/**
- * Aplica o arredondamento a uma tabela inteira.
- * @param {Object[]} linhas
- * @returns {Object[]}
- */
+/** Arredonda a tabela inteira. */
 export function arredondarTabela(linhas) {
   return linhas.map((l) => ({
     ...l,

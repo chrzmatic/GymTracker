@@ -1,7 +1,4 @@
-/**
- * Testes da conversão de energia: o índice aceita kJ na entrada, mas o
- * app guarda e mostra sempre kcal.
- */
+/** Testes da conversão de kJ para kcal. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -25,7 +22,7 @@ test('kJ vira kcal arredondado para inteiro', () => {
   assert.equal(kjParaKcal(2000), 478);
   // 1550 / 4,184 = 370,45… → 370
   assert.equal(kjParaKcal(1550), 370);
-  // Rótulo de pão de forma da NZ: 1040 kJ por 100 g = 248,57… → 249 kcal.
+  // 1040 kJ (pão de forma) = 248,57… → 249 kcal
   assert.equal(kjParaKcal(1040), 249);
 });
 
@@ -69,7 +66,7 @@ test('converter de volta dá o valor original', () => {
 });
 
 test('alimento cadastrado a partir de kJ calcula como se fosse kcal', () => {
-  // 544 kJ por 100 g = 130 kcal (arroz). 200 g → 260 kcal.
+  // 544 kJ por 100 g = 130 kcal (arroz); 200 g → 260 kcal.
   const arroz = {
     id: 'a',
     nome: 'Arroz',

@@ -1,21 +1,11 @@
 /**
- * Teste da Etapa 9 num navegador de verdade, sem tocar no Dropbox.
- *
- * O que dá para provar sem rede — e é justamente o que eu não quero
- * descobrir quebrado na academia:
- *
- *  - os módulos de `js/sync/` carregam no navegador, com os imports certos;
- *  - **salvar continua funcionando sem Dropbox conectado**. Esta é a
- *    regressão que mais assusta: o gatilho foi parar dentro do repositório
- *    da dieta e do `finalizarSessao`, ou seja, no caminho de escrita do
- *    app inteiro. Se ele estourar, some a capacidade de registrar treino;
- *  - o gatilho não agenda nada enquanto não há conexão;
- *  - os tokens ficam fora do banco, então **não entram no backup**;
- *  - o PKCE gera desafio do tamanho e do formato certos, e a URL de
- *    autorização muda conforme o fluxo (com ou sem redirecionamento).
- *
- * O login e o upload em si só dá para testar com a conta de verdade, no
- * aparelho de verdade.
+ * Backup no Dropbox, sem rede:
+ * - os módulos de js/sync/ carregam;
+ * - salvar continua funcionando sem Dropbox conectado;
+ * - sem conexão, nada é agendado;
+ * - os tokens ficam fora do banco e do backup;
+ * - PKCE e URL de autorização corretos.
+ * Login e upload de verdade só no aparelho.
  *
  *   deno run -A tests/navegador/dropbox-integracao.js
  */
@@ -41,8 +31,7 @@ const cenario = String.raw`
   const backup = await import('/js/services/backup-service.js');
   const seed = await import('/js/services/seed-service.js');
 
-  // A página de teste é uma aba em branco: sem a carga inicial não há
-  // treino A para finalizar uma sessão em cima.
+  // Aba em branco: precisa da carga inicial para ter o treino A.
   await seed.carregarSeNecessario();
 
   // Parte de um aparelho que nunca conectou.
@@ -50,7 +39,7 @@ const cenario = String.raw`
   ok('sem conexão, conectado() é falso', estado.conectado(), false);
   ok('e o estado vem zerado', estado.lerEstado().ultimoEm, null);
 
-  /* --- salvar continua funcionando sem Dropbox --------------------- */
+  /* --- salvar continua funcionando sem Dropbox --- */
 
   const alimento = await dieta.criarAlimento({
     nome: 'Teste Dropbox',
@@ -80,7 +69,7 @@ const cenario = String.raw`
   ok('finalizar sessão funciona sem Dropbox', finalizada.status, 'finalizada');
   await sessoes.apagarSessao(sessao.id);
 
-  /* --- o gatilho não faz nada desconectado ------------------------- */
+  /* --- desconectado, o gatilho não faz nada --- */
 
   gatilho.dadosMudaram();
   gatilho.dadosMudaram('sessao');
@@ -88,11 +77,9 @@ const cenario = String.raw`
   ok('gatilho desconectado não marca pendente', estado.lerEstado().pendente, false);
   ok('nem grava data de backup', estado.lerEstado().ultimoEm, null);
 
-  /* --- reforma pesada: apagar exercício, músculo e alimento -------- */
+  /* --- reforma pesada: apagar exercício, músculo e alimento --- */
 
-  // A pergunta que motivou isto: mudar a rotação inteira e apagar coisas
-  // quebra o backup? Não deveria — o backup é um retrato completo do
-  // banco, não uma diferença. Mas "não deveria" não é teste.
+  // O backup é um retrato completo do banco, então mudanças grandes não podem quebrá-lo.
   const exSvc = await import('/js/services/exercicio-service.js');
   const antesDaReforma = await backup.montarBackup();
 
@@ -131,7 +118,7 @@ const cenario = String.raw`
     Object.keys(antesDaReforma.dados).length
   );
 
-  // O caminho de volta: restaurar o retrato anterior traz tudo de novo.
+  // Restaurar o retrato anterior traz tudo de volta.
   await backup.restaurar(comTudo);
   ok('restaurar o backup anterior traz o exercício de volta', Boolean(await exSvc.buscarExercicio(exercicio.id)), true);
   ok('sem divergência na conferência', (await backup.conferirRestauracao(comTudo)).length, 0);
@@ -139,7 +126,7 @@ const cenario = String.raw`
   await backup.restaurar(depois);
   ok('e dá para voltar ao estado sem ele', await exSvc.buscarExercicio(exercicio.id), undefined);
 
-  /* --- o token não entra no backup --------------------------------- */
+  /* --- o token não entra no backup --- */
 
   estado.salvarEstado({
     refreshToken: 'token-de-mentira',
@@ -161,11 +148,11 @@ const cenario = String.raw`
   estado.limparEstado();
   ok('desconectar apaga o token', estado.lerEstado().refreshToken, null);
 
-  /* --- PKCE e a URL de autorização --------------------------------- */
+  /* --- PKCE e URL de autorização --- */
 
   const auth = await import('/js/sync/dropbox-auth.js');
 
-  // A chave de propósito não está no código: o repositório é público.
+  // A chave não fica no código (repositório público).
   ok('o código não carrega o app key', config.APP_KEY, '');
   localStorage.removeItem(config.CHAVE_APP_KEY);
   ok('sem chave colada, não há app key', estado.lerAppKey(), '');
@@ -208,31 +195,25 @@ const cenario = String.raw`
   const segundo = new URL(await auth.urlDeAutorizacao({ comRedirect: false })).searchParams.get('code_challenge');
   ok('cada login sorteia um desafio novo', primeiro === segundo, false);
 
-  /* --- o pedido pendente sobrevive ao app ser descartado ----------- */
+  /* --- o login pendente sobrevive ao app ser descartado --- */
 
-  // A armadilha do iPhone: autorizar no Safari, o app morrer, e voltar.
-  // O código do Dropbox continua valendo, mas só com o verifier daquele
-  // pedido. A tela precisa saber que ele existe para oferecer colar em
-  // vez de começar outro login (que invalidaria o código).
+  // No iPhone o app pode morrer durante o login no Safari. O código só vale
+  // com o verifier daquele pedido, então a tela precisa saber que ele existe.
   auth.esquecerPedido();
   ok('sem pedido começado, não há pendência', auth.temPedidoPendente(), false);
   await auth.urlDeAutorizacao({ comRedirect: false });
   ok('começar um login deixa o pedido pendente', auth.temPedidoPendente(), true);
 
-  // Simula o app sendo descartado e reaberto: módulo recarregado do zero,
-  // memória perdida, só o localStorage sobrevive.
+  // Simula o app reaberto: só o localStorage sobrevive.
   const authDeNovo = await import('/js/sync/dropbox-auth.js?reabrir=' + Date.now());
   ok('e ele sobrevive à reabertura do app', authDeNovo.temPedidoPendente(), true);
 
   auth.esquecerPedido();
   ok('descartar o pedido limpa a pendência', auth.temPedidoPendente(), false);
 
-  /* --- o diálogo do código oferece um link de verdade --------------- */
+  /* --- o diálogo do código usa um link de verdade --- */
 
-  // O bug que isto guarda: um window.open depois de um await perde o
-  // gesto do toque e o Safari bloqueia calado — a aba do Dropbox nunca
-  // abria e o app pedia um código que não havia como ter visto. Um <a>
-  // tocado pelo dedo não depende de gesto nenhum.
+  // window.open depois de um await é bloqueado pelo Safari; um <a> não.
   const dialogo = await import('/js/components/dialogo.js');
   const promessa = dialogo.formulario('teste', [
     { nome: 'abrir', tipo: 'link', href: 'https://exemplo/autorizar', rotulo: 'Abrir' },
@@ -245,7 +226,7 @@ const cenario = String.raw`
   document.querySelector('dialog [data-acao="cancelar"]').click();
   ok('e o campo do código convive com o link', await promessa, null);
 
-  /* --- código colado sem pedido aberto ----------------------------- */
+  /* --- código colado sem pedido aberto --- */
 
   localStorage.removeItem(config.CHAVE_VERIFIER);
   let recado = '';
@@ -256,8 +237,7 @@ const cenario = String.raw`
   }
   ok('sem o verifier, o erro explica o que houve', recado.includes('se perdeu neste aparelho'), true);
 
-  // Rodando em localhost, o botão de redirecionamento fica escondido
-  // porque só o endereço publicado está cadastrado no Dropbox.
+  // Em localhost o botão de redirecionamento fica escondido.
   ok('em localhost o redirect não é oferecido', config.podeUsarRedirect(), false);
 
   localStorage.removeItem(config.CHAVE_APP_KEY);

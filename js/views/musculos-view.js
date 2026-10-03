@@ -1,31 +1,18 @@
-/**
- * Tela "Músculos": a lista editável de grupos musculares.
- *
- * É uma lista curta, mas importante: ela é o eixo da tabela de séries
- * semanais da Etapa 5, e a ordem definida aqui é a ordem em que os músculos
- * vão aparecer lá.
- *
- * Excluir um músculo mexe em todos os exercícios que o citam, então a tela
- * mostra antes quantos são.
- */
+/** Músculos: lista editável. A ordem daqui é a da tabela de séries semanais. */
 
 import * as exercicios from '../services/exercicio-service.js';
 import { confirmar, escolher, formulario } from '../components/dialogo.js';
 import { blocoVazio } from '../components/ui.js';
 import { recarregar } from '../navegacao.js';
 
-/**
- * Renderiza a lista de músculos.
- * @param {HTMLElement} raiz
- * @returns {Promise<void>}
- */
+/** Monta a lista de músculos. */
 export async function montarMusculos(raiz) {
   const [musculos, todosExercicios] = await Promise.all([
     exercicios.listarMusculos(),
     exercicios.listarExercicios(),
   ]);
 
-  /** Quantos exercícios citam cada músculo, para mostrar na lista. */
+  /** Quantos exercícios usam cada músculo. */
   const usos = new Map();
   todosExercicios.forEach((ex) =>
     (ex.musculos ?? []).forEach((m) =>
@@ -62,14 +49,7 @@ export async function montarMusculos(raiz) {
   raiz.appendChild(novo);
 }
 
-/**
- * Uma linha da lista de músculos.
- * @param {Object} musculo
- * @param {number} quantosExercicios
- * @param {number} posicao
- * @param {number} total
- * @returns {HTMLElement}
- */
+/** Uma linha da lista. */
 function linha(musculo, quantosExercicios, posicao, total) {
   const div = document.createElement('div');
   div.className = 'linha-musculo linha-lista';
@@ -98,7 +78,7 @@ function linha(musculo, quantosExercicios, posicao, total) {
   return div;
 }
 
-/** Seta de reordenação. */
+/** Seta para subir ou descer. */
 function seta(musculo, direcao, ativo) {
   const btn = document.createElement('button');
   btn.className = 'btn btn-icone btn-mover';

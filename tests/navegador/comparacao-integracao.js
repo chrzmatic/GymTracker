@@ -1,11 +1,6 @@
 /**
- * Teste de integração da Etapa 4: comparação entre sessões e peso corporal
- * contra o IndexedDB real.
- *
- * As regras puras já estão cobertas em `tests/metricas.test.js` e
- * `tests/comparacao.test.js`. O que este teste verifica é a ligação: o peso
- * corporal certo para cada data, a normalização da ordem das sessões e os
- * atalhos de escolha.
+ * Comparação e peso corporal no IndexedDB real: peso certo em cada data,
+ * ordem das sessões e atalhos de escolha.
  *
  *   deno run -A tests/navegador/comparacao-integracao.js
  */
@@ -144,8 +139,7 @@ const navegador = await lancarNavegador({
 });
 
 let codigoSaida = 1;
-// Declarado fora do try para o finally conseguir fechar o navegador pelo
-// protocolo, que e o unico jeito confiavel de soltar o perfil temporario.
+// Fora do try, para o finally fechar o navegador pelo protocolo.
 let cdp = null;
 try {
   cdp = await conectar(PORTA_DEVTOOLS);

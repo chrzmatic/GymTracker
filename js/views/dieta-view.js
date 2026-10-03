@@ -1,13 +1,4 @@
-/**
- * Aba Dieta: o plano de hoje, com os totais calculados.
- *
- * O plano não é um registro do que você comeu: é o que você segue. Por
- * isso não há "marcar como comido" — há o plano, os valores dele e a
- * comparação com a meta.
- *
- * Nada aqui guarda kcal: tudo é calculado a partir do índice na hora de
- * desenhar. Corrigir um valor no índice muda o dia inteiro na hora.
- */
+/** Aba Dieta: o plano do dia, com os valores calculados e as metas. */
 
 import * as dieta from '../services/dieta-service.js';
 import { hojeIso, formatarLongo } from '../utils/date.js';
@@ -15,12 +6,11 @@ import { num, comSinal, paraNumero } from '../utils/format.js';
 import { escolher, formulario } from '../components/dialogo.js';
 import { abrir } from '../navegacao.js';
 
-/** Estado da tela. */
 const estado = { data: null, planoId: null };
 
 let raiz = null;
 
-/** Rótulos e unidades dos nutrientes, na ordem de exibição. */
+/** Nutrientes na ordem de exibição. */
 const NUTRIENTES = [
   { id: 'kcal', rotulo: 'Calorias', unidade: 'kcal', casas: 0 },
   { id: 'proteina', rotulo: 'Proteína', unidade: 'g', casas: 1 },
@@ -30,10 +20,9 @@ const NUTRIENTES = [
 ];
 
 /**
- * Renderiza a aba Dieta.
+ * Monta a aba Dieta.
  * @param {HTMLElement} elemento
  * @param {{data?: string}} [params]
- * @returns {Promise<void>}
  */
 export async function montarDieta(elemento, params = {}) {
   raiz = elemento;
@@ -66,9 +55,7 @@ async function desenhar() {
   raiz.appendChild(atalhos());
 }
 
-/* ------------------------------------------------------------------ */
-/* Cabeçalho: qual plano e por quê                                     */
-/* ------------------------------------------------------------------ */
+/* --- Cabeçalho: qual plano --- */
 
 function cabecalho(plano, automatico) {
   const card = document.createElement('div');
@@ -127,9 +114,7 @@ function cabecalho(plano, automatico) {
   return card;
 }
 
-/* ------------------------------------------------------------------ */
-/* Totais do dia                                                       */
-/* ------------------------------------------------------------------ */
+/* --- Totais do dia --- */
 
 function cardDeTotais(dia) {
   const card = document.createElement('div');
@@ -173,8 +158,7 @@ function cardDeTotais(dia) {
     const dif = document.createElement('span');
     dif.className = 'metrica-dif';
     if (d) {
-      // Perto da meta é cinza; longe, laranja. Não uso verde/vermelho
-      // porque em dieta "mais" não é melhor nem pior por si só.
+      // Perto da meta fica cinza; longe, laranja. Na dieta, mais não é melhor nem pior.
       const longe = d.percentual !== null && Math.abs(d.percentual - 100) > 10;
       dif.classList.add(longe ? 'piora' : 'igual');
       dif.textContent = comSinal(d.diferenca, n.casas);
@@ -225,9 +209,7 @@ async function editarMetas(dia) {
   await desenhar();
 }
 
-/* ------------------------------------------------------------------ */
-/* Refeições                                                           */
-/* ------------------------------------------------------------------ */
+/* --- Refeições --- */
 
 function cardDeRefeicao(r) {
   const card = document.createElement('div');
@@ -236,9 +218,7 @@ function cardDeRefeicao(r) {
   const cab = document.createElement('div');
   cab.className = 'card-cabecalho';
 
-  // Nome e calorias empilhados, em vez de lado a lado. Assim o ⋯ fica
-  // sozinho na direita e nomes compridos ("Lanche da tarde") param de
-  // disputar a mesma linha com o número.
+  // Nome e kcal empilhados, para nomes longos não brigarem com o ⋯.
   const titulo = document.createElement('div');
   titulo.className = 'refeicao-titulo';
 
@@ -246,8 +226,7 @@ function cardDeRefeicao(r) {
   h3.textContent = r.nome;
   titulo.appendChild(h3);
 
-  // As kcal das opções escolhidas, as mesmas que somam os macros embaixo.
-  // A faixa de todas as trocas possíveis confundia mais do que ajudava.
+  // Kcal das opções escolhidas, as mesmas dos macros embaixo.
   const kcal = document.createElement('span');
   kcal.className = 'refeicao-kcal';
   kcal.textContent = `${num(r.total.kcal, 0)} kcal`;
@@ -269,17 +248,7 @@ function cardDeRefeicao(r) {
   return card;
 }
 
-/**
- * Resumo de macros da refeição.
- *
- * Antes era uma linha de texto corrido em cinza pequeno ("P 43,2 g · G
- * 34,2 g · C 57,7 g"), que some do olhar. Como são os números que decidem
- * se a refeição está boa, viraram blocos com rótulo por extenso e valor em
- * destaque.
- *
- * @param {Object} total
- * @returns {HTMLElement}
- */
+/** Macros da refeição em blocos com valor em destaque. */
 function resumoDeMacros(total) {
   const div = document.createElement('div');
   div.className = 'resumo-macros';
@@ -309,13 +278,7 @@ function resumoDeMacros(total) {
   return div;
 }
 
-/**
- * Uma linha de item dentro da refeição.
- *
- * A quantidade é o dado mais importante da tela: é por ela que se monta o
- * prato na cozinha. Por isso ela vem numa coluna própria, com o mesmo
- * destaque do nome — e não colada nele nem escondida junto das calorias.
- */
+/** Uma linha de item, com a quantidade em coluna própria. */
 function linhaDeItem(refeicao, item) {
   const div = document.createElement('div');
   div.className = 'item-dieta';
@@ -333,8 +296,7 @@ function linhaDeItem(refeicao, item) {
     return div;
   }
 
-  // Item livre não tem valores, então não vale abrir nada nele; os outros
-  // abrem a tela com a informação nutricional daquela quantidade.
+  // Item livre não tem valores, então não abre nada.
   const linha = document.createElement(item.livre ? 'div' : 'button');
   linha.className = 'item-dieta-linha';
   if (!item.livre) {
@@ -375,18 +337,7 @@ function linhaDeItem(refeicao, item) {
   return div;
 }
 
-/**
- * Pílula de uma opção de grupo, em duas linhas.
- *
- * A quantidade fica em destaque na segunda linha porque escolher entre
- * "200 g de arroz" e "180 g de massa" é uma decisão sobre a quantidade
- * tanto quanto sobre o alimento.
- *
- * @param {Object} opcao
- * @param {Object} refeicao
- * @param {Object} item
- * @returns {HTMLElement}
- */
+/** Pílula de uma opção do grupo: nome e, embaixo, quantidade e kcal. */
 function pilulaDeOpcao(opcao, refeicao, item) {
   const btn = document.createElement('button');
   btn.className = 'pilula pilula-opcao';
@@ -418,9 +369,7 @@ function pilulaDeOpcao(opcao, refeicao, item) {
   return btn;
 }
 
-/* ------------------------------------------------------------------ */
-/* Avisos e atalhos                                                    */
-/* ------------------------------------------------------------------ */
+/* --- Avisos e atalhos --- */
 
 function faixaDeErros(erros) {
   const div = document.createElement('div');

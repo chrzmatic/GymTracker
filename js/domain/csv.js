@@ -1,34 +1,16 @@
 /**
- * Geração de CSV (especificação, seção 6.8).
+ * Geração de CSV para Excel, Numbers e Google Sheets.
  *
- * O arquivo precisa abrir no Excel, no Numbers e no Google Sheets. Duas
- * decisões nascem disso:
- *
- *  - **Separador ponto e vírgula.** O Excel em português usa vírgula como
- *    separador decimal, e um CSV separado por vírgula com números em
- *    "62,5" fica ilegível: cada número vira duas colunas. Com ponto e
- *    vírgula os dois convivem.
- *
- *  - **BOM UTF-8 no começo.** Sem ele o Excel no Windows lê o arquivo como
- *    ANSI e "Tríceps" vira "TrÃ­ceps".
+ * Separador `;`, porque o Excel em português usa vírgula decimal.
+ * BOM UTF-8 no começo, senão o Excel no Windows estraga os acentos.
  */
 
-/** Separador de colunas. Ver o comentário acima. */
 export const SEPARADOR = ';';
 
-/** Marca de ordem de bytes, para o Excel reconhecer UTF-8. */
+/** BOM, para o Excel reconhecer UTF-8. */
 export const BOM = '﻿';
 
-/**
- * Escapa um valor para uma célula de CSV.
- *
- * Aspas, separador e quebra de linha obrigam a envolver em aspas duplas, e
- * aspas internas são dobradas. É o formato do RFC 4180, que os três
- * programas entendem.
- *
- * @param {*} valor
- * @returns {string}
- */
+/** Escapa um valor para uma célula (RFC 4180). */
 export function celula(valor) {
   if (valor === null || valor === undefined) return '';
   const texto = String(valor);
@@ -41,21 +23,16 @@ export function celula(valor) {
   return '"' + texto.replace(/"/g, '""') + '"';
 }
 
-/**
- * Formata um número para a planilha, com vírgula decimal.
- * @param {number|null|undefined} valor
- * @returns {string}
- */
+/** Número com vírgula decimal. */
 export function numero(valor) {
   if (valor === null || valor === undefined || Number.isNaN(valor)) return '';
   return String(Math.round(valor * 1000) / 1000).replace('.', ',');
 }
 
 /**
- * Monta um CSV a partir do cabeçalho e das linhas.
+ * CSV completo, com BOM.
  * @param {string[]} cabecalho
  * @param {Array[]} linhas
- * @returns {string} com BOM, pronto para virar arquivo
  */
 export function montarCsv(cabecalho, linhas) {
   const tudo = [cabecalho, ...linhas]
@@ -64,17 +41,7 @@ export function montarCsv(cabecalho, linhas) {
   return BOM + tudo + '\r\n';
 }
 
-/**
- * CSV dos treinos: uma linha por série registrada.
- *
- * Uma linha por série (e não por sessão) é o que permite filtrar e montar
- * tabela dinâmica na planilha depois.
- *
- * @param {Object[]} sessoes
- * @param {Object[]} series
- * @param {Map<string, Object>} exercicios
- * @returns {string}
- */
+/** CSV dos treinos, uma linha por série (bom para filtrar na planilha). */
 export function csvDeTreinos(sessoes, series, exercicios) {
   const porId = new Map(sessoes.map((s) => [s.id, s]));
 
@@ -130,11 +97,6 @@ export function csvDeTreinos(sessoes, series, exercicios) {
   );
 }
 
-/**
- * CSV do peso corporal.
- * @param {Object[]} pesos
- * @returns {string}
- */
 export function csvDePeso(pesos) {
   const linhas = pesos
     .slice()
@@ -144,11 +106,10 @@ export function csvDePeso(pesos) {
 }
 
 /**
- * Nome de arquivo com a data de hoje.
+ * Nome de arquivo com a data.
  * @param {string} prefixo
  * @param {string} hoje AAAA-MM-DD
  * @param {string} extensao sem o ponto
- * @returns {string}
  */
 export function nomeDeArquivo(prefixo, hoje, extensao) {
   return `${prefixo}-${hoje}.${extensao}`;

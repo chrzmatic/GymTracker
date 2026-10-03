@@ -1,28 +1,16 @@
 /**
- * Regras puras dos modelos de treino, exercícios e músculos.
+ * Regras puras de treinos, exercícios e músculos.
  *
- * Nada aqui toca IndexedDB nem a página. São as operações de edição
- * (criar, reordenar, transformar em grupo de alternativas) e as checagens
- * de uso que impedem apagar algo que ainda está em uso.
- *
- * Diferença de ordenação entre treinos e itens, que é fácil confundir:
- *  - **treinos** têm campo `ordem`, porque a rotação precisa de uma sequência
- *    explícita que sobrevive a gravações separadas;
- *  - **itens de um treino** são ordenados pela posição no array `itens`,
- *    porque eles são gravados sempre juntos, dentro do treino.
+ * Treinos têm campo `ordem` (a rotação precisa de sequência);
+ * os itens de um treino seguem a posição no array `itens`.
  */
 
 import { TIPOS_CARGA } from '../utils/constantes.js';
 
-/* ------------------------------------------------------------------ */
-/* Reordenação                                                         */
-/* ------------------------------------------------------------------ */
+/* --- Reordenação --- */
 
 /**
- * Move um elemento do array uma posição para cima ou para baixo.
- * @param {Array} lista
- * @param {number} indice posição atual
- * @param {-1|1} direcao -1 sobe, 1 desce
+ * Move um elemento uma posição.
  * @returns {Array|null} novo array, ou null se já está na ponta
  */
 export function moverNoArray(lista, indice, direcao) {
@@ -35,11 +23,8 @@ export function moverNoArray(lista, indice, direcao) {
 }
 
 /**
- * Move um item dentro de um treino.
- * @param {Object} treino
- * @param {string} itemId
- * @param {-1|1} direcao
- * @returns {Object|null} treino atualizado, ou null se não deu para mover
+ * Move um item dentro do treino.
+ * @returns {Object|null} treino atualizado, ou null
  */
 export function moverItemDoTreino(treino, itemId, direcao) {
   const indice = treino.itens.findIndex((i) => i.id === itemId);
@@ -48,16 +33,8 @@ export function moverItemDoTreino(treino, itemId, direcao) {
 }
 
 /**
- * Move um treino dentro do próprio grupo (rotação ou extras).
- *
- * Reordenar só faz sentido dentro do grupo: a rotação tem sequência, os
- * extras são uma lista solta. Depois da troca, o campo `ordem` de *todos*
- * os treinos é recalculado, com a rotação primeiro.
- *
- * @param {Object[]} treinos todos os treinos
- * @param {string} treinoId
- * @param {-1|1} direcao
- * @returns {Object[]|null} lista completa com `ordem` nova, ou null
+ * Move um treino dentro do grupo (rotação ou extras) e recalcula `ordem`.
+ * @returns {Object[]|null} todos os treinos, ou null
  */
 export function moverTreino(treinos, treinoId, direcao) {
   const alvo = treinos.find((t) => t.id === treinoId);
@@ -72,27 +49,14 @@ export function moverTreino(treinos, treinoId, direcao) {
   return numerarOrdem(alvo.naRotacao ? [...movido, ...outros] : [...outros, ...movido]);
 }
 
-/**
- * Recalcula o campo `ordem` com a rotação sempre antes dos extras.
- * @param {Object[]} treinos na ordem desejada dentro de cada grupo
- * @returns {Object[]}
- */
+/** Recalcula `ordem`, com a rotação antes dos extras. */
 export function numerarOrdem(treinos) {
   const rotacao = treinos.filter((t) => t.naRotacao);
   const extras = treinos.filter((t) => !t.naRotacao);
   return [...rotacao, ...extras].map((t, ordem) => ({ ...t, ordem }));
 }
 
-/**
- * Troca um treino entre rotação e extras.
- *
- * Ao entrar na rotação o treino vai para o fim dela, que é o lugar que não
- * bagunça a sequência de quem já está rodando.
- *
- * @param {Object[]} treinos
- * @param {string} treinoId
- * @returns {Object[]} lista completa com `ordem` nova
- */
+/** Troca um treino entre rotação e extras. Ao entrar na rotação, vai para o fim. */
 export function alternarRotacao(treinos, treinoId) {
   const trocado = treinos.map((t) =>
     t.id === treinoId ? { ...t, naRotacao: !t.naRotacao } : t
@@ -103,19 +67,16 @@ export function alternarRotacao(treinos, treinoId) {
   return numerarOrdem([...resto, alvo]);
 }
 
-/* ------------------------------------------------------------------ */
-/* Criação de itens                                                    */
-/* ------------------------------------------------------------------ */
+/* --- Criação de itens --- */
 
 /**
- * Cria um item de exercício para um modelo de treino.
+ * Item de exercício para um treino.
  * @param {Object} params
  * @param {string} params.id
  * @param {string} params.exercicioId
  * @param {number} [params.seriesPlanejadas]
  * @param {number|null} [params.repsPlanejadas]
  * @param {boolean} [params.opcional]
- * @returns {Object}
  */
 export function criarItemExercicio({
   id,
@@ -135,15 +96,10 @@ export function criarItemExercicio({
 }
 
 /**
- * Transforma um item de exercício num grupo de alternativas.
- *
- * O exercício que já estava no item vira a primeira alternativa e o padrão,
- * então nenhuma sessão antiga fica órfã e a próxima sessão começa igual.
- *
- * @param {Object} item item do tipo 'exercicio'
- * @param {string} outroExercicioId a segunda alternativa
- * @param {string} [nome] rótulo do grupo (ex.: 'Voador inverso ou face pull')
- * @returns {Object} item do tipo 'alternativas'
+ * Transforma um item em grupo de alternativas. O exercício atual vira o padrão.
+ * @param {Object} item do tipo 'exercicio'
+ * @param {string} outroExercicioId
+ * @param {string} [nome] ex.: 'Voador inverso ou face pull'
  */
 export function virarGrupoDeAlternativas(item, outroExercicioId, nome = null) {
   return {
@@ -158,11 +114,7 @@ export function virarGrupoDeAlternativas(item, outroExercicioId, nome = null) {
   };
 }
 
-/**
- * Desfaz um grupo de alternativas, mantendo só a alternativa padrão.
- * @param {Object} item item do tipo 'alternativas'
- * @returns {Object} item do tipo 'exercicio'
- */
+/** Desfaz o grupo, ficando só a alternativa padrão. */
 export function desfazerGrupo(item) {
   return criarItemExercicio({
     id: item.id,
@@ -173,13 +125,7 @@ export function desfazerGrupo(item) {
   });
 }
 
-/**
- * Remove uma alternativa de um grupo.
- * Sobrando uma só, o grupo deixa de fazer sentido e vira item simples.
- * @param {Object} item
- * @param {string} exercicioId alternativa a remover
- * @returns {Object} o grupo sem ela, ou um item de exercício
- */
+/** Tira uma alternativa. Sobrando uma, vira item simples. */
 export function removerAlternativa(item, exercicioId) {
   const alternativas = item.alternativas.filter((id) => id !== exercicioId);
   if (alternativas.length <= 1) {
@@ -197,18 +143,15 @@ export function removerAlternativa(item, exercicioId) {
   return { ...item, alternativas, exercicioPadraoId };
 }
 
-/* ------------------------------------------------------------------ */
-/* Exercícios e músculos                                               */
-/* ------------------------------------------------------------------ */
+/* --- Exercícios e músculos --- */
 
 /**
- * Cria um exercício novo.
+ * Exercício novo.
  * @param {Object} params
  * @param {string} params.id
  * @param {string} params.nome
  * @param {string} [params.tipoCarga]
  * @param {Object[]} [params.musculos]
- * @returns {Object}
  */
 export function criarExercicio({
   id,
@@ -220,14 +163,9 @@ export function criarExercicio({
 }
 
 /**
- * Normaliza a lista de músculos de um exercício.
- *
- * Regras: músculo direto sempre conta 1 (a fração não se aplica); indireto
- * usa a fração informada, limitada entre 0 e 1. Um músculo não pode aparecer
- * duas vezes no mesmo exercício.
- *
+ * Limpa a lista de músculos: direto vale 1, indireto usa a fração (0 a 1),
+ * sem repetir músculo.
  * @param {{musculoId: string, tipo: string, fracao?: number}[]} lista
- * @returns {Object[]}
  */
 export function normalizarMusculos(lista) {
   const vistos = new Set();
@@ -246,14 +184,7 @@ export function normalizarMusculos(lista) {
 }
 
 /**
- * Onde um exercício está sendo usado nos modelos de treino.
- *
- * Usado para avisar antes de excluir: a especificação pede confirmação antes
- * de apagar qualquer coisa, e apagar um exercício em uso deixaria itens
- * apontando para o vazio.
- *
- * @param {Object[]} treinos
- * @param {string} exercicioId
+ * Treinos que usam um exercício (para avisar antes de excluir).
  * @returns {{treinoId: string, treinoNome: string, comoAlternativa: boolean}[]}
  */
 export function usosDoExercicio(treinos, exercicioId) {
@@ -272,24 +203,14 @@ export function usosDoExercicio(treinos, exercicioId) {
   return usos;
 }
 
-/**
- * Quais exercícios usam um músculo.
- * @param {Object[]} exercicios
- * @param {string} musculoId
- * @returns {Object[]} os exercícios que citam esse músculo
- */
+/** Exercícios que usam um músculo. */
 export function usosDoMusculo(exercicios, musculoId) {
   return exercicios.filter((e) =>
     (e.musculos ?? []).some((m) => m.musculoId === musculoId)
   );
 }
 
-/**
- * Remove um músculo de todos os exercícios que o citam.
- * @param {Object[]} exercicios
- * @param {string} musculoId
- * @returns {Object[]} só os exercícios que precisaram mudar
- */
+/** Tira um músculo dos exercícios. Devolve só os que mudaram. */
 export function tirarMusculoDosExercicios(exercicios, musculoId) {
   return usosDoMusculo(exercicios, musculoId).map((e) => ({
     ...e,
@@ -298,14 +219,8 @@ export function tirarMusculoDosExercicios(exercicios, musculoId) {
 }
 
 /**
- * Remove um exercício de todos os treinos que o usam.
- *
- * Num grupo de alternativas, tira só aquela alternativa (e o grupo vira item
- * simples se sobrar uma só). Num item simples, o item inteiro sai.
- *
- * @param {Object[]} treinos
- * @param {string} exercicioId
- * @returns {Object[]} só os treinos que precisaram mudar
+ * Tira um exercício dos treinos. Num grupo, tira só a alternativa.
+ * Devolve só os treinos que mudaram.
  */
 export function tirarExercicioDosTreinos(treinos, exercicioId) {
   const mudados = [];
@@ -331,8 +246,7 @@ export function tirarExercicioDosTreinos(treinos, exercicioId) {
 }
 
 /**
- * Soma as séries planejadas de um treino, separando as opcionais.
- * @param {Object} treino
+ * Séries planejadas do treino.
  * @returns {{obrigatorias: number, opcionais: number, total: number}}
  */
 export function seriesPlanejadasDoTreino(treino) {

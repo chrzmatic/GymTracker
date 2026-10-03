@@ -1,11 +1,6 @@
 /**
- * Aba Treino: tela inicial do app.
- *
- * Dois estados:
- *  - sem sessão aberta: escolher um treino para começar (ou retomar)
- *  - com sessão aberta: registrar as séries
- *
- * Tudo é salvo a cada alteração, então sair do app no meio não perde nada.
+ * Aba Treino: escolher o treino ou registrar a sessão aberta.
+ * Tudo é salvo a cada alteração.
  */
 
 import { hojeIso, formatarLongo, descreverDistancia } from '../utils/date.js';
@@ -18,29 +13,24 @@ import { diaDaProximaSugestao } from '../domain/rotacao.js';
 import { confirmar, escolher, escolherComBusca, formulario } from '../components/dialogo.js';
 import { abrir, voltarUmaTela } from '../navegacao.js';
 
-/** Estado local da tela. O banco continua sendo a fonte da verdade. */
+/** Estado da tela. O banco é a fonte da verdade. */
 const estado = {
   sessaoId: null,
   sessao: null,
   series: [],
   exercicios: new Map(),
   ultimaVezPorExercicio: new Map(),
-  /** true quando a sessão foi aberta pelo histórico, e não é a do dia. */
+  /** true quando a sessão foi aberta de outra tela (histórico, calendário, resumo). */
   veioDeOutraTela: false,
 };
 
 let raiz = null;
 
 /**
- * Renderiza a aba Treino dentro do elemento informado.
- *
- * Com `params.sessaoId` abre aquela sessão específica — é assim que o
- * histórico (e o calendário, na Etapa 3) abrem uma sessão passada. Sem
- * parâmetro, retoma a sessão em andamento, se houver.
- *
+ * Monta a aba Treino. Com `sessaoId`, abre aquela sessão;
+ * sem, retoma a sessão em andamento, se houver.
  * @param {HTMLElement} elemento
  * @param {{sessaoId?: string}} [params]
- * @returns {Promise<void>}
  */
 export async function montarTreino(elemento, params = {}) {
   raiz = elemento;
@@ -55,19 +45,12 @@ export async function montarTreino(elemento, params = {}) {
   await desenhar();
 }
 
-/**
- * Recarrega os dados da sessão e redesenha a tela.
- *
- * O aviso do backup entra por último, depois de a tela estar pronta, e
- * vale para os dois caminhos (escolher treino e sessão aberta), porque os
- * dois começam limpando a raiz.
- */
+/** Redesenha e, por último, mostra o aviso do backup se preciso. */
 async function desenhar() {
   await desenharConteudo();
   avisarSeOBackupFalhou();
 }
 
-/** O desenho da tela em si. */
 async function desenharConteudo() {
   if (!raiz) return;
   if (!estado.sessaoId) {
@@ -88,21 +71,19 @@ async function desenharConteudo() {
   desenharSessao();
 }
 
-/** Busca, para cada exercício da sessão, o que foi feito da última vez. */
+/** Última vez de cada exercício da sessão. */
 async function carregarUltimasVezes() {
   const ids = [...new Set(estado.sessao.itens.map((i) => i.exercicioId).filter(Boolean))];
   estado.ultimaVezPorExercicio = await sessoes.ultimasVezes(estado.sessao, ids);
 }
 
-/* ------------------------------------------------------------------ */
-/* Tela 1: escolher o treino                                           */
-/* ------------------------------------------------------------------ */
+/* --- Escolher o treino --- */
 
 async function desenharEscolhaDeTreino() {
   const hoje = hojeIso();
   const deHoje = await sessoes.listarSessoesDaData(hoje);
 
-  // Se já treinou hoje, a sugestão passa para amanhã (ver o domínio).
+  // Se já treinou hoje, a sugestão é para amanhã.
   const dia = diaDaProximaSugestao(hoje, deHoje);
 
   const [{ rotacao, extras }, exercicios, sugestao] = await Promise.all([
@@ -136,11 +117,7 @@ async function desenharEscolhaDeTreino() {
   raiz.appendChild(atalhosDeGestao());
 }
 
-/**
- * Card com o que já foi treinado hoje, quando há sessão do dia.
- * @param {Object[]} deHoje sessões de hoje
- * @returns {HTMLElement}
- */
+/** Card com os treinos já feitos hoje. */
 function cardDoQueJaFoiHoje(deHoje) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -175,20 +152,10 @@ function cardDoQueJaFoiHoje(deHoje) {
 }
 
 /**
- * Card em destaque com o treino sugerido.
- *
- * O dia da sugestão depende do que já aconteceu: se ainda não treinou hoje,
- * a sugestão é para hoje; se já treinou, ela passa a ser para amanhã, já
- * contando o treino de hoje na sequência.
- *
- * A sugestão é só uma sugestão: os treinos todos continuam listados
- * embaixo, e escolher outro não quebra nada — a rotação se orienta pelo
- * que foi realmente registrado, não pelo que foi sugerido.
- *
- * @param {Object} sugestao resultado de sugestaoPara
+ * Card do treino sugerido. Os outros treinos continuam listados embaixo.
+ * @param {Object} sugestao
  * @param {Map<string, Object>} exercicios
- * @param {boolean} paraAmanha true quando já houve treino hoje
- * @returns {HTMLElement}
+ * @param {boolean} paraAmanha true se já treinou hoje
  */
 function cardDeSugestao(sugestao, exercicios, paraAmanha) {
   const card = document.createElement('div');
@@ -220,9 +187,7 @@ function cardDeSugestao(sugestao, exercicios, paraAmanha) {
 
   const botao = document.createElement('button');
   botao.className = 'btn btn-primario btn-bloco';
-  // Mesmo com a sugestão virada para amanhã, o botão registra hoje: mais de
-  // uma sessão no mesmo dia é permitido, e treinar de novo hoje é o caso
-  // real (segunda sessão, treino extra). Registrar amanhã não faz sentido.
+  // Mesmo sugerido para amanhã, o botão registra hoje (segunda sessão do dia).
   botao.textContent = paraAmanha
     ? 'Fazer o ' + sugestao.treino.nome + ' hoje mesmo'
     : 'Começar treino ' + sugestao.treino.nome;
@@ -233,7 +198,7 @@ function cardDeSugestao(sugestao, exercicios, paraAmanha) {
 }
 
 
-/** Atalhos para editar os modelos e ver o histórico. */
+/** Atalhos para editar treinos e ver o histórico. */
 function atalhosDeGestao() {
   const div = document.createElement('div');
   div.className = 'linha-botoes';
@@ -253,12 +218,7 @@ function atalhosDeGestao() {
   return div;
 }
 
-/**
- * Card de um treino na tela de escolha.
- * @param {Object} treino
- * @param {Map<string, Object>} exercicios
- * @returns {HTMLElement}
- */
+/** Card de um treino na escolha. */
 function cardDeTreino(treino, exercicios) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -311,20 +271,14 @@ function cardDeTreino(treino, exercicios) {
   return card;
 }
 
-/**
- * Inicia uma sessão e abre a tela de registro.
- * @param {string} treinoId
- * @param {string} data AAAA-MM-DD
- */
+/** Inicia a sessão e abre o registro. */
 async function comecar(treinoId, data) {
   const sessao = await sessoes.iniciarSessao(treinoId, data);
   estado.sessaoId = sessao.id;
   await desenhar();
 }
 
-/* ------------------------------------------------------------------ */
-/* Tela 2: registrar a sessão                                          */
-/* ------------------------------------------------------------------ */
+/* --- Registrar a sessão --- */
 
 function desenharSessao() {
   const { sessao } = estado;
@@ -340,7 +294,7 @@ function desenharSessao() {
   raiz.appendChild(rodapeDaSessao(sessao));
 }
 
-/** Cabeçalho com nome do treino, data e estado. */
+/** Nome do treino, data e estado. */
 function cabecalhoDaSessao(sessao) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -368,7 +322,7 @@ function cabecalhoDaSessao(sessao) {
   return card;
 }
 
-/** Card de um exercício (ou grupo de alternativas) com suas séries. */
+/** Card de um exercício com as séries. */
 function cardDeItem(item, posicao, total) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -421,16 +375,8 @@ function cardDeItem(item, posicao, total) {
 }
 
 /**
- * Botão de subir/descer o exercício na sessão.
- *
- * A ordem importa de verdade num treino full body: o que fica para o fim
- * pega a fadiga acumulada e rende menos. Por isso dá para reordenar durante
- * o treino, e a ordem fica gravada na sessão.
- *
- * @param {Object} item
- * @param {-1|1} direcao
- * @param {boolean} ativo false quando o item já está na ponta
- * @returns {HTMLElement}
+ * Sobe ou desce o exercício. A ordem fica gravada na sessão.
+ * @param {boolean} ativo false quando já está na ponta
  */
 function botaoMover(item, direcao, ativo) {
   const btn = document.createElement('button');
@@ -448,13 +394,13 @@ function botaoMover(item, direcao, ativo) {
   return btn;
 }
 
-/** Nome mostrado no card: o exercício escolhido, ou o nome do grupo. */
+/** Nome no card: o exercício ou o grupo. */
 function nomeDoExercicio(item) {
   const ex = estado.exercicios.get(item.exercicioId);
   return ex ? ex.nome : nomeDoItem(item, estado.exercicios);
 }
 
-/** Pílulas para trocar a alternativa com um toque. */
+/** Pílulas para trocar a alternativa. */
 function pilulasDeAlternativa(item) {
   const div = document.createElement('div');
   div.className = 'pilulas';
@@ -479,13 +425,7 @@ function pilulasDeAlternativa(item) {
   return div;
 }
 
-/**
- * Linha "Última vez (há 5 dias · 3º): 60×10  60×9".
- *
- * Mostra também em que posição do treino o exercício foi feito naquele dia,
- * porque é essa a informação que justifica reordenar: um exercício que
- * rendeu pouco em 7º lugar pode render mais em 2º.
- */
+/** "Última vez (há 5 dias · 3º de 8): 60×10 60×9". */
 function linhaUltimaVez(ultima) {
   const p = document.createElement('p');
   p.className = 'texto-fraco pequeno';
@@ -506,12 +446,7 @@ function linhaUltimaVez(ultima) {
   return p;
 }
 
-/**
- * Trecho " · 3º de 8" com a posição que o exercício ocupou naquela sessão.
- * Devolve string vazia se a sessão antiga não guardou a ordem.
- * @param {{sessao: Object, series: Object[]}} ultima
- * @returns {string}
- */
+/** " · 3º de 8", ou '' se a sessão antiga não guardou a ordem. */
 function posicaoNaquelaVez(ultima) {
   const ordem = ultima.series[0] ? ultima.series[0].ordemItem : null;
   const total = (ultima.sessao.itens ?? []).length;
@@ -519,12 +454,12 @@ function posicaoNaquelaVez(ultima) {
   return ' · ' + (ordem + 1) + 'º de ' + total;
 }
 
-/** Séries já registradas para um item, na ordem de exibição. */
+/** Séries do item, em ordem. */
 function seriesDe(item) {
   return estado.series.filter((s) => s.itemId === item.itemId);
 }
 
-/** Uma linha editável de série. */
+/** Linha editável de uma série. */
 function linhaDeSerie(item, serie, seriesDoItem) {
   const ex = estado.exercicios.get(item.exercicioId);
   const unidade = ROTULO_CARGA[(ex && ex.tipoCarga) || 'carga'];
@@ -567,11 +502,10 @@ function linhaDeSerie(item, serie, seriesDoItem) {
 }
 
 /**
- * Campo numérico que salva sozinho (ao digitar, com pequeno atraso, e ao sair).
+ * Campo numérico que salva sozinho (ao digitar e ao sair).
  * @param {number|null} valor
- * @param {string} unidade rótulo curto à direita
+ * @param {string} unidade rótulo à direita
  * @param {(v: number|null) => Promise<void>} aoMudar
- * @returns {HTMLElement}
  */
 function campoNumerico(valor, unidade, aoMudar) {
   const wrap = document.createElement('div');
@@ -628,7 +562,7 @@ function botoesDeSerie(item, seriesDoItem) {
   return div;
 }
 
-/** Menu de opções do exercício dentro da sessão. */
+/** Menu do exercício na sessão. */
 async function menuDoItem(item) {
   const acao = await escolher(nomeDoExercicio(item), [
     { valor: 'substituir', rotulo: 'Substituir por outro exercício' },
@@ -648,15 +582,7 @@ async function menuDoItem(item) {
   }
 }
 
-/**
- * Troca o exercício mantendo o lugar dele no treino.
- *
- * É diferente de remover e adicionar: como a vaga do treino é a mesma, a
- * comparação entre sessões mostra "exercício diferente" naquele lugar, em
- * vez de um removido e um adicionado soltos.
- *
- * @param {Object} item
- */
+/** Troca o exercício mantendo o lugar dele no treino. */
 async function substituir(item) {
   const todos = await listarExercicios();
   const jaNaSessao = new Set(estado.sessao.itens.map((i) => i.exercicioId));
@@ -695,7 +621,7 @@ async function substituir(item) {
   await desenhar();
 }
 
-/** Anotação geral, adicionar exercício, finalizar e excluir. */
+/** Anotação, adicionar exercício, finalizar e excluir. */
 function rodapeDaSessao(sessao) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -786,13 +712,7 @@ function rodapeDaSessao(sessao) {
   return card;
 }
 
-/**
- * Fecha a sessão aberta.
- *
- * Se ela foi aberta pelo histórico, volta para lá (a pilha de navegação
- * cuida disso). Se é a sessão do dia, volta para a lista de treinos da aba.
- * @returns {Promise<void>}
- */
+/** Fecha a sessão: volta para a tela anterior ou para a escolha de treino. */
 async function sair() {
   if (estado.veioDeOutraTela) {
     estado.veioDeOutraTela = false;
@@ -805,21 +725,12 @@ async function sair() {
 }
 
 
-/* ------------------------------------------------------------------ */
-/* Aviso do backup                                                     */
-/* ------------------------------------------------------------------ */
+/* --- Aviso do backup --- */
 
 /**
- * Faixa discreta no topo quando o último backup no Dropbox não saiu.
- *
- * A especificação pede isso aqui, e não num diálogo, por um motivo
- * concreto: o backup falha justamente no lugar onde a internet é ruim, a
- * academia, e um modal no meio de uma série seria a pior interrupção
- * possível. A faixa informa e sai do caminho — dá para treinar o dia
- * inteiro sem tocar nela.
- *
- * Só aparece quando há erro de verdade. "Pendente" por falta de rede é o
- * funcionamento normal e não vira aviso.
+ * Faixa no topo quando o backup no Dropbox falhou.
+ * Faixa e não diálogo, para não atrapalhar o treino. Pendente por falta de
+ * rede não é erro e não aparece.
  */
 function avisarSeOBackupFalhou() {
   if (!raiz) return;
@@ -832,15 +743,11 @@ function avisarSeOBackupFalhou() {
       raiz.prepend(faixaDeAviso(estadoBackup.ultimoErro));
     })
     .catch(() => {
-      /* sem backup configurado, não há aviso a dar */
+      /* Sem backup configurado, não há aviso. */
     });
 }
 
-/**
- * A faixa em si: toca para ir às configurações do Dropbox.
- * @param {string} mensagem
- * @returns {HTMLElement}
- */
+/** A faixa: toca para abrir o Dropbox. */
 function faixaDeAviso(mensagem) {
   const faixa = document.createElement('button');
   faixa.className = 'aviso-backup';

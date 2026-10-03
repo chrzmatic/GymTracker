@@ -1,23 +1,10 @@
-/**
- * Resumo de uma sessão, só para ler: a tela de visualização rápida e o
- * texto de "copiar".
- *
- * Funções puras. Recebem a sessão, as séries e os exercícios como estão
- * no banco e devolvem a estrutura pronta para desenhar ou o texto pronto
- * para colar. Nada aqui grava, então a tela de resumo nunca muda um
- * treino; ela só reflete o que está salvo no momento em que é desenhada.
- */
+/** Resumo de uma sessão para ler e copiar. Não grava nada. */
 
 import { STATUS, TIPOS_CARGA } from '../utils/constantes.js';
 import { ordenarSeries } from './sessao.js';
 import { formatarLongo } from '../utils/date.js';
 
-/**
- * Número com vírgula, sem zeros à toa. Igual ao `num` da formatação, mas
- * aqui para o domínio não depender da camada de exibição.
- * @param {number} valor
- * @returns {string}
- */
+/** Número com vírgula (como `num`, sem depender da camada de exibição). */
 function numero(valor) {
   const arredondado = Math.round(valor * 100) / 100;
   return String(arredondado).replace('.', ',');
@@ -29,12 +16,8 @@ function vazio(valor) {
 }
 
 /**
- * Texto de uma série: "16 kg × 10", "peso corporal +5 kg × 8",
- * "assistência 20 kg × 6". O que não foi anotado aparece como "—", nunca
- * como zero.
- * @param {{carga: number|null, reps: number|null}} serie
- * @param {string} [tipoCarga]
- * @returns {string}
+ * Texto de uma série: "16 kg × 10", "peso corporal +5 kg × 8", "assistência 20 kg × 6".
+ * O que não foi anotado vira "—", nunca zero.
  */
 export function textoDaSerie(serie, tipoCarga = TIPOS_CARGA.CARGA) {
   const reps = vazio(serie.reps) ? '—' : numero(Number(serie.reps));
@@ -52,15 +35,9 @@ export function textoDaSerie(serie, tipoCarga = TIPOS_CARGA.CARGA) {
 }
 
 /**
- * Monta o resumo de uma sessão.
- *
- * Os exercícios seguem a ordem gravada na sessão. Séries que não batem
- * com nenhum item (não deveria acontecer, mas um backup antigo ou uma
- * edição interrompida podem deixar) entram no fim, agrupadas pelo
- * exercício: o resumo nunca esconde uma série que está no banco.
- *
+ * Resumo da sessão, na ordem dos exercícios.
+ * Séries sem item correspondente entram no fim, para nada ficar escondido.
  * @param {{sessao: Object, series: Object[], exercicios: Map<string, Object>}} dados
- * @returns {Object}
  */
 export function resumirSessao({ sessao, series, exercicios }) {
   const ordenadas = ordenarSeries(series ?? []);
@@ -144,11 +121,7 @@ export function resumirSessao({ sessao, series, exercicios }) {
   };
 }
 
-/**
- * Linha de totais: "5 exercícios · 20 séries · 194 reps".
- * @param {Object} totais
- * @returns {string}
- */
+/** "5 exercícios · 20 séries · 194 reps". */
 export function textoDosTotais(totais) {
   const p = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
   return [
@@ -159,15 +132,8 @@ export function textoDosTotais(totais) {
 }
 
 /**
- * Texto para colar em qualquer lugar (WhatsApp, Notas, e-mail).
- *
- * Só texto puro com quebras de linha: sem tabulação nem espaços no começo
- * da linha, que alguns apps comem ao colar e bagunçam o alinhamento. Cada
- * série é um item "- ", que vira lista onde houver markdown e continua
- * legível onde não houver.
- *
- * @param {Object} resumo resultado de resumirSessao
- * @returns {string}
+ * Texto para colar (WhatsApp, Notas…).
+ * Sem tabulação nem espaço no começo da linha; cada série é um "- ".
  */
 export function textoParaCopiar(resumo) {
   const linhas = [];

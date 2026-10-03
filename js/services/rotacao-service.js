@@ -1,14 +1,6 @@
 /**
- * Casos de uso da sugestão do próximo treino e do calendário.
- *
- * Junta três fontes — sessões registradas, treinos da rotação e as
- * configurações — e entrega para as telas o resultado já pronto.
- *
- * Tudo depende de datas, então qualquer registro retroativo, edição ou
- * exclusão de sessão muda o resultado na próxima leitura. Não há nada em
- * cache: a especificação pede que a sugestão, o calendário e o resto se
- * atualizem sozinhos quando o histórico muda, e a forma mais simples de
- * garantir isso é sempre recalcular.
+ * Sugestão do próximo treino e dados do calendário.
+ * Sempre recalculado, então registros retroativos e edições aparecem na hora.
  */
 
 import { listarSessoes } from '../data/sessoes-repo.js';
@@ -19,8 +11,7 @@ import { sugerirTreino, explicarSugestao } from '../domain/rotacao.js';
 import { montarMes, agruparPorData, resumoDoMes } from '../domain/calendario.js';
 
 /**
- * Sugere o treino de um dia.
- * @param {string} [dia] AAAA-MM-DD (padrão: hoje)
+ * Treino sugerido para um dia (padrão: hoje).
  * @returns {Promise<{treino: Object, motivo: string, ultima: Object|null, diasDesde: number|null, explicacao: string}|null>}
  */
 export async function sugestaoPara(dia = hojeIso()) {
@@ -36,15 +27,10 @@ export async function sugestaoPara(dia = hojeIso()) {
 }
 
 /**
- * Tudo que a tela do calendário precisa de um mês.
- *
- * Inclui a sugestão de cada dia **sem** sessão, calculada com as sessões
- * anteriores àquele dia — é isso que faz um dia futuro mostrar o treino
- * que seria sugerido para ele.
- *
+ * Tudo que o calendário precisa de um mês, incluindo a sugestão
+ * de cada dia sem sessão.
  * @param {number} ano
  * @param {number} mes 1-12
- * @returns {Promise<Object>}
  */
 export async function dadosDoMes(ano, mes) {
   const [sessoes, treinos, config] = await Promise.all([
@@ -68,11 +54,7 @@ export async function dadosDoMes(ano, mes) {
     rotacao,
     treinos,
     resumo: resumoDoMes(doMes),
-    /**
-     * Sugestão de um dia qualquer da grade, sem reler o banco.
-     * @param {string} dia
-     * @returns {Object|null}
-     */
+    /** Sugestão de qualquer dia da grade, sem reler o banco. */
     sugestaoDoDia(dia) {
       const s = sugerirTreino(sessoes, rotacao, dia, config);
       return s ? { ...s, explicacao: explicarSugestao(s) } : null;

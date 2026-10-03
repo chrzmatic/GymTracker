@@ -1,7 +1,6 @@
 #!/bin/sh
-# Atualiza a versão do app (js/versao.js e o cache do service worker) com o
-# número deste commit. Ativar uma vez por clone:
-#   git config core.hooksPath .githooks
+# Atualiza a versão do app com o número deste commit.
+# Ativar uma vez por clone: git config core.hooksPath .githooks
 
 if command -v node >/dev/null 2>&1; then
   node scripts/versao.mjs --proximo || exit 1

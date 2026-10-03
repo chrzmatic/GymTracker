@@ -1,12 +1,4 @@
-/**
- * Tela do backup no Dropbox (especificação, seção 6.9).
- *
- * Um card só: o estado em cima, os botões embaixo. Sem explicar o que o
- * backup é nem como o Dropbox funciona — isto é um app pessoal, e quem o
- * abre já sabe. Texto na tela só onde ele evita um erro que não dá para
- * desfazer (a confirmação do restaurar) ou onde é preciso no momento
- * exato (os passos de colar o código).
- */
+/** Tela do backup no Dropbox: estado em cima, botões embaixo. */
 
 import { formulario, confirmar, avisar, escolher } from '../components/dialogo.js';
 import { formatarDataHora } from '../utils/date.js';
@@ -23,11 +15,7 @@ import {
 } from '../sync/dropbox-auth.js';
 import * as sync from '../sync/dropbox-backup.js';
 
-/**
- * Renderiza a tela do Dropbox.
- * @param {HTMLElement} raiz
- * @returns {Promise<void>}
- */
+/** Monta a tela do Dropbox. */
 export async function montarDropbox(raiz) {
   raiz.innerHTML = '';
 
@@ -36,19 +24,16 @@ export async function montarDropbox(raiz) {
     return;
   }
 
-  // Conectar sem internet deixaria o nome da conta em branco para sempre,
-  // porque ele só era buscado no login.
+  // Busca o nome da conta se ficou vazio (ex.: conectou sem internet).
   const antes = sync.estado();
   if (antes.conectado && !antes.conta) await nomeDaConta();
 
   raiz.appendChild(antes.conectado ? cardConectado(sync.estado()) : cardDesconectado());
 }
 
-/* ------------------------------------------------------------------ */
-/* Peças                                                               */
-/* ------------------------------------------------------------------ */
+/* --- Peças --- */
 
-/** Um card com título e, opcionalmente, uma linha de detalhe. */
+/** Card com título e uma linha de detalhe opcional. */
 function card(titulo, detalhe) {
   const el = document.createElement('div');
   el.className = 'card';
@@ -69,10 +54,7 @@ function card(titulo, detalhe) {
   return el;
 }
 
-/**
- * Botão de bloco com um espaço em cima, para os cards não precisarem
- * repetir `style.marginTop` em cada um.
- */
+/** Botão de bloco com espaço em cima. */
 function botao(rotulo, aoTocar, primario = false) {
   const b = document.createElement('button');
   b.className = 'btn btn-bloco' + (primario ? ' btn-primario' : '');
@@ -82,7 +64,7 @@ function botao(rotulo, aoTocar, primario = false) {
   return b;
 }
 
-/** Linha discreta de ações secundárias, separadas por ponto. */
+/** Linha de ações secundárias, separadas por ponto. */
 function acoesSecundarias(itens) {
   const linha = document.createElement('p');
   linha.className = 'pequeno';
@@ -100,9 +82,7 @@ function acoesSecundarias(itens) {
   return linha;
 }
 
-/* ------------------------------------------------------------------ */
-/* Os três estados da tela                                             */
-/* ------------------------------------------------------------------ */
+/* --- Estados da tela --- */
 
 /** Sem app key neste aparelho. */
 function cardSemChave() {
@@ -111,7 +91,7 @@ function cardSemChave() {
   return el;
 }
 
-/** Com chave, sem conexão. */
+/** Com app key, sem conexão. */
 function cardDesconectado() {
   const pendente = temPedidoPendente();
   const el = card(
@@ -163,11 +143,9 @@ function cardConectado(estado) {
   return el;
 }
 
-/* ------------------------------------------------------------------ */
-/* App key                                                             */
-/* ------------------------------------------------------------------ */
+/* --- App key --- */
 
-/** Formulário do app key, para a primeira vez e para corrigir um erro. */
+/** Formulário do app key. */
 async function pedirAppKey() {
   const dados = await formulario(
     'App key do Dropbox',
@@ -187,17 +165,11 @@ async function pedirAppKey() {
   await recarregar();
 }
 
-/* ------------------------------------------------------------------ */
-/* Conectar                                                            */
-/* ------------------------------------------------------------------ */
+/* --- Conectar --- */
 
 /**
- * Um botão só: o app escolhe o caminho que funciona aqui.
- *
- * No endereço publicado vale o redirecionamento, que volta sozinho. No
- * localhost e no app da Tela de Início não vale — lá o Dropbox mostra um
- * código para colar. Perguntar isso ao usuário seria transferir para ele
- * uma decisão que o código sabe tomar.
+ * Conecta pelo caminho que funciona aqui: redirecionamento no endereço
+ * publicado, código colado no localhost e no app da Tela de Início.
  */
 async function conectar() {
   const comRedirect = podeUsarRedirect();
@@ -217,12 +189,8 @@ async function conectar() {
 }
 
 /**
- * Os dois passos de colar o código, no mesmo diálogo.
- *
- * Juntos porque no iPhone sair para o Safari e voltar é uma viagem só de
- * ida em potencial: o app pode ser descartado da memória enquanto você
- * autoriza. Com o campo já aberto, voltar encontra onde colar.
- *
+ * Abre o Dropbox e pede o código no mesmo diálogo, para o campo já estar
+ * aberto ao voltar.
  * @param {string|null} url null quando o pedido já existe e só falta colar
  */
 async function pedirOCodigo(url) {
@@ -255,7 +223,7 @@ async function pedirOCodigo(url) {
   }
 }
 
-/** Erro de login, com o caso da chave faltando à parte. */
+/** Mostra um erro de login. */
 async function avisarErroDeLogin(erro) {
   if (erro instanceof SemAppKey) {
     await recarregar();
@@ -264,13 +232,7 @@ async function avisarErroDeLogin(erro) {
   await avisar('Não consegui conectar', String(erro && erro.message ? erro.message : erro));
 }
 
-/**
- * Fecha o login e já manda o primeiro backup.
- *
- * Na hora, de propósito: conectar e não ver nada acontecer deixa a dúvida
- * de se funcionou, e a resposta só viria 24 horas depois — tarde demais
- * para descobrir que a permissão no App Console estava errada.
- */
+/** Termina o login e já faz o primeiro backup, para confirmar que funciona. */
 async function depoisDeConectar() {
   await nomeDaConta();
   const resultado = await sync.fazerBackup('manual');
@@ -281,11 +243,9 @@ async function depoisDeConectar() {
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Backup e restauração                                                */
-/* ------------------------------------------------------------------ */
+/* --- Backup e restauração --- */
 
-/** "Fazer backup agora", com o botão contando o que está havendo. */
+/** "Fazer backup agora", com o andamento no botão. */
 async function fazerBackupAgora(evento) {
   const btn = evento.currentTarget;
   btn.disabled = true;
@@ -302,7 +262,7 @@ async function fazerBackupAgora(evento) {
   await recarregar();
 }
 
-/** Baixa a lista, deixa escolher, confirma e restaura. */
+/** Lista os backups, deixa escolher e restaura. */
 async function escolherERestaurar(evento) {
   const btn = evento.currentTarget;
   btn.disabled = true;
@@ -334,17 +294,7 @@ async function escolherERestaurar(evento) {
   await restaurarCaminho(escolhido);
 }
 
-/**
- * Baixa, mostra o que tem dentro, confirma e grava.
- *
- * O conteúdo aparece **antes** da confirmação pelo mesmo motivo do
- * "Importar JSON": um backup tirado de uma instalação nova tem quase 80
- * registros de treinos e alimentos padrão e parece cheio, mas pode não
- * ter nenhuma sessão sua. Confirmar às cegas é como se perde um
- * histórico.
- *
- * @param {string} caminho
- */
+/** Baixa, mostra o conteúdo, confirma e grava. */
 async function restaurarCaminho(caminho) {
   const { descreverBackup, perdasAoRestaurar } = await import(
     '../services/backup-service.js'
@@ -361,7 +311,7 @@ async function restaurarCaminho(caminho) {
   try {
     perdas = await perdasAoRestaurar(backup);
   } catch {
-    /* sem a comparação, o aviso genérico abaixo ainda vale */
+    /* Sem a comparação, vale o aviso genérico. */
   }
 
   const ok = await confirmar(
@@ -396,7 +346,7 @@ async function restaurarCaminho(caminho) {
   await recomecar();
 }
 
-/** Desconectar, apagando o token deste aparelho. */
+/** Desconecta, com confirmação. */
 async function desconectarComConfirmacao() {
   const ok = await confirmar(
     'Desconectar do Dropbox?',
@@ -408,18 +358,9 @@ async function desconectarComConfirmacao() {
   await recarregar();
 }
 
-/* ------------------------------------------------------------------ */
-/* Login que voltou pela URL                                           */
-/* ------------------------------------------------------------------ */
+/* --- Login que voltou pela URL --- */
 
-/**
- * Conclui um login que voltou por redirecionamento.
- *
- * Chamado pelo `main.js` na abertura, porque o `?code=` chega na URL
- * antes de qualquer tela existir.
- *
- * @returns {Promise<void>}
- */
+/** Conclui um login que voltou por redirecionamento (chamado pelo main.js). */
 export async function concluirLoginPendente() {
   const { concluirLoginDoRedirect } = await import('../sync/dropbox-auth.js');
   const resultado = await concluirLoginDoRedirect();

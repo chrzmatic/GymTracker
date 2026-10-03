@@ -1,11 +1,4 @@
-/**
- * Tela "Histórico": todas as sessões registradas, da mais recente para a
- * mais antiga, agrupadas por mês.
- *
- * Daqui se abre qualquer sessão passada para editar ou excluir — o que a
- * especificação pede na seção 6.2. A tela da sessão é a mesma do registro
- * do dia, então editar o passado usa exatamente os mesmos controles.
- */
+/** Histórico: todas as sessões, da mais recente para a mais antiga, por mês. */
 
 import * as sessoes from '../services/sessao-service.js';
 import { anteriorDoMesmoTreino } from '../services/comparacao-service.js';
@@ -13,11 +6,6 @@ import { formatarCurto, partesIso, NOMES_MES, descreverDistancia } from '../util
 import { confirmar, escolher } from '../components/dialogo.js';
 import { abrir, recarregar } from '../navegacao.js';
 
-/**
- * Renderiza o histórico.
- * @param {HTMLElement} raiz
- * @returns {Promise<void>}
- */
 export async function montarHistorico(raiz) {
   const lista = await sessoes.historico();
   raiz.innerHTML = '';
@@ -43,9 +31,8 @@ export async function montarHistorico(raiz) {
 }
 
 /**
- * Card de uma sessão no histórico.
+ * Card de uma sessão.
  * @param {{sessao: Object, series: number, aquecimentos: number, exercicios: number}} registro
- * @returns {HTMLElement}
  */
 function cardDaSessao({ sessao, series, aquecimentos, exercicios }) {
   const card = document.createElement('div');
@@ -116,27 +103,14 @@ function cardDaSessao({ sessao, series, aquecimentos, exercicios }) {
   return card;
 }
 
-/**
- * Sessão finalizada abre no resumo, só para ler; em andamento abre direto
- * no registro, que é o que se quer fazer com ela.
- * @param {Object} sessao
- * @returns {Promise<void>}
- */
+/** Finalizada abre o resumo; em andamento abre o registro. */
 function abrirSessao(sessao) {
   return sessao.status === sessoes.STATUS.FINALIZADA
     ? abrir('sessao-resumo', { sessaoId: sessao.id })
     : abrir('treino', { sessaoId: sessao.id });
 }
 
-/**
- * Menu de uma sessão do histórico.
- *
- * O atalho "comparar com a anterior do mesmo treino" é o que a
- * especificação pede na seção 6.5 — é a comparação que interessa na
- * prática, e achá-la na mão na lista de sessões seria trabalhoso.
- *
- * @param {Object} sessao
- */
+/** Menu da sessão: ver, editar, comparar com a anterior do mesmo treino e excluir. */
 async function menuDaSessao(sessao) {
   const anterior = await anteriorDoMesmoTreino(sessao);
 

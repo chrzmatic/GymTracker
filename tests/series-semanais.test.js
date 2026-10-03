@@ -1,10 +1,6 @@
 /**
- * Testes do contador de séries por músculo (especificação, seção 6.6).
- *
- * O teste central é o que a seção 8 pede na Etapa 5: reproduzir a tabela
- * de séries semanais do `TREINO-DADOS.md` **a partir do arquivo de carga
- * inicial de verdade**, não de dados inventados aqui. Se alguém mexer no
- * seed e desalinhar dos dados oficiais, este teste quebra.
+ * Testes das séries por músculo. O principal confere a tabela do
+ * TREINO-DADOS.md a partir dos dados padrão de verdade.
  */
 
 import test from 'node:test';
@@ -43,18 +39,16 @@ const ESPERADO_COM_OPCIONAIS = [
   ['Lombar', 0, 2, 2],
 ];
 
-/** Converte a tabela calculada para o formato comparável. */
+/** Tabela calculada no mesmo formato. */
 const comoTabela = (linhas) =>
   arredondarTabela(linhas).map((l) => [l.nome, l.diretas, l.indiretas, l.total]);
 
-/* ------------------------------------------------------------------ */
-/* O teste que a especificação pede                                    */
-/* ------------------------------------------------------------------ */
+/* --- Tabela dos dados padrão --- */
 
 test('a rotação inicial reproduz a tabela de séries semanais do TREINO-DADOS.md', () => {
   const calculado = comoTabela(planejadoPorMusculo(rotacao, exercicios, musculos));
 
-  // Compara linha a linha para a mensagem de erro dizer qual músculo errou.
+  // Linha a linha, para o erro dizer qual músculo falhou.
   ESPERADO_COM_OPCIONAIS.forEach((esperada) => {
     const real = calculado.find((l) => l[0] === esperada[0]);
     assert.deepEqual(real, esperada, `músculo ${esperada[0]}`);
@@ -91,9 +85,7 @@ test('o Glúteo com 3,5 não vira 3,4999 por causa do ponto flutuante', () => {
   assert.equal(gluteo.total, 3.5);
 });
 
-/* ------------------------------------------------------------------ */
-/* A conta em si, com dados pequenos                                   */
-/* ------------------------------------------------------------------ */
+/* --- A conta em si, com dados pequenos --- */
 
 const musculosTeste = [
   { id: 'mus-peito', nome: 'Peito' },
@@ -190,9 +182,7 @@ test('exercício que não existe mais é ignorado', () => {
   assert.doesNotThrow(() => planejadoPorMusculo([treino], exerciciosTeste, musculosTeste));
 });
 
-/* ------------------------------------------------------------------ */
-/* Realizado                                                           */
-/* ------------------------------------------------------------------ */
+/* --- Realizado --- */
 
 test('cada série registrada conta 1 para os diretos e a fração para os indiretos', () => {
   const series = [
@@ -221,9 +211,7 @@ test('semana sem treino nenhum dá tudo zero', () => {
   assert.deepEqual(t.map((l) => l.total), [0, 0, 0]);
 });
 
-/* ------------------------------------------------------------------ */
-/* Planejado × realizado                                               */
-/* ------------------------------------------------------------------ */
+/* --- Planejado × realizado --- */
 
 test('a diferença mostra o que faltou e o que sobrou', () => {
   const treino = {

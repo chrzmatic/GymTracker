@@ -1,13 +1,4 @@
-/**
- * Tela "Treinos": a lista de modelos, separada em rotação e extras.
- *
- * A rotação é uma sequência — a ordem aqui é a ordem que a sugestão do
- * próximo treino vai seguir (Etapa 3). Os extras são uma lista solta, que
- * não afeta a rotação.
- *
- * Daqui também se chega às telas de exercícios e músculos, porque as três
- * coisas são editadas na mesma sessão de trabalho.
- */
+/** Treinos: rotação (em ordem) e extras, com atalhos para exercícios e músculos. */
 
 import * as treinos from '../services/treino-service.js';
 import { seriesPlanejadasDoTreino } from '../domain/treino.js';
@@ -17,11 +8,7 @@ import { abrir, recarregar } from '../navegacao.js';
 
 let exercicios = new Map();
 
-/**
- * Renderiza a tela dentro do elemento informado.
- * @param {HTMLElement} raiz
- * @returns {Promise<void>}
- */
+/** Monta a lista de treinos. */
 export async function montarTreinos(raiz) {
   const [{ rotacao, extras }, mapa] = await Promise.all([
     treinos.listarTreinosAgrupados(),
@@ -38,13 +25,7 @@ export async function montarTreinos(raiz) {
 }
 
 
-/**
- * Desenha uma seção (rotação ou extras).
- * @param {HTMLElement} raiz
- * @param {string} titulo
- * @param {Object[]} lista
- * @param {boolean} naRotacao
- */
+/** Seção da lista (rotação ou extras). */
 function secao(raiz, titulo, lista, naRotacao) {
   const h = document.createElement('h2');
   h.textContent = titulo;
@@ -66,13 +47,7 @@ function secao(raiz, titulo, lista, naRotacao) {
   );
 }
 
-/**
- * Card de um treino, com as setas de ordem e o menu de opções.
- * @param {Object} treino
- * @param {number} posicao
- * @param {number} total
- * @returns {HTMLElement}
- */
+/** Card de um treino, com setas e menu. */
 function cardDeTreino(treino, posicao, total) {
   const card = document.createElement('div');
   card.className = 'card card-clicavel';
@@ -128,13 +103,7 @@ function cardDeTreino(treino, posicao, total) {
   return card;
 }
 
-/**
- * Seta de reordenação dentro do grupo.
- * @param {Object} treino
- * @param {-1|1} direcao
- * @param {boolean} ativo
- * @returns {HTMLElement}
- */
+/** Seta para subir ou descer dentro do grupo. */
 function seta(treino, direcao, ativo) {
   const btn = document.createElement('button');
   btn.className = 'btn btn-icone btn-mover';
@@ -149,7 +118,7 @@ function seta(treino, direcao, ativo) {
   return btn;
 }
 
-/** Menu de opções de um treino. */
+/** Menu de um treino. */
 async function menuDoTreino(treino) {
   const acao = await escolher('Treino ' + treino.nome, [
     { valor: 'editar', rotulo: 'Editar exercícios' },
@@ -189,7 +158,7 @@ async function menuDoTreino(treino) {
   }
 }
 
-/** Botões de criar treino e de ir para exercícios e músculos. */
+/** Criar treino e ir para exercícios e músculos. */
 function botoesDoRodape() {
   const div = document.createElement('div');
   div.style.marginTop = '20px';

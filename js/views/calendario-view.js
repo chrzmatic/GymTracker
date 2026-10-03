@@ -1,13 +1,10 @@
 /**
- * Aba Calendário: visão mensal dos treinos.
+ * Aba Calendário.
  *
- * Cada dia treinado ganha uma bolinha na cor do treino (mais de uma se
- * houve mais de uma sessão no dia). Tocar num dia:
- *  - com treino: abre o resumo da sessão (ou o registro, se ainda está em
- *    andamento); editar fica a um toque dali;
- *  - sem treino, passado ou hoje: mostra o sugerido e deixa registrar;
- *  - futuro: mostra o que seria sugerido, considerando só o que já foi
- *    registrado, e não deixa registrar (não dá para treinar amanhã hoje).
+ * Tocar num dia:
+ * - com treino: abre o resumo (ou o registro, se em andamento);
+ * - sem treino, até hoje: deixa registrar, com o sugerido no topo;
+ * - futuro: só mostra o que seria sugerido.
  */
 
 import * as rotacao from '../services/rotacao-service.js';
@@ -23,17 +20,16 @@ import { rotulosDaSemana, mesVizinho, acoesDoDia } from '../domain/calendario.js
 import { escolher } from '../components/dialogo.js';
 import { abrir } from '../navegacao.js';
 
-/** Mês visível. Guardado entre montagens para a tela voltar onde estava. */
+/** Mês visível (mantido entre montagens). */
 const estado = { ano: null, mes: null };
 
 let raiz = null;
 let dados = null;
 
 /**
- * Renderiza a aba Calendário.
+ * Monta a aba Calendário.
  * @param {HTMLElement} elemento
  * @param {{ano?: number, mes?: number}} [params]
- * @returns {Promise<void>}
  */
 export async function montarCalendario(elemento, params = {}) {
   raiz = elemento;
@@ -56,9 +52,7 @@ async function desenhar() {
   raiz.appendChild(resumo());
 }
 
-/* ------------------------------------------------------------------ */
-/* Cabeçalho do mês                                                    */
-/* ------------------------------------------------------------------ */
+/* --- Cabeçalho do mês --- */
 
 function barraDoMes() {
   const div = document.createElement('div');
@@ -91,7 +85,7 @@ function barraDoMes() {
   return div;
 }
 
-/** Avança ou volta um mês. */
+/** Mês anterior (-1) ou seguinte (1). */
 async function irParaMes(direcao) {
   const { ano, mes } = mesVizinho(estado.ano, estado.mes, direcao);
   estado.ano = ano;
@@ -99,9 +93,7 @@ async function irParaMes(direcao) {
   await desenhar();
 }
 
-/* ------------------------------------------------------------------ */
-/* Grade                                                               */
-/* ------------------------------------------------------------------ */
+/* --- Grade --- */
 
 function grade() {
   const tabela = document.createElement('div');
@@ -123,10 +115,9 @@ function grade() {
 }
 
 /**
- * Uma célula de dia.
+ * Um dia da grade.
  * @param {{iso: string, dia: number, doMes: boolean}} celula
  * @param {string} hoje
- * @returns {HTMLElement}
  */
 function diaDaGrade(celula, hoje) {
   const doDia = dados.porData.get(celula.iso) ?? [];
@@ -163,14 +154,9 @@ function diaDaGrade(celula, hoje) {
 }
 
 /**
- * O que acontece ao tocar num dia.
- *
- * Um dia que já tem treino abre um menu com as sessões dele **e** a opção
- * de registrar mais uma: mais de uma sessão no mesmo dia é permitida, e
- * antes dava para criar só nos dias vazios, o que era incoerente.
- *
+ * Ao tocar num dia: as sessões dele e a opção de registrar outro treino.
  * @param {string} dia AAAA-MM-DD
- * @param {Object[]} doDia sessões daquele dia
+ * @param {Object[]} doDia sessões do dia
  */
 async function tocarNoDia(dia, doDia) {
   const acoes = acoesDoDia(dia, doDia, hojeIso());
@@ -193,7 +179,6 @@ async function tocarNoDia(dia, doDia) {
   }
 
   if (!opcoes.length) {
-    // Dia futuro e vazio: só dá para informar qual seria o sugerido.
     await mostrarSugestaoFutura(dia, titulo);
     return;
   }
@@ -212,11 +197,7 @@ async function tocarNoDia(dia, doDia) {
   await registrarNoDia(dia, titulo);
 }
 
-/**
- * Dia futuro e vazio: informa o sugerido sem deixar registrar.
- * @param {string} dia
- * @param {string} titulo
- */
+/** Dia futuro sem treino: só mostra o sugerido. */
 async function mostrarSugestaoFutura(dia, titulo) {
   const sugestao = dados.sugestaoDoDia(dia);
   const { avisar } = await import('../components/dialogo.js');
@@ -228,11 +209,7 @@ async function mostrarSugestaoFutura(dia, titulo) {
   );
 }
 
-/**
- * Escolhe o treino e registra a sessão naquele dia, com o sugerido no topo.
- * @param {string} dia
- * @param {string} titulo
- */
+/** Escolhe o treino e registra no dia, com o sugerido no topo. */
 async function registrarNoDia(dia, titulo) {
   const sugestao = dados.sugestaoDoDia(dia);
 
@@ -267,9 +244,7 @@ async function registrarNoDia(dia, titulo) {
   await abrir('treino', { sessaoId: sessao.id });
 }
 
-/* ------------------------------------------------------------------ */
-/* Resumo do mês                                                       */
-/* ------------------------------------------------------------------ */
+/* --- Resumo do mês --- */
 
 function resumo() {
   const div = document.createElement('div');

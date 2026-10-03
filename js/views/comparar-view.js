@@ -1,12 +1,7 @@
 /**
  * Aba Comparar: duas sessões lado a lado.
- *
- * A tela abre já sugerindo a comparação mais útil — as duas sessões mais
- * recentes do mesmo treino — e deixa trocar qualquer uma das duas.
- *
- * Verde é melhora, vermelho é piora, cinza é igual. Em exercício
- * assistido, "melhora" quer dizer mais carga efetiva, ou seja, menos
- * assistência.
+ * Abre com as duas mais recentes do mesmo treino.
+ * Verde melhora, vermelho piora, cinza igual.
  */
 
 import * as comparacao from '../services/comparacao-service.js';
@@ -15,16 +10,15 @@ import { formatarLongo, descreverDistancia } from '../utils/date.js';
 import { num, comSinal, percentual } from '../utils/format.js';
 import { escolher } from '../components/dialogo.js';
 
-/** Sessões escolhidas. Guardado entre montagens. */
+/** Sessões escolhidas (mantidas entre montagens). */
 const estado = { idA: null, idB: null };
 
 let raiz = null;
 
 /**
- * Renderiza a aba Comparar.
+ * Monta a aba Comparar.
  * @param {HTMLElement} elemento
  * @param {{idA?: string, idB?: string}} [params]
- * @returns {Promise<void>}
  */
 export async function montarComparar(elemento, params = {}) {
   raiz = elemento;
@@ -61,9 +55,8 @@ async function desenhar() {
     return;
   }
 
-  // A comparação põe a mais antiga como "antes", seja qual for a ordem da
-  // escolha. O estado acompanha, para que tocar na caixa "antes" troque
-  // exatamente a sessão que está aparecendo nela.
+  // A comparação põe a mais antiga como "antes". O estado acompanha, para
+  // cada caixa trocar a sessão que está mostrando.
   estado.idA = r.sessaoA.id;
   estado.idB = r.sessaoB.id;
 
@@ -85,9 +78,7 @@ async function desenhar() {
   avisos(r).forEach((faixa) => raiz.appendChild(faixa));
 }
 
-/* ------------------------------------------------------------------ */
-/* Cabeçalho e escolha das sessões                                     */
-/* ------------------------------------------------------------------ */
+/* --- Cabeçalho e escolha das sessões --- */
 
 function cabecalho(r) {
   const linha = document.createElement('div');
@@ -101,11 +92,10 @@ function cabecalho(r) {
 }
 
 /**
- * Um lado do cabeçalho. Tocar nele troca a sessão daquele lado.
+ * Caixa de um lado. Tocar troca a sessão daquele lado.
  * @param {Object} sessao
  * @param {'antes'|'depois'} papel
  * @param {'idA'|'idB'} lado
- * @returns {HTMLElement}
  */
 function ladoDaSessao(sessao, papel, lado) {
   const div = document.createElement('button');
@@ -149,10 +139,7 @@ function seta() {
   return span;
 }
 
-/**
- * Botões para escolher cada lado. Só aparecem quando ainda não há
- * comparação na tela; com ela, as próprias caixas do topo trocam.
- */
+/** Botões de escolha, só quando ainda não há comparação. */
 function botoesDeEscolha() {
   const div = document.createElement('div');
   div.className = 'linha-botoes';
@@ -173,7 +160,7 @@ function botoesDeEscolha() {
 }
 
 /**
- * Abre a lista de sessões para escolher um dos lados.
+ * Lista de sessões para um dos lados.
  * @param {'idA'|'idB'} lado
  */
 async function escolherSessao(lado) {
@@ -199,11 +186,8 @@ async function escolherSessao(lado) {
   await desenhar();
 }
 
-/* ------------------------------------------------------------------ */
-/* Tabelas                                                             */
-/* ------------------------------------------------------------------ */
+/* --- Tabelas --- */
 
-/** Card do total da sessão. */
 function cardDeTotal(r) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -217,11 +201,7 @@ function cardDeTotal(r) {
   return card;
 }
 
-/**
- * Card de um exercício.
- * @param {Object} item resultado da comparação
- * @returns {HTMLElement}
- */
+/** Card de um exercício. */
 function cardDeExercicio(item) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -270,7 +250,7 @@ function cardDeExercicio(item) {
   return card;
 }
 
-/** Etiqueta "adicionado", "removido", "pulado (opcional)"… */
+/** Etiqueta do estado (adicionado, removido, pulado…). */
 function etiquetaDoEstado(item) {
   const textos = {
     [ESTADO.ADICIONADO]: 'adicionado',
@@ -290,7 +270,7 @@ function etiquetaDoEstado(item) {
   return span;
 }
 
-/** Resumo de um lado só, quando não dá para comparar número a número. */
+/** Resumo de cada lado quando não dá para comparar os números. */
 function resumoSimples(item) {
   const div = document.createElement('div');
   div.className = 'comparar-simples';
@@ -310,11 +290,7 @@ function resumoSimples(item) {
   return div;
 }
 
-/**
- * Uma linha de métrica: rótulo, os dois valores, a diferença e o percentual.
- * @param {Object} m
- * @returns {HTMLElement}
- */
+/** Linha de métrica: rótulo, antes, depois e diferença. */
 function linhaDeMetrica(m) {
   const linha = document.createElement('div');
   linha.className = 'metrica';
@@ -345,21 +321,12 @@ function linhaDeMetrica(m) {
   return linha;
 }
 
-/** Formata um valor da tabela. */
 function valor(v, unidade) {
   if (v === null || v === undefined) return '—';
   return num(v, 1) + (unidade ? ' ' + unidade : '');
 }
 
-/**
- * Faixas de aviso sobre dados que faltam.
- *
- * Uma por causa, porque a solução de cada uma é diferente: registrar o
- * peso corporal, preencher o kg de uma série, ou anotar as reps.
- *
- * @param {Object} r resultado da comparação
- * @returns {HTMLElement[]}
- */
+/** Avisos de dados faltando, um por causa. */
 function avisos(r) {
   const faltando = r.faltando ?? { pesoCorporal: 0, carga: 0, reps: 0 };
   const faixas = [];

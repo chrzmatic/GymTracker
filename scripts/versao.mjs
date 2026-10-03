@@ -1,10 +1,9 @@
 /**
- * Gera js/versao.js e atualiza a versão do cache no service worker.
+ * Gera js/versao.js e atualiza a versão no service worker.
  *
  *   node scripts/versao.mjs             versão do último commit
- *   node scripts/versao.mjs --proximo   versão do commit que está sendo feito
+ *   node scripts/versao.mjs --proximo   versão do commit sendo feito (usado no hook)
  *
- * O hook de pre-commit usa `--proximo`: ele roda antes de o commit existir.
  * Também roda com Deno: `deno run -A scripts/versao.mjs --proximo`.
  */
 
