@@ -9,6 +9,7 @@ import { ESTADO } from '../domain/comparacao.js';
 import { formatarLongo, descreverDistancia } from '../utils/date.js';
 import { num, comSinal, percentual } from '../utils/format.js';
 import { escolher } from '../components/dialogo.js';
+import { blocoVazio } from '../components/ui.js';
 
 /** Sessões escolhidas (mantidas entre montagens). */
 const estado = { idA: null, idB: null };
@@ -41,8 +42,9 @@ async function desenhar() {
   raiz.innerHTML = '';
 
   if (!estado.idA || !estado.idB) {
-    raiz.innerHTML =
-      '<div class="vazio">Registre pelo menos duas sessões do mesmo treino para comparar.</div>';
+    raiz.replaceChildren(
+      blocoVazio('Registre pelo menos duas sessões do mesmo treino para comparar.')
+    );
     raiz.appendChild(botoesDeEscolha());
     return;
   }

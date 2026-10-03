@@ -11,6 +11,7 @@ import * as sessoes from '../services/sessao-service.js';
 import { sugestaoPara } from '../services/rotacao-service.js';
 import { diaDaProximaSugestao } from '../domain/rotacao.js';
 import { confirmar, escolher, escolherComBusca, formulario } from '../components/dialogo.js';
+import { blocoVazio } from '../components/ui.js';
 import { abrir, voltarUmaTela } from '../navegacao.js';
 
 /** Estado da tela. O banco é a fonte da verdade. */
@@ -95,7 +96,7 @@ async function desenharEscolhaDeTreino() {
   raiz.innerHTML = '';
 
   if (!rotacao.length && !extras.length) {
-    raiz.innerHTML = '<div class="vazio">Nenhum treino cadastrado ainda.</div>';
+    raiz.replaceChildren(blocoVazio('Nenhum treino cadastrado ainda.'));
     raiz.appendChild(atalhosDeGestao());
     return;
   }

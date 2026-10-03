@@ -4,7 +4,13 @@ import * as repo from '../data/dieta-repo.js';
 import { listarSessoesDaData } from '../data/sessoes-repo.js';
 import { novoId, paraSlug } from '../utils/id.js';
 import { hojeIso } from '../utils/date.js';
-import { calcularPlano, calcularPrato, calcularRefeicao, TIPO_ITEM } from '../domain/nutricao.js';
+import {
+  calcularPlano,
+  calcularPrato,
+  calcularRefeicao,
+  tirarDasRefeicoes,
+  TIPO_ITEM,
+} from '../domain/nutricao.js';
 
 /**
  * Alimentos e pratos por ID, para os cálculos.
@@ -236,27 +242,7 @@ export async function excluirAlimento(alimentoId) {
     }));
   if (pratosMudados.length) await repo.salvarPratos(pratosMudados);
 
-  const refeicoesMudadas = refeicoes
-    .map((r) => {
-      const itens = (r.itens ?? [])
-        .map((item) => {
-          if (item.tipo === TIPO_ITEM.GRUPO) {
-            const opcoes = (item.opcoes ?? []).filter((o) => o.alimentoId !== alimentoId);
-            if (opcoes.length === (item.opcoes ?? []).length) return item;
-            const padraoId = opcoes.some((o) => o.id === item.padraoId)
-              ? item.padraoId
-              : (opcoes[0]?.id ?? null);
-            return { ...item, opcoes, padraoId };
-          }
-          return item.alimentoId === alimentoId ? null : item;
-        })
-        .filter(Boolean);
-      return itens.length === (r.itens ?? []).length &&
-        itens.every((item, i) => item === r.itens[i])
-        ? null
-        : { ...r, itens };
-    })
-    .filter(Boolean);
+  const refeicoesMudadas = tirarDasRefeicoes(refeicoes, (x) => x.alimentoId === alimentoId);
   if (refeicoesMudadas.length) await repo.salvarRefeicoes(refeicoesMudadas);
 
   await repo.removerAlimento(alimentoId);
@@ -302,24 +288,7 @@ export async function ondePratoEUsado(pratoId) {
 /** Exclui o prato e tira das refeições. */
 export async function excluirPrato(pratoId) {
   const refeicoes = await repo.listarRefeicoes();
-  const mudadas = refeicoes
-    .map((r) => {
-      const itens = (r.itens ?? [])
-        .map((item) => {
-          if (item.tipo === TIPO_ITEM.GRUPO) {
-            const opcoes = (item.opcoes ?? []).filter((o) => o.pratoId !== pratoId);
-            if (opcoes.length === (item.opcoes ?? []).length) return item;
-            const padraoId = opcoes.some((o) => o.id === item.padraoId)
-              ? item.padraoId
-              : (opcoes[0]?.id ?? null);
-            return { ...item, opcoes, padraoId };
-          }
-          return item.pratoId === pratoId ? null : item;
-        })
-        .filter(Boolean);
-      return itens.length === (r.itens ?? []).length ? null : { ...r, itens };
-    })
-    .filter(Boolean);
+  const mudadas = tirarDasRefeicoes(refeicoes, (x) => x.pratoId === pratoId);
   if (mudadas.length) await repo.salvarRefeicoes(mudadas);
   await repo.removerPrato(pratoId);
 }

@@ -314,7 +314,7 @@ async function desenhar() {
   try {
     if (!tela) {
       definirTitulo(atual.tela);
-      destino.innerHTML = '<div class="vazio">Esta tela chega numa próxima etapa.</div>';
+      destino.innerHTML = '<div class="vazio">Tela não encontrada.</div>';
       return;
     }
 

@@ -1,23 +1,16 @@
 /** Aba Dieta: o plano do dia, com os valores calculados e as metas. */
 
 import * as dieta from '../services/dieta-service.js';
+import { INFO_NUTRIENTES } from '../domain/nutricao.js';
 import { hojeIso, formatarLongo } from '../utils/date.js';
 import { num, comSinal, paraNumero } from '../utils/format.js';
 import { escolher, formulario } from '../components/dialogo.js';
+import { blocoVazio } from '../components/ui.js';
 import { abrir } from '../navegacao.js';
 
 const estado = { data: null, planoId: null };
 
 let raiz = null;
-
-/** Nutrientes na ordem de exibição. */
-const NUTRIENTES = [
-  { id: 'kcal', rotulo: 'Calorias', unidade: 'kcal', casas: 0 },
-  { id: 'proteina', rotulo: 'Proteína', unidade: 'g', casas: 1 },
-  { id: 'gordura', rotulo: 'Gordura', unidade: 'g', casas: 1 },
-  { id: 'carbo', rotulo: 'Carboidrato', unidade: 'g', casas: 1 },
-  { id: 'fibra', rotulo: 'Fibra', unidade: 'g', casas: 1 },
-];
 
 /**
  * Monta a aba Dieta.
@@ -36,7 +29,7 @@ async function desenhar() {
 
   const { plano, automatico } = await dieta.planoDoDia(estado.data);
   if (!plano) {
-    raiz.innerHTML = '<div class="vazio">Nenhum plano de dieta cadastrado.</div>';
+    raiz.replaceChildren(blocoVazio('Nenhum plano de dieta cadastrado.'));
     raiz.appendChild(atalhos());
     return;
   }
@@ -135,7 +128,7 @@ function cardDeTotais(dia) {
   });
   card.appendChild(cabecalhoTabela);
 
-  NUTRIENTES.forEach((n) => {
+  INFO_NUTRIENTES.forEach((n) => {
     const d = dia.diferencas[n.id];
     const linha = document.createElement('div');
     linha.className = 'metrica';

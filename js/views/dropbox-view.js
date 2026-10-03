@@ -11,6 +11,7 @@ import {
   nomeDaConta,
   desconectar,
   temPedidoPendente,
+  concluirLoginDoRedirect,
   SemAppKey,
 } from '../sync/dropbox-auth.js';
 import * as sync from '../sync/dropbox-backup.js';
@@ -362,7 +363,6 @@ async function desconectarComConfirmacao() {
 
 /** Conclui um login que voltou por redirecionamento (chamado pelo main.js). */
 export async function concluirLoginPendente() {
-  const { concluirLoginDoRedirect } = await import('../sync/dropbox-auth.js');
   const resultado = await concluirLoginDoRedirect();
   if (!resultado.houve) return;
 

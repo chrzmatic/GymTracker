@@ -13,6 +13,15 @@
 /** Os valores somados. */
 export const NUTRIENTES = ['kcal', 'proteina', 'gordura', 'carbo', 'fibra'];
 
+/** Rótulo, unidade e casas decimais de cada nutriente, na ordem de exibição. */
+export const INFO_NUTRIENTES = [
+  { id: 'kcal', rotulo: 'Calorias', unidade: 'kcal', casas: 0 },
+  { id: 'proteina', rotulo: 'Proteína', unidade: 'g', casas: 1 },
+  { id: 'gordura', rotulo: 'Gordura', unidade: 'g', casas: 1 },
+  { id: 'carbo', rotulo: 'Carboidrato', unidade: 'g', casas: 1 },
+  { id: 'fibra', rotulo: 'Fibra', unidade: 'g', casas: 1 },
+];
+
 /**
  * Os que, em branco, marcam o item como incompleto.
  * A fibra fica de fora: muitos rótulos não trazem e muitos alimentos não têm.
@@ -345,6 +354,40 @@ export function calcularPlano(plano, refeicoes, indice) {
     erros,
     diferencas: compararComMetas(total, metasDoPlano(plano)),
   };
+}
+
+/**
+ * Tira das refeições os itens e as opções de grupo marcados por `usa`.
+ * Se a opção padrão sair, a primeira que sobrar vira padrão.
+ * @param {Object[]} refeicoes
+ * @param {(itemOuOpcao: Object) => boolean} usa
+ * @returns {Object[]} só as refeições que mudaram
+ */
+export function tirarDasRefeicoes(refeicoes, usa) {
+  return refeicoes
+    .map((r) => {
+      let mudou = false;
+      const itens = (r.itens ?? [])
+        .map((item) => {
+          if (item.tipo === TIPO_ITEM.GRUPO) {
+            const opcoes = (item.opcoes ?? []).filter((o) => !usa(o));
+            if (opcoes.length === (item.opcoes ?? []).length) return item;
+            mudou = true;
+            const padraoId = opcoes.some((o) => o.id === item.padraoId)
+              ? item.padraoId
+              : (opcoes[0]?.id ?? null);
+            return { ...item, opcoes, padraoId };
+          }
+          if (usa(item)) {
+            mudou = true;
+            return null;
+          }
+          return item;
+        })
+        .filter(Boolean);
+      return mudou ? { ...r, itens } : null;
+    })
+    .filter(Boolean);
 }
 
 /** Metas do plano. Meta ausente é null, não zero. */

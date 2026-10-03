@@ -8,6 +8,7 @@ import * as treinos from '../services/treino-service.js';
 import { TIPOS_CARGA, NOME_TIPO_CARGA, ROTULO_CARGA } from '../utils/constantes.js';
 import { num, paraNumero } from '../utils/format.js';
 import { confirmar, escolher, escolherComBusca, formulario, avisar } from '../components/dialogo.js';
+import { blocoVazio } from '../components/ui.js';
 import { definirTitulo, abrir, voltarUmaTela, recarregar } from '../navegacao.js';
 
 /* --- Lista --- */
@@ -46,7 +47,7 @@ export async function montarExercicios(raiz) {
       : lista;
     container.innerHTML = '';
     if (!visiveis.length) {
-      container.innerHTML = '<div class="vazio">Nenhum exercício encontrado.</div>';
+      container.replaceChildren(blocoVazio('Nenhum exercício encontrado.'));
       return;
     }
     visiveis.forEach((ex) => container.appendChild(cardDeExercicio(ex, nomeMusculo)));

@@ -126,6 +126,15 @@ const cenario = String.raw`
   const jantarFinal = (await dieta.calcularDia('plano-dia-de-treino')).refeicoes.find((r) => r.nome === 'Jantar');
   ok('o jantar volta a ter 4 itens', jantarFinal.itens.length, 4);
 
+  /* --- excluir um prato que é opção de um grupo --- */
+  const pratoTeste = await dieta.criarPrato('Prato de teste');
+  await dieta.adicionarOpcao('ref-jantar', 'it-jantar-carbo', { tipo: 'prato', pratoId: pratoTeste.id, porcoes: 1 });
+  ok('o prato entrou como opção do grupo', await dieta.ondePratoEUsado(pratoTeste.id), ['Jantar']);
+  await dieta.excluirPrato(pratoTeste.id);
+  ok('excluir o prato tira a opção do grupo', await dieta.ondePratoEUsado(pratoTeste.id), []);
+  const grupoSemPrato = (await (await import('/js/data/dieta-repo.js')).buscarRefeicao('ref-jantar')).itens.find((i) => i.id === 'it-jantar-carbo');
+  ok('nenhuma opção aponta para o prato apagado', grupoSemPrato.opcoes.some((o) => o.pratoId === pratoTeste.id), false);
+
   /* --- editar as refeições de um plano --- */
   const antesDoPlano = (await dieta.buscarPlano('plano-dia-de-treino')).refeicoes.length;
   const nova = await dieta.criarRefeicaoNoPlano('plano-dia-de-treino', 'Ceia');

@@ -16,6 +16,9 @@ import {
   calcularPlano,
   compararComMetas,
   metasDoPlano,
+  tirarDasRefeicoes,
+  NUTRIENTES,
+  INFO_NUTRIENTES,
   TIPO_ITEM,
 } from '../js/domain/nutricao.js';
 
@@ -540,4 +543,68 @@ test('mudar o valor de um alimento no índice muda o dia inteiro', () => {
 
   // 40 g: 152 → 160 kcal, ou seja +8 no dia.
   assert.equal(r1(depois.total.kcal - antes.total.kcal), 8);
+});
+
+/* --- Tirar alimento ou prato das refeições --- */
+
+const REFEICOES = [
+  {
+    id: 'r1',
+    nome: 'Jantar',
+    itens: [
+      {
+        id: 'g',
+        tipo: TIPO_ITEM.GRUPO,
+        nome: 'Carbo',
+        padraoId: 'o-prato',
+        opcoes: [
+          { id: 'o-prato', tipo: TIPO_ITEM.PRATO, pratoId: 'prato-x', porcoes: 1 },
+          { id: 'o-arroz', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-arroz', quantidade: 200 },
+        ],
+      },
+      { id: 'i1', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-ovo', quantidade: 2 },
+      { id: 'i2', tipo: TIPO_ITEM.LIVRE, texto: 'Salada' },
+    ],
+  },
+  { id: 'r2', nome: 'Café', itens: [{ id: 'i3', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-aveia', quantidade: 40 }] },
+];
+
+test('tirar um prato que é opção de grupo muda a refeição (o bug antigo não salvava)', () => {
+  const mudadas = tirarDasRefeicoes(REFEICOES, (x) => x.pratoId === 'prato-x');
+  assert.equal(mudadas.length, 1);
+  const grupo = mudadas[0].itens[0];
+  assert.deepEqual(grupo.opcoes.map((o) => o.id), ['o-arroz']);
+  assert.equal(grupo.padraoId, 'o-arroz', 'a padrão saiu, a que sobrou vira padrão');
+  assert.equal(mudadas[0].itens.length, 3, 'os outros itens ficam');
+});
+
+test('tirar um alimento remove o item simples e a opção do grupo', () => {
+  const ovo = tirarDasRefeicoes(REFEICOES, (x) => x.alimentoId === 'alim-ovo');
+  assert.deepEqual(ovo[0].itens.map((i) => i.id), ['g', 'i2']);
+  const arroz = tirarDasRefeicoes(REFEICOES, (x) => x.alimentoId === 'alim-arroz');
+  assert.deepEqual(arroz[0].itens[0].opcoes.map((o) => o.id), ['o-prato']);
+  assert.equal(arroz[0].itens[0].padraoId, 'o-prato', 'a padrão continua a mesma');
+});
+
+test('só devolve as refeições que mudaram, sem alterar as originais', () => {
+  const copia = JSON.parse(JSON.stringify(REFEICOES));
+  assert.deepEqual(tirarDasRefeicoes(REFEICOES, (x) => x.alimentoId === 'nada'), []);
+  const mudadas = tirarDasRefeicoes(REFEICOES, (x) => x.alimentoId === 'alim-aveia');
+  assert.deepEqual(mudadas.map((r) => r.id), ['r2']);
+  assert.deepEqual(mudadas[0].itens, []);
+  assert.deepEqual(REFEICOES, copia);
+});
+
+test('grupo que fica sem opções fica com padrão null', () => {
+  const soPrato = [{ id: 'r', itens: [{ ...REFEICOES[0].itens[0], opcoes: [REFEICOES[0].itens[0].opcoes[0]] }] }];
+  const r = tirarDasRefeicoes(soPrato, (x) => x.pratoId === 'prato-x');
+  assert.deepEqual(r[0].itens[0].opcoes, []);
+  assert.equal(r[0].itens[0].padraoId, null);
+});
+
+test('a lista de nutrientes da tela tem os mesmos ids e ordem dos cálculos', () => {
+  assert.deepEqual(INFO_NUTRIENTES.map((n) => n.id), NUTRIENTES);
+  INFO_NUTRIENTES.forEach((n) => {
+    assert.ok(n.rotulo && n.unidade && Number.isInteger(n.casas), n.id);
+  });
 });

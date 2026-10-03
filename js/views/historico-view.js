@@ -4,6 +4,7 @@ import * as sessoes from '../services/sessao-service.js';
 import { anteriorDoMesmoTreino } from '../services/comparacao-service.js';
 import { formatarCurto, partesIso, NOMES_MES, descreverDistancia } from '../utils/date.js';
 import { confirmar, escolher } from '../components/dialogo.js';
+import { blocoVazio } from '../components/ui.js';
 import { abrir, recarregar } from '../navegacao.js';
 
 export async function montarHistorico(raiz) {
@@ -11,7 +12,7 @@ export async function montarHistorico(raiz) {
   raiz.innerHTML = '';
 
   if (!lista.length) {
-    raiz.innerHTML = '<div class="vazio">Nenhuma sessão registrada ainda.</div>';
+    raiz.replaceChildren(blocoVazio('Nenhuma sessão registrada ainda.'));
     return;
   }
 

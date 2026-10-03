@@ -17,7 +17,7 @@ import {
   descreverDistancia,
 } from '../utils/date.js';
 import { rotulosDaSemana, mesVizinho, acoesDoDia } from '../domain/calendario.js';
-import { escolher } from '../components/dialogo.js';
+import { escolher, avisar } from '../components/dialogo.js';
 import { abrir } from '../navegacao.js';
 
 /** Mês visível (mantido entre montagens). */
@@ -200,7 +200,6 @@ async function tocarNoDia(dia, doDia) {
 /** Dia futuro sem treino: só mostra o sugerido. */
 async function mostrarSugestaoFutura(dia, titulo) {
   const sugestao = dados.sugestaoDoDia(dia);
-  const { avisar } = await import('../components/dialogo.js');
   await avisar(
     titulo,
     sugestao
@@ -232,7 +231,6 @@ async function registrarNoDia(dia, titulo) {
     );
 
   if (!opcoes.length) {
-    const { avisar } = await import('../components/dialogo.js');
     await avisar(titulo, 'Nenhum treino cadastrado.');
     return;
   }

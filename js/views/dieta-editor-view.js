@@ -4,7 +4,16 @@
  */
 
 import * as dieta from '../services/dieta-service.js';
-import { UNIDADES, UNIDADES_ENERGIA, TIPO_ITEM, energiaEmKcal } from '../domain/nutricao.js';
+import {
+  UNIDADES,
+  UNIDADES_ENERGIA,
+  TIPO_ITEM,
+  INFO_NUTRIENTES,
+  energiaEmKcal,
+  calcularPrato,
+  calcularItem,
+  calcularOpcao,
+} from '../domain/nutricao.js';
 import { num, paraNumero } from '../utils/format.js';
 import {
   confirmar,
@@ -50,7 +59,7 @@ export async function montarAlimentos(raiz) {
     container.innerHTML = '';
 
     if (!visiveis.length) {
-      container.innerHTML = '<div class="vazio">Nenhum alimento encontrado.</div>';
+      container.replaceChildren(blocoVazio('Nenhum alimento encontrado.'));
       return;
     }
 
@@ -211,13 +220,8 @@ export async function montarEditorDeAlimento(raiz, params) {
   h3.style.margin = '0 0 8px';
   card.appendChild(h3);
 
-  [
-    ['Calorias', alimento.kcal, 'kcal', 0],
-    ['Proteína', alimento.proteina, 'g', 1],
-    ['Gordura', alimento.gordura, 'g', 1],
-    ['Carboidrato', alimento.carbo, 'g', 1],
-    ['Fibra', alimento.fibra, 'g', 1],
-  ].forEach(([rotulo, valor, unidade, casas]) => {
+  INFO_NUTRIENTES.forEach(({ id, rotulo, unidade, casas }) => {
+    const valor = alimento[id];
     const linha = document.createElement('div');
     linha.className = 'metrica';
     const nome = document.createElement('span');
@@ -301,8 +305,6 @@ export async function montarPratos(raiz) {
   if (!pratos.length) {
     raiz.appendChild(blocoVazio('Nenhum prato composto ainda.'));
   }
-
-  const { calcularPrato } = await import('../domain/nutricao.js');
 
   pratos.forEach((prato) => {
     const r = calcularPrato(prato, indice.alimentos);
@@ -738,7 +740,6 @@ export async function montarNutricional(raiz, params) {
     return;
   }
 
-  const { calcularItem, calcularOpcao } = await import('../domain/nutricao.js');
   const alvo = dados.opcao ?? dados.item;
   const calculo = dados.opcao
     ? calcularOpcao(dados.opcao, indice)
@@ -826,7 +827,6 @@ export async function montarNutricional(raiz, params) {
   referencia.appendChild(titulo);
 
   if (ehPrato) {
-    const { calcularPrato } = await import('../domain/nutricao.js');
     const doPrato = calcularPrato(fonte, indice.alimentos);
     referencia.appendChild(tabelaDeNutrientes(doPrato.valores));
 
@@ -899,13 +899,7 @@ function valoresDoAlimento(alimento) {
 function tabelaDeNutrientes(valores) {
   const div = document.createElement('div');
 
-  [
-    ['Calorias', 'kcal', 'kcal', 0],
-    ['Proteína', 'proteina', 'g', 1],
-    ['Gordura', 'gordura', 'g', 1],
-    ['Carboidrato', 'carbo', 'g', 1],
-    ['Fibra', 'fibra', 'g', 1],
-  ].forEach(([rotulo, chave, unidade, casas]) => {
+  INFO_NUTRIENTES.forEach(({ id: chave, rotulo, unidade, casas }) => {
     const linha = document.createElement('div');
     linha.className = 'nutriente';
 
