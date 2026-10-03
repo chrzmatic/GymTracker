@@ -75,33 +75,33 @@ const TELAS = {
   },
   alimentos: {
     titulo: 'Alimentos',
-    carregar: () => import('./views/dieta-editor-view.js').then((m) => m.montarAlimentos),
+    carregar: () => import('./views/alimentos-view.js').then((m) => m.montarAlimentos),
   },
   'alimento-editor': {
     titulo: 'Alimento',
     carregar: () =>
-      import('./views/dieta-editor-view.js').then((m) => m.montarEditorDeAlimento),
+      import('./views/alimentos-view.js').then((m) => m.montarEditorDeAlimento),
   },
   pratos: {
     titulo: 'Pratos compostos',
-    carregar: () => import('./views/dieta-editor-view.js').then((m) => m.montarPratos),
+    carregar: () => import('./views/pratos-view.js').then((m) => m.montarPratos),
   },
   'prato-editor': {
     titulo: 'Prato',
-    carregar: () => import('./views/dieta-editor-view.js').then((m) => m.montarEditorDePrato),
+    carregar: () => import('./views/pratos-view.js').then((m) => m.montarEditorDePrato),
   },
   refeicao: {
     titulo: 'Refeição',
     carregar: () =>
-      import('./views/dieta-editor-view.js').then((m) => m.montarEditorDeRefeicao),
+      import('./views/refeicoes-view.js').then((m) => m.montarEditorDeRefeicao),
   },
   'plano-editor': {
     titulo: 'Editar plano',
-    carregar: () => import('./views/dieta-editor-view.js').then((m) => m.montarEditorDePlano),
+    carregar: () => import('./views/refeicoes-view.js').then((m) => m.montarEditorDePlano),
   },
   nutricional: {
     titulo: 'Informação nutricional',
-    carregar: () => import('./views/dieta-editor-view.js').then((m) => m.montarNutricional),
+    carregar: () => import('./views/nutricional-view.js').then((m) => m.montarNutricional),
   },
 };
 

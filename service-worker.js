@@ -9,7 +9,7 @@
  * Arquivo novo no projeto precisa entrar em `ARQUIVOS` (tests/arquivos.test.js confere).
  */
 
-const VERSAO = '1.0.13';
+const VERSAO = '1.0.14';
 const CACHE = `gymtracker-${VERSAO}`;
 
 /** Arquivos para abrir sem rede. */
@@ -85,17 +85,21 @@ const ARQUIVOS = [
   './js/sync/dropbox-backup.js',
   './js/sync/gatilho.js',
 
+  './js/views/alimentos-view.js',
   './js/views/calendario-view.js',
   './js/views/comparar-view.js',
   './js/views/dropbox-view.js',
   './js/views/configuracoes-view.js',
+  './js/views/dieta-comum.js',
   './js/views/dieta-view.js',
-  './js/views/dieta-editor-view.js',
   './js/views/exercicios-view.js',
   './js/views/historico-view.js',
   './js/views/musculos-view.js',
+  './js/views/nutricional-view.js',
   './js/views/peso-view.js',
+  './js/views/pratos-view.js',
   './js/views/progresso-view.js',
+  './js/views/refeicoes-view.js',
   './js/views/sessao-resumo-view.js',
   './js/views/treino-editor-view.js',
   './js/views/treino-view.js',
