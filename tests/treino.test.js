@@ -4,21 +4,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  moverNoArray,
-  moverItemDoTreino,
-  moverTreino,
-  numerarOrdem,
   alternarRotacao,
   criarItemExercicio,
-  virarGrupoDeAlternativas,
   desfazerGrupo,
-  removerAlternativa,
+  moverItemDoTreino,
+  moverNoArray,
+  moverTreino,
   normalizarMusculos,
-  usosDoExercicio,
-  usosDoMusculo,
+  numerarOrdem,
+  removerAlternativa,
+  seriesPlanejadasDoTreino,
   tirarExercicioDosTreinos,
   tirarMusculoDosExercicios,
-  seriesPlanejadasDoTreino,
+  usosDoExercicio,
+  usosDoMusculo,
+  virarGrupoDeAlternativas,
 } from '../js/domain/treino.js';
 
 /* --- reordenação genérica --- */
@@ -45,16 +45,38 @@ const treinoA = {
   naRotacao: true,
   ordem: 0,
   itens: [
-    { id: 'it-1', tipo: 'exercicio', exercicioId: 'ex-supino', seriesPlanejadas: 4, opcional: false },
-    { id: 'it-2', tipo: 'exercicio', exercicioId: 'ex-remada', seriesPlanejadas: 3, opcional: false },
-    { id: 'it-3', tipo: 'exercicio', exercicioId: 'ex-pantu', seriesPlanejadas: 2, opcional: true },
+    {
+      id: 'it-1',
+      tipo: 'exercicio',
+      exercicioId: 'ex-supino',
+      seriesPlanejadas: 4,
+      opcional: false,
+    },
+    {
+      id: 'it-2',
+      tipo: 'exercicio',
+      exercicioId: 'ex-remada',
+      seriesPlanejadas: 3,
+      opcional: false,
+    },
+    {
+      id: 'it-3',
+      tipo: 'exercicio',
+      exercicioId: 'ex-pantu',
+      seriesPlanejadas: 2,
+      opcional: true,
+    },
   ],
 };
 
 test('moverItemDoTreino reordena os itens', () => {
   const r = moverItemDoTreino(treinoA, 'it-3', -1);
   assert.deepEqual(r.itens.map((i) => i.id), ['it-1', 'it-3', 'it-2']);
-  assert.deepEqual(treinoA.itens.map((i) => i.id), ['it-1', 'it-2', 'it-3'], 'original intacto');
+  assert.deepEqual(
+    treinoA.itens.map((i) => i.id),
+    ['it-1', 'it-2', 'it-3'],
+    'original intacto',
+  );
 });
 
 test('moverItemDoTreino devolve null quando já está na ponta', () => {
@@ -96,7 +118,7 @@ test('moverTreino reordena dentro da rotação', () => {
   const r = moverTreino(treinos, 'tr-c', -1);
   assert.deepEqual(
     r.filter((t) => t.naRotacao).map((t) => t.nome),
-    ['A', 'C', 'B']
+    ['A', 'C', 'B'],
   );
   assert.deepEqual(r.map((t) => t.ordem), [0, 1, 2, 3], 'ordem sempre sequencial');
 });
@@ -105,7 +127,7 @@ test('moverTreino não deixa um extra invadir a rotação', () => {
   assert.equal(
     moverTreino(treinos, 'tr-x', -1),
     null,
-    'o extra é o único do grupo dele, então não tem para onde ir'
+    'o extra é o único do grupo dele, então não tem para onde ir',
   );
 });
 
@@ -116,12 +138,12 @@ test('alternarRotacao manda o treino para o fim do grupo novo', () => {
   assert.deepEqual(
     r.filter((t) => t.naRotacao).map((t) => t.nome),
     ['B', 'C'],
-    'a rotação segue na ordem, sem buraco'
+    'a rotação segue na ordem, sem buraco',
   );
   assert.deepEqual(
     r.filter((t) => !t.naRotacao).map((t) => t.nome),
     ['Extra', 'A'],
-    'A entra no fim dos extras'
+    'A entra no fim dos extras',
   );
 });
 
@@ -130,7 +152,7 @@ test('alternarRotacao devolve um treino extra para o fim da rotação', () => {
   assert.deepEqual(
     r.filter((t) => t.naRotacao).map((t) => t.nome),
     ['A', 'B', 'C', 'Extra'],
-    'entra no fim para não bagunçar a sequência de quem já está rodando'
+    'entra no fim para não bagunçar a sequência de quem já está rodando',
   );
 });
 
@@ -278,13 +300,17 @@ const exercicios = [
       { musculoId: 'mus-triceps', tipo: 'indireto', fracao: 0.5 },
     ],
   },
-  { id: 'ex-rosca', nome: 'Rosca', musculos: [{ musculoId: 'mus-biceps', tipo: 'direto', fracao: 1 }] },
+  {
+    id: 'ex-rosca',
+    nome: 'Rosca',
+    musculos: [{ musculoId: 'mus-biceps', tipo: 'direto', fracao: 1 }],
+  },
 ];
 
 test('usosDoMusculo lista os exercícios que citam o músculo', () => {
   assert.deepEqual(
     usosDoMusculo(exercicios, 'mus-triceps').map((e) => e.id),
-    ['ex-supino']
+    ['ex-supino'],
   );
   assert.deepEqual(usosDoMusculo(exercicios, 'mus-panturrilha'), []);
 });
@@ -296,6 +322,6 @@ test('excluir um músculo o remove só dos exercícios que o usam', () => {
   assert.equal(
     exercicios[0].musculos.length,
     2,
-    'o exercício original não é alterado no lugar'
+    'o exercício original não é alterado no lugar',
   );
 });

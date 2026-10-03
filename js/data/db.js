@@ -50,10 +50,12 @@ const MIGRACOES = {
         .slice()
         .sort(
           (a, b) =>
-            (a.ordemItem ?? 0) - (b.ordemItem ?? 0) || (a.numero ?? 0) - (b.numero ?? 0)
+            (a.ordemItem ?? 0) - (b.ordemItem ?? 0) || (a.numero ?? 0) - (b.numero ?? 0),
         )
         .forEach((serie) => {
-          const grupo = `${serie.sessaoId}|${serie.itemId}|${serie.aquecimento ? 'aq' : 'ok'}`;
+          const grupo = `${serie.sessaoId}|${serie.itemId}|${
+            serie.aquecimento ? 'aq' : 'ok'
+          }`;
           const numero = (contadores.get(grupo) ?? 0) + 1;
           contadores.set(grupo, numero);
           if (numero !== serie.numero) store.put({ ...serie, numero });
@@ -167,28 +169,28 @@ async function abrirTransacao(stores, modo) {
 }
 
 export function lerTudo(store) {
-  return transacao(store, 'readonly', (tx) =>
-    promessa(tx.objectStore(store).getAll())
-  );
+  return transacao(store, 'readonly', (tx) => promessa(tx.objectStore(store).getAll()));
 }
 
 export function ler(store, chave) {
-  return transacao(store, 'readonly', (tx) =>
-    promessa(tx.objectStore(store).get(chave))
-  );
+  return transacao(store, 'readonly', (tx) => promessa(tx.objectStore(store).get(chave)));
 }
 
 /** Registros de um índice com um valor exato. */
 export function lerPorIndice(store, indice, valor) {
-  return transacao(store, 'readonly', (tx) =>
-    promessa(tx.objectStore(store).index(indice).getAll(valor))
+  return transacao(
+    store,
+    'readonly',
+    (tx) => promessa(tx.objectStore(store).index(indice).getAll(valor)),
   );
 }
 
 /** Insere ou substitui um registro. */
 export function gravar(store, registro) {
-  return transacao(store, 'readwrite', (tx) =>
-    promessa(tx.objectStore(store).put(registro))
+  return transacao(
+    store,
+    'readwrite',
+    (tx) => promessa(tx.objectStore(store).put(registro)),
   );
 }
 
@@ -201,22 +203,20 @@ export function gravarVarios(store, registros) {
 }
 
 export function apagar(store, chave) {
-  return transacao(store, 'readwrite', (tx) =>
-    promessa(tx.objectStore(store).delete(chave))
+  return transacao(
+    store,
+    'readwrite',
+    (tx) => promessa(tx.objectStore(store).delete(chave)),
   );
 }
 
 /** Apaga todos os registros de uma store. */
 export function limpar(store) {
-  return transacao(store, 'readwrite', (tx) =>
-    promessa(tx.objectStore(store).clear())
-  );
+  return transacao(store, 'readwrite', (tx) => promessa(tx.objectStore(store).clear()));
 }
 
 export function contar(store) {
-  return transacao(store, 'readonly', (tx) =>
-    promessa(tx.objectStore(store).count())
-  );
+  return transacao(store, 'readonly', (tx) => promessa(tx.objectStore(store).count()));
 }
 
 /** Nomes de todas as stores (usado no backup). */

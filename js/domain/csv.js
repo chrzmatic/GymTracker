@@ -14,8 +14,7 @@ export const BOM = '﻿';
 export function celula(valor) {
   if (valor === null || valor === undefined) return '';
   const texto = String(valor);
-  const precisaAspas =
-    texto.includes(SEPARADOR) ||
+  const precisaAspas = texto.includes(SEPARADOR) ||
     texto.includes('"') ||
     texto.includes('\n') ||
     texto.includes('\r');
@@ -93,7 +92,7 @@ export function csvDeTreinos(sessoes, series, exercicios) {
       'Anotação da série',
       'Anotação da sessão',
     ],
-    linhas
+    linhas,
   );
 }
 

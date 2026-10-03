@@ -3,15 +3,15 @@
  * Só entram sozinhos com o banco vazio; depois, só por "Restaurar" nas configurações.
  */
 
-import { salvarMusculos, contarMusculos } from '../data/musculos-repo.js';
-import { salvarExercicios, contarExercicios } from '../data/exercicios-repo.js';
-import { salvarTreinos, contarTreinos } from '../data/treinos-repo.js';
+import { contarMusculos, salvarMusculos } from '../data/musculos-repo.js';
+import { contarExercicios, salvarExercicios } from '../data/exercicios-repo.js';
+import { contarTreinos, salvarTreinos } from '../data/treinos-repo.js';
 import {
+  contarAlimentos,
   salvarAlimentos,
+  salvarPlanos,
   salvarPratos,
   salvarRefeicoes,
-  salvarPlanos,
-  contarAlimentos,
 } from '../data/dieta-repo.js';
 
 /** JSON já carregado. */

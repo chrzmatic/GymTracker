@@ -33,7 +33,7 @@ export function ultimaSessaoDaRotacao(sessoes, rotacao, dia) {
   const candidatas = sessoes
     .filter((s) => s.data < dia && naRotacao.has(s.treinoId))
     .sort(
-      (a, b) => b.data.localeCompare(a.data) || (b.criadaEm ?? 0) - (a.criadaEm ?? 0)
+      (a, b) => b.data.localeCompare(a.data) || (b.criadaEm ?? 0) - (a.criadaEm ?? 0),
     );
   return candidatas[0] ?? null;
 }
@@ -92,12 +92,11 @@ export function explicarSugestao(sugestao) {
     return 'Primeiro treino registrado — começando pelo início da rotação.';
   }
   const ultimo = `último foi o ${sugestao.ultima.treinoNome}`;
-  const quando =
-    sugestao.diasDesde === 0
-      ? 'hoje'
-      : sugestao.diasDesde === 1
-        ? 'ontem'
-        : `há ${sugestao.diasDesde} dias`;
+  const quando = sugestao.diasDesde === 0
+    ? 'hoje'
+    : sugestao.diasDesde === 1
+    ? 'ontem'
+    : `há ${sugestao.diasDesde} dias`;
   if (sugestao.motivo === MOTIVO.REINICIO) {
     return `Semana nova e ${quando} o ${sugestao.ultima.treinoNome} — reiniciando a rotação.`;
   }

@@ -7,13 +7,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  pesoCorporalEm,
   cargaEfetiva,
+  diferenca,
   epley,
   metricasDeSeries,
   metricasVazias,
+  pesoCorporalEm,
   somarMetricas,
-  diferenca,
 } from '../js/domain/metricas.js';
 
 const CARGA = { id: 'ex-supino', nome: 'Supino', tipoCarga: 'carga' };
@@ -33,7 +33,11 @@ const pesos = [
 test('pesoCorporalEm pega o registro mais recente até a data', () => {
   assert.equal(pesoCorporalEm(pesos, '2025-09-10'), 80);
   assert.equal(pesoCorporalEm(pesos, '2025-09-15'), 79, 'a data do registro conta');
-  assert.equal(pesoCorporalEm(pesos, '2025-12-01'), 79, 'depois do último, vale o último');
+  assert.equal(
+    pesoCorporalEm(pesos, '2025-12-01'),
+    79,
+    'depois do último, vale o último',
+  );
   assert.equal(pesoCorporalEm(pesos, '2025-08-15'), 82);
 });
 
@@ -55,13 +59,21 @@ test('carga sem kg registrado não tem carga efetiva', () => {
 
 test('peso corporal: soma o peso ao kg adicional', () => {
   assert.equal(cargaEfetiva(s(10, 8), CORPORAL, 80), 90);
-  assert.equal(cargaEfetiva(s(null, 8), CORPORAL, 80), 80, 'sem anilha, é o próprio peso');
+  assert.equal(
+    cargaEfetiva(s(null, 8), CORPORAL, 80),
+    80,
+    'sem anilha, é o próprio peso',
+  );
   assert.equal(cargaEfetiva(s(0, 8), CORPORAL, 80), 80);
 });
 
 test('assistido: subtrai a assistência do peso corporal', () => {
   assert.equal(cargaEfetiva(s(30, 8), ASSISTIDO, 80), 50);
-  assert.equal(cargaEfetiva(s(20, 8), ASSISTIDO, 80), 60, 'menos assistência, mais carga');
+  assert.equal(
+    cargaEfetiva(s(20, 8), ASSISTIDO, 80),
+    60,
+    'menos assistência, mais carga',
+  );
 });
 
 test('sem peso corporal, peso corporal e assistido ficam sem carga efetiva', () => {
@@ -134,7 +146,11 @@ test('sem peso corporal, as métricas de carga somem mas reps e séries ficam', 
   assert.equal(m.volume, null);
   assert.equal(m.cargaMaxima, null);
   assert.equal(m.semCargaEfetiva, true, 'a flag avisa que o número está incompleto');
-  assert.equal(m.cargaRegistradaMaxima, 30, 'a assistência registrada continua disponível');
+  assert.equal(
+    m.cargaRegistradaMaxima,
+    30,
+    'a assistência registrada continua disponível',
+  );
 });
 
 test('uma série sem carga no meio marca o conjunto como incompleto', () => {

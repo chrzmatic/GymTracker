@@ -5,12 +5,15 @@ import { calcularPrato } from '../domain/nutricao.js';
 import { num, paraNumero } from '../utils/format.js';
 import { confirmar, formulario } from '../components/dialogo.js';
 import { blocoVazio } from '../components/ui.js';
-import { abrir, definirTitulo, voltarUmaTela, recarregar } from '../navegacao.js';
+import { abrir, definirTitulo, recarregar, voltarUmaTela } from '../navegacao.js';
 import { escolherAlimento } from './dieta-comum.js';
 
 /** Lista de pratos. */
 export async function montarPratos(raiz) {
-  const [pratos, indice] = await Promise.all([dieta.listarPratos(), dieta.carregarIndice()]);
+  const [pratos, indice] = await Promise.all([
+    dieta.listarPratos(),
+    dieta.carregarIndice(),
+  ]);
   raiz.innerHTML = '';
 
   if (!pratos.length) {
@@ -55,7 +58,11 @@ export async function montarPratos(raiz) {
   novo.className = 'btn btn-primario btn-bloco mt-3';
   novo.textContent = '+ novo prato';
   novo.onclick = async () => {
-    const dados = await formulario('Novo prato', [{ nome: 'nome', rotulo: 'Nome' }], 'Criar');
+    const dados = await formulario(
+      'Novo prato',
+      [{ nome: 'nome', rotulo: 'Nome' }],
+      'Criar',
+    );
     if (!dados || !dados.nome.trim()) return;
     const criado = await dieta.criarPrato(dados.nome);
     await abrir('prato-editor', { pratoId: criado.id });
@@ -116,10 +123,9 @@ export async function montarEditorDePrato(raiz, params) {
 
     const quantidade = document.createElement('button');
     quantidade.className = 'pilula';
-    quantidade.textContent =
-      ing.quantidade === null || ing.quantidade === undefined
-        ? '— preencher'
-        : `${num(ing.quantidade, 2)} ${ing.unidade}`;
+    quantidade.textContent = ing.quantidade === null || ing.quantidade === undefined
+      ? '— preencher'
+      : `${num(ing.quantidade, 2)} ${ing.unidade}`;
     if (ing.quantidade === null || ing.quantidade === undefined) {
       quantidade.setAttribute('aria-pressed', 'false');
       quantidade.classList.add('pilula-aviso');
@@ -171,12 +177,20 @@ export async function montarEditorDePrato(raiz, params) {
     if (!alimentoId) return;
     const alimento = await dieta.buscarAlimento(alimentoId);
     const dados = await formulario(alimento.nome, [
-      { nome: 'q', rotulo: `Quantidade (${alimento.unidade})`, tipo: 'number', valor: '' },
+      {
+        nome: 'q',
+        rotulo: `Quantidade (${alimento.unidade})`,
+        tipo: 'number',
+        valor: '',
+      },
     ]);
     if (!dados) return;
     await dieta.salvarPrato({
       ...prato,
-      ingredientes: [...(prato.ingredientes ?? []), { alimentoId, quantidade: paraNumero(dados.q) }],
+      ingredientes: [...(prato.ingredientes ?? []), {
+        alimentoId,
+        quantidade: paraNumero(dados.q),
+      }],
     });
     await recarregar();
   };
@@ -192,7 +206,7 @@ export async function montarEditorDePrato(raiz, params) {
       'Excluir ' + prato.nome + '?',
       onde.length
         ? `Ele está nas refeições: ${onde.join(', ')}. Será removido delas.`
-        : 'Ele não está em nenhuma refeição.'
+        : 'Ele não está em nenhuma refeição.',
     );
     if (!ok) return;
     await dieta.excluirPrato(prato.id);

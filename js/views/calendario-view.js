@@ -10,14 +10,14 @@
 import * as rotacao from '../services/rotacao-service.js';
 import * as sessoes from '../services/sessao-service.js';
 import {
-  hojeIso,
-  formatarLongo,
-  partesIso,
-  NOMES_MES,
   descreverDistancia,
+  formatarLongo,
+  hojeIso,
+  NOMES_MES,
+  partesIso,
 } from '../utils/date.js';
-import { rotulosDaSemana, mesVizinho, acoesDoDia } from '../domain/calendario.js';
-import { escolher, avisar } from '../components/dialogo.js';
+import { acoesDoDia, mesVizinho, rotulosDaSemana } from '../domain/calendario.js';
+import { avisar, escolher } from '../components/dialogo.js';
 import { abrir } from '../navegacao.js';
 
 /** Mês visível (mantido entre montagens). */
@@ -147,7 +147,8 @@ function diaDaGrade(celula, hoje) {
 
   btn.setAttribute(
     'aria-label',
-    formatarLongo(celula.iso) + (doDia.length ? `: ${doDia.map((s) => s.treinoNome).join(', ')}` : '')
+    formatarLongo(celula.iso) +
+      (doDia.length ? `: ${doDia.map((s) => s.treinoNome).join(', ')}` : ''),
   );
   btn.onclick = () => tocarNoDia(celula.iso, doDia);
   return btn;
@@ -204,7 +205,7 @@ async function mostrarSugestaoFutura(dia, titulo) {
     titulo,
     sugestao
       ? `Sugerido para este dia: treino ${sugestao.treino.nome}. ${sugestao.explicacao}`
-      : 'Nenhum treino na rotação ainda.'
+      : 'Nenhum treino na rotação ainda.',
   );
 }
 
@@ -249,8 +250,9 @@ function resumo() {
   div.className = 'card mt-4';
 
   const h3 = document.createElement('h3');
-  h3.textContent =
-    dados.resumo.total === 1 ? '1 treino no mês' : `${dados.resumo.total} treinos no mês`;
+  h3.textContent = dados.resumo.total === 1
+    ? '1 treino no mês'
+    : `${dados.resumo.total} treinos no mês`;
   h3.classList.add('m-0', 'mb-2');
   div.appendChild(h3);
 

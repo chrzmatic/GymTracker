@@ -7,8 +7,8 @@ import { listarSessoes } from '../data/sessoes-repo.js';
 import { listarTreinos } from '../data/treinos-repo.js';
 import { lerTodasConfigs } from '../data/config-repo.js';
 import { hojeIso, partesIso } from '../utils/date.js';
-import { sugerirTreino, explicarSugestao } from '../domain/rotacao.js';
-import { montarMes, agruparPorData, resumoDoMes } from '../domain/calendario.js';
+import { explicarSugestao, sugerirTreino } from '../domain/rotacao.js';
+import { agruparPorData, montarMes, resumoDoMes } from '../domain/calendario.js';
 
 /**
  * Treino sugerido para um dia (padrão: hoje).

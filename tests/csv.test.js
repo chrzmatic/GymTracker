@@ -4,14 +4,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  celula,
-  numero,
-  montarCsv,
-  csvDeTreinos,
-  csvDePeso,
-  nomeDeArquivo,
-  SEPARADOR,
   BOM,
+  celula,
+  csvDePeso,
+  csvDeTreinos,
+  montarCsv,
+  nomeDeArquivo,
+  numero,
+  SEPARADOR,
 } from '../js/domain/csv.js';
 
 /* --- escape --- */
@@ -81,7 +81,14 @@ const sessoes = [
     criadaEm: 1,
     anotacao: 'ombro doendo',
   },
-  { id: 's2', data: '2025-09-08', treinoNome: 'B', status: 'finalizada', criadaEm: 2, anotacao: '' },
+  {
+    id: 's2',
+    data: '2025-09-08',
+    treinoNome: 'B',
+    status: 'finalizada',
+    criadaEm: 2,
+    anotacao: '',
+  },
 ];
 
 const exercicios = new Map([
@@ -90,10 +97,46 @@ const exercicios = new Map([
 ]);
 
 const series = [
-  { sessaoId: 's2', exercicioId: 'ex-supino', ordemItem: 0, numero: 1, carga: 62.5, reps: 10, aquecimento: false, anotacao: '' },
-  { sessaoId: 's1', exercicioId: 'ex-supino', ordemItem: 0, numero: 1, carga: 60, reps: 10, aquecimento: false, anotacao: 'fácil' },
-  { sessaoId: 's1', exercicioId: 'ex-supino', ordemItem: 0, numero: 1, carga: 20, reps: 15, aquecimento: true, anotacao: '' },
-  { sessaoId: 's1', exercicioId: 'ex-barra', ordemItem: 1, numero: 1, carga: null, reps: 8, aquecimento: false, anotacao: '' },
+  {
+    sessaoId: 's2',
+    exercicioId: 'ex-supino',
+    ordemItem: 0,
+    numero: 1,
+    carga: 62.5,
+    reps: 10,
+    aquecimento: false,
+    anotacao: '',
+  },
+  {
+    sessaoId: 's1',
+    exercicioId: 'ex-supino',
+    ordemItem: 0,
+    numero: 1,
+    carga: 60,
+    reps: 10,
+    aquecimento: false,
+    anotacao: 'fácil',
+  },
+  {
+    sessaoId: 's1',
+    exercicioId: 'ex-supino',
+    ordemItem: 0,
+    numero: 1,
+    carga: 20,
+    reps: 15,
+    aquecimento: true,
+    anotacao: '',
+  },
+  {
+    sessaoId: 's1',
+    exercicioId: 'ex-barra',
+    ordemItem: 1,
+    numero: 1,
+    carga: null,
+    reps: 8,
+    aquecimento: false,
+    anotacao: '',
+  },
 ];
 
 /** CSV em linhas de células. */
@@ -122,7 +165,7 @@ test('as séries saem em ordem de data, posição no treino e número', () => {
       ['2025-09-01', 'Barra fixa', 'valendo'],
       ['2025-09-08', 'Supino reto', 'valendo'],
     ],
-    'aquecimento antes das séries valendo, como na tela'
+    'aquecimento antes das séries valendo, como na tela',
   );
 });
 
@@ -155,12 +198,25 @@ test('as anotações da série e da sessão vão em colunas separadas', () => {
 });
 
 test('série de uma sessão apagada não quebra a exportação', () => {
-  const orfa = [{ sessaoId: 'sumiu', exercicioId: 'ex-supino', numero: 1, carga: 50, reps: 5 }];
+  const orfa = [{
+    sessaoId: 'sumiu',
+    exercicioId: 'ex-supino',
+    numero: 1,
+    carga: 50,
+    reps: 5,
+  }];
   assert.doesNotThrow(() => csvDeTreinos(sessoes, orfa, exercicios));
 });
 
 test('exercício apagado sai com o ID, para não perder o dado', () => {
-  const orfa = [{ sessaoId: 's1', exercicioId: 'ex-sumiu', ordemItem: 0, numero: 1, carga: 50, reps: 5 }];
+  const orfa = [{
+    sessaoId: 's1',
+    exercicioId: 'ex-sumiu',
+    ordemItem: 0,
+    numero: 1,
+    carga: 50,
+    reps: 5,
+  }];
   const linhas = linhasDe(csvDeTreinos(sessoes, orfa, exercicios)).slice(1);
   assert.equal(linhas[0][4], 'ex-sumiu');
 });
@@ -183,5 +239,8 @@ test('o peso sai em ordem cronológica', () => {
 /* --- nome do arquivo --- */
 
 test('o nome do arquivo leva a data', () => {
-  assert.equal(nomeDeArquivo('gymtracker-treinos', '2025-09-21', 'csv'), 'gymtracker-treinos-2025-09-21.csv');
+  assert.equal(
+    nomeDeArquivo('gymtracker-treinos', '2025-09-21', 'csv'),
+    'gymtracker-treinos-2025-09-21.csv',
+  );
 });

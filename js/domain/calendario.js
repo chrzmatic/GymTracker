@@ -3,7 +3,7 @@
  * vizinhos, com `doMes: false`.
  */
 
-import { partesIso, somarDias, diasNoMes, NOMES_DIA_SEMANA } from '../utils/date.js';
+import { diasNoMes, NOMES_DIA_SEMANA, partesIso, somarDias } from '../utils/date.js';
 
 /**
  * Semanas de um mês.
@@ -15,7 +15,9 @@ import { partesIso, somarDias, diasNoMes, NOMES_DIA_SEMANA } from '../utils/date
 export function montarMes(ano, mes, inicioSemana = 1) {
   const primeiro = `${ano}-${String(mes).padStart(2, '0')}-01`;
   const total = diasNoMes(ano, mes);
-  const ultimo = `${ano}-${String(mes).padStart(2, '0')}-${String(total).padStart(2, '0')}`;
+  const ultimo = `${ano}-${String(mes).padStart(2, '0')}-${
+    String(total).padStart(2, '0')
+  }`;
 
   // Dias do mês anterior na primeira linha.
   const diaDaSemanaDoPrimeiro = new Date(ano, mes - 1, 1).getDay();

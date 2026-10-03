@@ -3,9 +3,15 @@
 import * as dieta from '../services/dieta-service.js';
 import { TIPO_ITEM } from '../domain/nutricao.js';
 import { num, paraNumero } from '../utils/format.js';
-import { confirmar, escolher, escolherComBusca, formulario, avisar } from '../components/dialogo.js';
+import {
+  avisar,
+  confirmar,
+  escolher,
+  escolherComBusca,
+  formulario,
+} from '../components/dialogo.js';
 import { blocoVazio, textoFraco } from '../components/ui.js';
-import { abrir, definirTitulo, voltarUmaTela, recarregar } from '../navegacao.js';
+import { abrir, definirTitulo, recarregar, voltarUmaTela } from '../navegacao.js';
 import { escolherAlimento } from './dieta-comum.js';
 
 /**
@@ -37,8 +43,8 @@ export async function montarEditorDePlano(raiz, params) {
       dia.metas.kcal
         ? `Meta: ${num(dia.metas.kcal, 0)} kcal`
         : 'Sem meta de calorias definida.',
-      'm-0'
-    )
+      'm-0',
+    ),
   );
 
   const renomear = document.createElement('button');
@@ -158,7 +164,9 @@ async function menuDaRefeicao(plano, r) {
         rotulo: 'Nome',
         valor: r.nome,
         dica: compartilhada
-          ? `Esta refeição também está em: ${planos.filter((p) => p !== plano.nome).join(', ')}. O nome muda lá também.`
+          ? `Esta refeição também está em: ${
+            planos.filter((p) => p !== plano.nome).join(', ')
+          }. O nome muda lá também.`
           : undefined,
       },
     ]);
@@ -173,7 +181,7 @@ async function menuDaRefeicao(plano, r) {
       compartilhada
         ? `Ela continua em: ${planos.filter((p) => p !== plano.nome).join(', ')}.`
         : 'Como ela não está em nenhum outro plano, será apagada junto com os itens dela.',
-      'Tirar'
+      'Tirar',
     );
     if (!ok) return;
     await dieta.removerRefeicaoDoPlano(plano.id, r.refeicaoId);
@@ -201,7 +209,7 @@ async function adicionarRefeicao(plano) {
     const dados = await formulario(
       'Nova refeição',
       [{ nome: 'nome', rotulo: 'Nome', placeholder: 'Almoço' }],
-      'Criar'
+      'Criar',
     );
     if (!dados || !dados.nome.trim()) return;
     const criada = await dieta.criarRefeicaoNoPlano(plano.id, dados.nome);
@@ -215,14 +223,14 @@ async function adicionarRefeicao(plano) {
       valor: r.id,
       rotulo: r.nome,
       detalhe: `${(r.itens ?? []).length} itens`,
-    }))
+    })),
   );
   if (!refeicaoId) return;
 
   await dieta.adicionarRefeicaoAoPlano(plano.id, refeicaoId);
   await avisar(
     'Refeição compartilhada',
-    'Ela agora está nos dois planos. Editar os itens dela vale para os dois.'
+    'Ela agora está nos dois planos. Editar os itens dela vale para os dois.',
   );
   await recarregar();
 }
@@ -248,7 +256,9 @@ export async function montarEditorDeRefeicao(raiz, params) {
   if (planos.length > 1) {
     const aviso = document.createElement('div');
     aviso.className = 'faixa-aviso';
-    aviso.textContent = `Esta refeição é compartilhada por: ${planos.join(' e ')}. Editar aqui muda nos dois.`;
+    aviso.textContent = `Esta refeição é compartilhada por: ${
+      planos.join(' e ')
+    }. Editar aqui muda nos dois.`;
     raiz.appendChild(aviso);
   }
 
@@ -260,8 +270,7 @@ export async function montarEditorDeRefeicao(raiz, params) {
   totais.appendChild(h2);
   const macros = document.createElement('p');
   macros.className = 'texto-fraco pequeno m-0';
-  macros.textContent =
-    `P ${num(calculo.total.proteina, 1)} g · ` +
+  macros.textContent = `P ${num(calculo.total.proteina, 1)} g · ` +
     `G ${num(calculo.total.gordura, 1)} g · C ${num(calculo.total.carbo, 1)} g`;
   totais.appendChild(macros);
   raiz.appendChild(totais);
@@ -320,7 +329,7 @@ function cardDeItemEditavel(refeicao, item) {
       item.tipo === TIPO_ITEM.GRUPO
         ? 'O grupo inteiro sai desta refeição, com todas as opções dele.'
         : 'Sai desta refeição.',
-      'Remover'
+      'Remover',
     );
     if (!ok) return;
     await dieta.removerItem(refeicao.id, item.itemId);
@@ -334,8 +343,8 @@ function cardDeItemEditavel(refeicao, item) {
       textoFraco(
         'Uma linha por opção. A marcada é a padrão; toque nela para trocar, ou no ⋯ para mudar a quantidade e remover.',
         'm-0',
-        'mb-2'
-      )
+        'mb-2',
+      ),
     );
 
     item.opcoes.forEach((o) => card.appendChild(linhaDeOpcao(refeicao, item, o)));
@@ -374,7 +383,9 @@ function cardDeItemEditavel(refeicao, item) {
 
   const kcal = document.createElement('span');
   kcal.className = 'texto-fraco pequeno alinha-centro';
-  kcal.textContent = `${num(item.valores.kcal, 0)} kcal · P ${num(item.valores.proteina, 1)} g`;
+  kcal.textContent = `${num(item.valores.kcal, 0)} kcal · P ${
+    num(item.valores.proteina, 1)
+  } g`;
   linha.appendChild(kcal);
 
   card.appendChild(linha);
@@ -450,7 +461,7 @@ function linhaDeOpcao(refeicao, item, opcao) {
         refeicao.id,
         item.itemId,
         opcao.opcaoId,
-        paraNumero(dados.q)
+        paraNumero(dados.q),
       );
       return recarregar();
     }
@@ -464,14 +475,14 @@ function linhaDeOpcao(refeicao, item, opcao) {
       if (item.opcoes.length <= 1) {
         await avisar(
           'Última opção',
-          'Um grupo precisa de pelo menos uma opção. Remova o grupo inteiro pelo × do cabeçalho.'
+          'Um grupo precisa de pelo menos uma opção. Remova o grupo inteiro pelo × do cabeçalho.',
         );
         return;
       }
       const ok = await confirmar(
         'Remover ' + opcao.nome + '?',
         'Sai deste grupo de opções. O alimento continua no índice.',
-        'Remover'
+        'Remover',
       );
       if (!ok) return;
       await dieta.removerOpcao(refeicao.id, item.itemId, opcao.opcaoId);
@@ -508,7 +519,7 @@ async function montarOpcao(tipo) {
     }
     const pratoId = await escolherComBusca(
       'Escolher prato',
-      pratos.map((p) => ({ valor: p.id, rotulo: p.nome }))
+      pratos.map((p) => ({ valor: p.id, rotulo: p.nome })),
     );
     if (!pratoId) return null;
     const dados = await formulario('Porções', [
@@ -546,10 +557,11 @@ async function adicionarItem(refeicao) {
           nome: 'nome',
           rotulo: 'Nome do grupo',
           placeholder: 'Carboidrato',
-          dica: 'Um grupo guarda alternativas para a mesma função na refeição. A opção padrão é a que entra no total do dia.',
+          dica:
+            'Um grupo guarda alternativas para a mesma função na refeição. A opção padrão é a que entra no total do dia.',
         },
       ],
-      'Criar'
+      'Criar',
     );
     if (!nome || !nome.nome.trim()) return;
 
@@ -578,7 +590,10 @@ async function adicionarItem(refeicao) {
       { nome: 'texto', rotulo: 'Texto', placeholder: 'Salada à vontade' },
     ]);
     if (!dados || !dados.texto.trim()) return;
-    await dieta.adicionarItem(refeicao.id, { tipo: TIPO_ITEM.LIVRE, texto: dados.texto.trim() });
+    await dieta.adicionarItem(refeicao.id, {
+      tipo: TIPO_ITEM.LIVRE,
+      texto: dados.texto.trim(),
+    });
     await recarregar();
     return;
   }
@@ -591,7 +606,7 @@ async function adicionarItem(refeicao) {
     }
     const pratoId = await escolherComBusca(
       'Escolher prato',
-      pratos.map((p) => ({ valor: p.id, rotulo: p.nome }))
+      pratos.map((p) => ({ valor: p.id, rotulo: p.nome })),
     );
     if (!pratoId) return;
     const dados = await formulario('Porções', [

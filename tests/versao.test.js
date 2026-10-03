@@ -5,11 +5,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import {
-  montarVersao,
-  conteudoDoArquivo,
   atualizarServiceWorker,
+  conteudoDoArquivo,
+  montarVersao,
 } from '../scripts/versao-lib.js';
-import { VERSAO, BUILD, DATA_DA_VERSAO } from '../js/versao.js';
+import { BUILD, DATA_DA_VERSAO, VERSAO } from '../js/versao.js';
 
 const ler = (caminho) => readFileSync(new URL('../' + caminho, import.meta.url), 'utf8');
 
@@ -18,7 +18,7 @@ test('MAJOR.MINOR vêm do deno.json e o terceiro número é o commit', () => {
   assert.equal(
     montarVersao('1.2.7', 154),
     '1.2.154',
-    'o patch do deno.json é ignorado'
+    'o patch do deno.json é ignorado',
   );
   assert.equal(montarVersao('2.0.0', 0), '2.0.0');
 });
@@ -48,12 +48,12 @@ test('atualizar o service worker troca só a linha da VERSAO', () => {
   const depois = atualizarServiceWorker(antes, '1.0.10');
   assert.equal(
     depois,
-    "a();\nconst VERSAO = '1.0.10';\nconst CACHE = `gymtracker-${VERSAO}`;\n"
+    "a();\nconst VERSAO = '1.0.10';\nconst CACHE = `gymtracker-${VERSAO}`;\n",
   );
   assert.equal(
     atualizarServiceWorker(depois, '1.0.10'),
     depois,
-    'rodar de novo não muda nada'
+    'rodar de novo não muda nada',
   );
 });
 
@@ -70,6 +70,6 @@ test('js/versao.js atual é coerente com o deno.json', () => {
 test('o cache do service worker usa a mesma versão mostrada no app', () => {
   assert.match(
     ler('service-worker.js'),
-    new RegExp(`const VERSAO = '${VERSAO.replace(/\./g, '\\.')}';`)
+    new RegExp(`const VERSAO = '${VERSAO.replace(/\./g, '\\.')}';`),
   );
 });

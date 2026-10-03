@@ -2,8 +2,8 @@
 
 import * as dieta from '../services/dieta-service.js';
 import { INFO_NUTRIENTES } from '../domain/nutricao.js';
-import { hojeIso, formatarLongo } from '../utils/date.js';
-import { num, comSinal, paraNumero } from '../utils/format.js';
+import { formatarLongo, hojeIso } from '../utils/date.js';
+import { comSinal, num, paraNumero } from '../utils/format.js';
 import { escolher, formulario } from '../components/dialogo.js';
 import { blocoVazio } from '../components/ui.js';
 import { abrir } from '../navegacao.js';
@@ -121,7 +121,11 @@ function cardDeTotais(dia) {
   cabecalhoTabela.className = 'metrica metrica-cabecalho';
   ['', 'Dia', 'Meta', 'Dif.'].forEach((texto, i) => {
     const span = document.createElement('span');
-    span.className = i === 0 ? 'metrica-rotulo' : i === 3 ? 'metrica-dif' : 'metrica-valor';
+    span.className = i === 0
+      ? 'metrica-rotulo'
+      : i === 3
+      ? 'metrica-dif'
+      : 'metrica-valor';
     span.textContent = texto;
     cabecalhoTabela.appendChild(span);
   });
@@ -176,18 +180,34 @@ async function editarMetas(dia) {
   const dados = await formulario(
     'Metas — ' + dia.nome,
     [
-      { nome: 'kcal', rotulo: 'Meta de calorias (kcal)', tipo: 'number', valor: dia.metas.kcal ?? '' },
-      { nome: 'proteina', rotulo: 'Proteína (g)', tipo: 'number', valor: dia.metas.proteina ?? '' },
-      { nome: 'gordura', rotulo: 'Gordura (g)', tipo: 'number', valor: dia.metas.gordura ?? '' },
+      {
+        nome: 'kcal',
+        rotulo: 'Meta de calorias (kcal)',
+        tipo: 'number',
+        valor: dia.metas.kcal ?? '',
+      },
+      {
+        nome: 'proteina',
+        rotulo: 'Proteína (g)',
+        tipo: 'number',
+        valor: dia.metas.proteina ?? '',
+      },
+      {
+        nome: 'gordura',
+        rotulo: 'Gordura (g)',
+        tipo: 'number',
+        valor: dia.metas.gordura ?? '',
+      },
       {
         nome: 'carbo',
         rotulo: 'Carboidrato (g)',
         tipo: 'number',
         valor: dia.metas.carbo ?? '',
-        dica: 'Deixe em branco o que não quiser acompanhar — em branco significa "sem meta", não zero.',
+        dica:
+          'Deixe em branco o que não quiser acompanhar — em branco significa "sem meta", não zero.',
       },
     ],
-    'Salvar'
+    'Salvar',
   );
   if (!dados) return;
 
@@ -347,7 +367,9 @@ function pilulaDeOpcao(opcao, refeicao, item) {
   detalhe.appendChild(quantidade);
 
   const kcal = document.createElement('span');
-  kcal.textContent = `${num(opcao.valores.kcal, 0)} kcal · P ${num(opcao.valores.proteina, 1)} g`;
+  kcal.textContent = `${num(opcao.valores.kcal, 0)} kcal · P ${
+    num(opcao.valores.proteina, 1)
+  } g`;
   detalhe.appendChild(kcal);
 
   btn.appendChild(detalhe);
@@ -364,10 +386,9 @@ function pilulaDeOpcao(opcao, refeicao, item) {
 function faixaDeErros(erros) {
   const div = document.createElement('div');
   div.className = 'faixa-aviso faixa-erro';
-  div.textContent =
-    erros.length === 1
-      ? `${erros[0].refeicao}: ${erros[0].erro}`
-      : `${erros.length} itens com problema: ${erros.map((e) => e.nome).join(', ')}.`;
+  div.textContent = erros.length === 1
+    ? `${erros[0].refeicao}: ${erros[0].erro}`
+    : `${erros.length} itens com problema: ${erros.map((e) => e.nome).join(', ')}.`;
   return div;
 }
 

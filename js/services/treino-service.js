@@ -4,25 +4,25 @@
  */
 
 import {
-  listarTreinos,
-  listarRotacao,
   buscarTreino,
+  listarRotacao,
+  listarTreinos,
+  removerTreino,
   salvarTreino,
   salvarTreinos,
-  removerTreino,
 } from '../data/treinos-repo.js';
 import { mapaExercicios } from '../data/exercicios-repo.js';
 import { listarMusculos } from '../data/musculos-repo.js';
 import { novoId } from '../utils/id.js';
 import {
+  alternarRotacao,
+  criarItemExercicio,
+  desfazerGrupo,
   moverItemDoTreino,
   moverTreino,
-  alternarRotacao,
   numerarOrdem,
-  criarItemExercicio,
-  virarGrupoDeAlternativas,
-  desfazerGrupo,
   removerAlternativa,
+  virarGrupoDeAlternativas,
 } from '../domain/treino.js';
 
 /** Cores para treinos novos. */
@@ -182,4 +182,4 @@ export async function desfazerGrupoDeAlternativas(treino, itemId) {
   return atualizado;
 }
 
-export { listarTreinos, listarRotacao, listarMusculos, CORES };
+export { CORES, listarMusculos, listarRotacao, listarTreinos };

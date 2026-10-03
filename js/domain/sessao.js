@@ -18,8 +18,7 @@ export function itemDaSessao(item, ordem) {
     ordem,
     tipo: item.tipo,
     nome: item.nome ?? null,
-    exercicioId:
-      item.tipo === 'alternativas' ? item.exercicioPadraoId : item.exercicioId,
+    exercicioId: item.tipo === 'alternativas' ? item.exercicioPadraoId : item.exercicioId,
     alternativas: item.tipo === 'alternativas' ? [...item.alternativas] : null,
     seriesPlanejadas: item.seriesPlanejadas ?? 3,
     repsPlanejadas: item.repsPlanejadas ?? null,
@@ -37,7 +36,9 @@ export function itemDaSessao(item, ordem) {
  * @param {boolean} [params.finalizada] true para registro retroativo
  * @param {number} [params.agora] timestamp (para teste)
  */
-export function montarSessao({ id, data, treino, finalizada = false, agora = Date.now() }) {
+export function montarSessao(
+  { id, data, treino, finalizada = false, agora = Date.now() },
+) {
   return {
     id,
     data,
@@ -63,7 +64,13 @@ export function montarSessao({ id, data, treino, finalizada = false, agora = Dat
  * @param {string} [ignorarSessaoId]
  * @returns {{sessao: Object, series: Object[]}|null}
  */
-export function ultimaVezDoExercicio(sessoes, series, exercicioId, dataLimite, ignorarSessaoId) {
+export function ultimaVezDoExercicio(
+  sessoes,
+  series,
+  exercicioId,
+  dataLimite,
+  ignorarSessaoId,
+) {
   const seriesPorSessao = new Map();
   series.forEach((s) => {
     if (s.exercicioId !== exercicioId) return;
@@ -75,7 +82,9 @@ export function ultimaVezDoExercicio(sessoes, series, exercicioId, dataLimite, i
     .filter((s) => s.id !== ignorarSessaoId)
     .filter((s) => s.data <= dataLimite)
     .filter((s) => seriesPorSessao.has(s.id))
-    .sort((a, b) => b.data.localeCompare(a.data) || (b.criadaEm ?? 0) - (a.criadaEm ?? 0));
+    .sort((a, b) =>
+      b.data.localeCompare(a.data) || (b.criadaEm ?? 0) - (a.criadaEm ?? 0)
+    );
 
   const sessao = candidatas[0];
   if (!sessao) return null;
@@ -105,7 +114,7 @@ export function ordenarSeries(series) {
 /** Número da próxima série, dentro da categoria (aquecimento ou valendo). */
 export function proximoNumero(seriesDoItem, aquecimento) {
   const mesma = seriesDoItem.filter(
-    (s) => Boolean(s.aquecimento) === Boolean(aquecimento)
+    (s) => Boolean(s.aquecimento) === Boolean(aquecimento),
   );
   return mesma.length + 1;
 }
@@ -133,7 +142,12 @@ export function alternarAquecimento(seriesDoItem, serieId) {
  * @param {boolean} [aquecimento]
  * @returns {{carga: number|null, reps: number|null}}
  */
-export function valoresIniciaisDaSerie(item, seriesAtuais, ultimaVez, aquecimento = false) {
+export function valoresIniciaisDaSerie(
+  item,
+  seriesAtuais,
+  ultimaVez,
+  aquecimento = false,
+) {
   const mesmaCategoria = (s) => Boolean(s.aquecimento) === Boolean(aquecimento);
   const atuais = seriesAtuais.filter(mesmaCategoria).sort((a, b) => a.numero - b.numero);
   const historico = (ultimaVez ? ultimaVez.series : [])
@@ -156,7 +170,9 @@ export function valoresIniciaisDaSerie(item, seriesAtuais, ultimaVez, aqueciment
 }
 
 /** Objeto de uma série nova. */
-export function montarSerie({ id, sessaoId, item, numero, carga, reps, aquecimento = false }) {
+export function montarSerie(
+  { id, sessaoId, item, numero, carga, reps, aquecimento = false },
+) {
   return {
     id,
     sessaoId,
@@ -176,9 +192,7 @@ export function renumerar(series) {
   let aquecimentos = 0;
   let valendo = 0;
   return ordenarSeries(series).map((s) =>
-    s.aquecimento
-      ? { ...s, numero: (aquecimentos += 1) }
-      : { ...s, numero: (valendo += 1) }
+    s.aquecimento ? { ...s, numero: aquecimentos += 1 } : { ...s, numero: valendo += 1 }
   );
 }
 

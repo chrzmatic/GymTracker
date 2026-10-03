@@ -6,7 +6,12 @@
  * "alternativa diferente", e não como um removido e um adicionado.
  */
 
-import { metricasDeSeries, metricasVazias, somarMetricas, diferenca } from './metricas.js';
+import {
+  diferenca,
+  metricasDeSeries,
+  metricasVazias,
+  somarMetricas,
+} from './metricas.js';
 import { TIPOS_CARGA } from '../utils/constantes.js';
 
 /** Situação de um exercício na comparação. */
@@ -66,7 +71,7 @@ function parear(itensA, itensB) {
   pares.forEach((par) => {
     if (par.b || !par.a.exercicioId) return;
     const b = sobrandoB.find(
-      (i) => i.exercicioId === par.a.exercicioId && !usadosB.has(i.itemId)
+      (i) => i.exercicioId === par.a.exercicioId && !usadosB.has(i.itemId),
     );
     if (b) {
       usadosB.add(b.itemId);
@@ -204,7 +209,13 @@ function compararMetricas(mA, mB, exercicio, pesoA, pesoB) {
     return [
       linha('Séries', mA.series, mB.series),
       linha('Reps totais', mA.reps, mB.reps),
-      linha(rotulo, mA.cargaRegistradaMaxima, mB.cargaRegistradaMaxima, 'kg', maiorEhMelhor),
+      linha(
+        rotulo,
+        mA.cargaRegistradaMaxima,
+        mB.cargaRegistradaMaxima,
+        'kg',
+        maiorEhMelhor,
+      ),
     ];
   }
 

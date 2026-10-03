@@ -6,8 +6,8 @@ import assert from 'node:assert/strict';
 import {
   resumirSessao,
   textoDaSerie,
-  textoParaCopiar,
   textoDosTotais,
+  textoParaCopiar,
 } from '../js/domain/resumo-sessao.js';
 import { STATUS, TIPOS_CARGA } from '../js/utils/constantes.js';
 
@@ -44,7 +44,7 @@ const serie = (
   numero,
   carga,
   reps,
-  aquecimento = false
+  aquecimento = false,
 ) => ({
   id,
   sessaoId: 's1',
@@ -89,7 +89,7 @@ test('série com carga: "16 kg × 10", com vírgula decimal', () => {
   assert.equal(
     textoDaSerie({ carga: 0, reps: 15 }),
     '0 kg × 15',
-    'zero é valor, não branco'
+    'zero é valor, não branco',
   );
 });
 
@@ -102,26 +102,26 @@ test('o que não foi anotado aparece como "—", nunca como zero', () => {
 test('peso corporal: sem lastro, com lastro', () => {
   assert.equal(
     textoDaSerie({ carga: null, reps: 8 }, TIPOS_CARGA.PESO_CORPORAL),
-    'peso corporal × 8'
+    'peso corporal × 8',
   );
   assert.equal(
     textoDaSerie({ carga: 0, reps: 8 }, TIPOS_CARGA.PESO_CORPORAL),
-    'peso corporal × 8'
+    'peso corporal × 8',
   );
   assert.equal(
     textoDaSerie({ carga: 5, reps: 6 }, TIPOS_CARGA.PESO_CORPORAL),
-    'peso corporal +5 kg × 6'
+    'peso corporal +5 kg × 6',
   );
 });
 
 test('assistido mostra a assistência', () => {
   assert.equal(
     textoDaSerie({ carga: 20, reps: 6 }, TIPOS_CARGA.ASSISTIDO),
-    'assistência 20 kg × 6'
+    'assistência 20 kg × 6',
   );
   assert.equal(
     textoDaSerie({ carga: null, reps: 6 }, TIPOS_CARGA.ASSISTIDO),
-    'assistência — kg × 6'
+    'assistência — kg × 6',
   );
 });
 
@@ -136,19 +136,19 @@ test('exercícios na ordem da sessão, séries ordenadas com aquecimento primeir
   const r = resumirSessao({ sessao, series, exercicios });
   assert.deepEqual(
     r.exercicios.map((e) => e.nome),
-    ['Supino reto máquina', 'Barra fixa', 'Leg press']
+    ['Supino reto máquina', 'Barra fixa', 'Leg press'],
   );
   assert.deepEqual(
     r.exercicios[0].series.map((s) => s.rotulo),
-    ['aq 1', '1', '2']
+    ['aq 1', '1', '2'],
   );
   assert.deepEqual(
     r.exercicios[0].series.map((s) => s.texto),
-    ['10 kg × 12', '16 kg × 10', '16 kg × 9']
+    ['10 kg × 12', '16 kg × 10', '16 kg × 9'],
   );
   assert.deepEqual(
     r.exercicios.map((e) => e.posicao),
-    [1, 2, 3]
+    [1, 2, 3],
   );
 });
 
@@ -160,7 +160,7 @@ test('a ordem segue o campo "ordem" do item, não a posição no array', () => {
   const r = resumirSessao({ sessao: reordenada, series, exercicios });
   assert.deepEqual(
     r.exercicios.map((e) => e.nome),
-    ['Supino reto máquina', 'Leg press', 'Barra fixa']
+    ['Supino reto máquina', 'Leg press', 'Barra fixa'],
   );
 });
 
@@ -197,7 +197,7 @@ test('série órfã (item que não existe mais) não some do resumo', () => {
   assert.equal(ultimo.nome, 'Paralela');
   assert.deepEqual(
     ultimo.series.map((s) => s.texto),
-    ['assistência 20 kg × 6']
+    ['assistência 20 kg × 6'],
   );
   assert.equal(r.totais.series, 5);
 });
@@ -213,7 +213,7 @@ test('exercício apagado do cadastro usa o nome do grupo ou um aviso', () => {
   const r = resumirSessao({ sessao: s, series: [], exercicios });
   assert.deepEqual(
     r.exercicios.map((e) => e.nome),
-    ['Exercício removido', 'Remada (alternativas)']
+    ['Exercício removido', 'Remada (alternativas)'],
   );
 });
 
@@ -269,7 +269,7 @@ test('texto completo, linha a linha', () => {
       'Anotação: Bom treino',
       '',
       '2 exercícios · 4 séries · 33 reps',
-    ].join('\n')
+    ].join('\n'),
   );
 });
 
@@ -318,10 +318,10 @@ test('anotação da série vai entre parênteses', () => {
 test('totais no singular e no plural', () => {
   assert.equal(
     textoDosTotais({ exercicios: 1, series: 1, reps: 1 }),
-    '1 exercício · 1 série · 1 rep'
+    '1 exercício · 1 série · 1 rep',
   );
   assert.equal(
     textoDosTotais({ exercicios: 0, series: 0, reps: 0 }),
-    '0 exercícios · 0 séries · 0 reps'
+    '0 exercícios · 0 séries · 0 reps',
   );
 });

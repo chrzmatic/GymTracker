@@ -1,6 +1,6 @@
 /** Comparação entre sessões: carrega os dados e o peso corporal de cada data. */
 
-import { listarSessoes, buscarSessao } from '../data/sessoes-repo.js';
+import { buscarSessao, listarSessoes } from '../data/sessoes-repo.js';
 import { listarSeriesDaSessao } from '../data/series-repo.js';
 import { listarPesos } from '../data/peso-corporal-repo.js';
 import { mapaExercicios } from '../data/exercicios-repo.js';
@@ -12,11 +12,14 @@ import { compararSessoes } from '../domain/comparacao.js';
  * @returns {Promise<Object|null>}
  */
 export async function comparar(idA, idB) {
-  const [umaSessao, outraSessao] = await Promise.all([buscarSessao(idA), buscarSessao(idB)]);
+  const [umaSessao, outraSessao] = await Promise.all([
+    buscarSessao(idA),
+    buscarSessao(idB),
+  ]);
   if (!umaSessao || !outraSessao) return null;
 
   const ordenadas = [umaSessao, outraSessao].sort(
-    (x, y) => x.data.localeCompare(y.data) || (x.criadaEm ?? 0) - (y.criadaEm ?? 0)
+    (x, y) => x.data.localeCompare(y.data) || (x.criadaEm ?? 0) - (y.criadaEm ?? 0),
   );
   const [sessaoA, sessaoB] = ordenadas;
 
@@ -53,7 +56,7 @@ export async function anteriorDoMesmoTreino(sessao) {
     .filter(
       (s) =>
         s.data < sessao.data ||
-        (s.data === sessao.data && (s.criadaEm ?? 0) < (sessao.criadaEm ?? 0))
+        (s.data === sessao.data && (s.criadaEm ?? 0) < (sessao.criadaEm ?? 0)),
     );
   return candidatas[0] ?? null;
 }

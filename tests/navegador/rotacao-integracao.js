@@ -153,7 +153,7 @@ try {
   }
   for (let i = 0; i < 60; i += 1) {
     const quantos = await cdp.avaliar(
-      `(async () => { try { const t = await import('/js/data/treinos-repo.js'); return (await t.listarTreinos()).length; } catch { return 0; } })()`
+      `(async () => { try { const t = await import('/js/data/treinos-repo.js'); return (await t.listarTreinos()).length; } catch { return 0; } })()`,
     );
     if (quantos > 0) break;
     await new Promise((r) => setTimeout(r, 250));

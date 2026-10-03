@@ -167,13 +167,62 @@
       "ordem": 0,
       "cor": "#4f8cff",
       "itens": [
-        { "id": "it-a-1", "tipo": "exercicio", "exercicioId": "ex-leg-press-pes-altos", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-a-2", "tipo": "exercicio", "exercicioId": "ex-panturrilha-leg-press", "seriesPlanejadas": 2, "repsPlanejadas": null, "opcional": true },
-        { "id": "it-a-3", "tipo": "exercicio", "exercicioId": "ex-supino-reto-maquina", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-a-4", "tipo": "exercicio", "exercicioId": "ex-remada-baixa", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-a-5", "tipo": "exercicio", "exercicioId": "ex-mesa-flexora", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-a-6", "tipo": "exercicio", "exercicioId": "ex-elevacao-lateral", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-a-7", "tipo": "exercicio", "exercicioId": "ex-triceps-pushdown", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": false }
+        {
+          "id": "it-a-1",
+          "tipo": "exercicio",
+          "exercicioId": "ex-leg-press-pes-altos",
+          "seriesPlanejadas": 3,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-a-2",
+          "tipo": "exercicio",
+          "exercicioId": "ex-panturrilha-leg-press",
+          "seriesPlanejadas": 2,
+          "repsPlanejadas": null,
+          "opcional": true
+        },
+        {
+          "id": "it-a-3",
+          "tipo": "exercicio",
+          "exercicioId": "ex-supino-reto-maquina",
+          "seriesPlanejadas": 4,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-a-4",
+          "tipo": "exercicio",
+          "exercicioId": "ex-remada-baixa",
+          "seriesPlanejadas": 4,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-a-5",
+          "tipo": "exercicio",
+          "exercicioId": "ex-mesa-flexora",
+          "seriesPlanejadas": 4,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-a-6",
+          "tipo": "exercicio",
+          "exercicioId": "ex-elevacao-lateral",
+          "seriesPlanejadas": 4,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-a-7",
+          "tipo": "exercicio",
+          "exercicioId": "ex-triceps-pushdown",
+          "seriesPlanejadas": 3,
+          "repsPlanejadas": null,
+          "opcional": false
+        }
       ]
     },
     {
@@ -183,9 +232,30 @@
       "ordem": 1,
       "cor": "#2fbf71",
       "itens": [
-        { "id": "it-b-1", "tipo": "exercicio", "exercicioId": "ex-agachamento", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-b-2", "tipo": "exercicio", "exercicioId": "ex-supino-inclinado-maquina", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-b-3", "tipo": "exercicio", "exercicioId": "ex-puxada-frente", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
+        {
+          "id": "it-b-1",
+          "tipo": "exercicio",
+          "exercicioId": "ex-agachamento",
+          "seriesPlanejadas": 4,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-b-2",
+          "tipo": "exercicio",
+          "exercicioId": "ex-supino-inclinado-maquina",
+          "seriesPlanejadas": 4,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-b-3",
+          "tipo": "exercicio",
+          "exercicioId": "ex-puxada-frente",
+          "seriesPlanejadas": 4,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
         {
           "id": "it-b-4",
           "tipo": "alternativas",
@@ -196,8 +266,22 @@
           "repsPlanejadas": null,
           "opcional": false
         },
-        { "id": "it-b-5", "tipo": "exercicio", "exercicioId": "ex-triceps-frances", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-b-6", "tipo": "exercicio", "exercicioId": "ex-rosca-direta", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": false }
+        {
+          "id": "it-b-5",
+          "tipo": "exercicio",
+          "exercicioId": "ex-triceps-frances",
+          "seriesPlanejadas": 3,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-b-6",
+          "tipo": "exercicio",
+          "exercicioId": "ex-rosca-direta",
+          "seriesPlanejadas": 3,
+          "repsPlanejadas": null,
+          "opcional": false
+        }
       ]
     },
     {
@@ -207,13 +291,62 @@
       "ordem": 2,
       "cor": "#ff8a3d",
       "itens": [
-        { "id": "it-c-1", "tipo": "exercicio", "exercicioId": "ex-cadeira-extensora", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-c-2", "tipo": "exercicio", "exercicioId": "ex-mesa-flexora", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-c-3", "tipo": "exercicio", "exercicioId": "ex-pec-fly", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-c-4", "tipo": "exercicio", "exercicioId": "ex-remada-baixa", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-c-5", "tipo": "exercicio", "exercicioId": "ex-elevacao-lateral", "seriesPlanejadas": 4, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-c-6", "tipo": "exercicio", "exercicioId": "ex-rosca-martelo", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": false },
-        { "id": "it-c-7", "tipo": "exercicio", "exercicioId": "ex-abdominal", "seriesPlanejadas": 3, "repsPlanejadas": null, "opcional": true }
+        {
+          "id": "it-c-1",
+          "tipo": "exercicio",
+          "exercicioId": "ex-cadeira-extensora",
+          "seriesPlanejadas": 4,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-c-2",
+          "tipo": "exercicio",
+          "exercicioId": "ex-mesa-flexora",
+          "seriesPlanejadas": 4,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-c-3",
+          "tipo": "exercicio",
+          "exercicioId": "ex-pec-fly",
+          "seriesPlanejadas": 3,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-c-4",
+          "tipo": "exercicio",
+          "exercicioId": "ex-remada-baixa",
+          "seriesPlanejadas": 4,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-c-5",
+          "tipo": "exercicio",
+          "exercicioId": "ex-elevacao-lateral",
+          "seriesPlanejadas": 4,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-c-6",
+          "tipo": "exercicio",
+          "exercicioId": "ex-rosca-martelo",
+          "seriesPlanejadas": 3,
+          "repsPlanejadas": null,
+          "opcional": false
+        },
+        {
+          "id": "it-c-7",
+          "tipo": "exercicio",
+          "exercicioId": "ex-abdominal",
+          "seriesPlanejadas": 3,
+          "repsPlanejadas": null,
+          "opcional": true
+        }
       ]
     }
   ]

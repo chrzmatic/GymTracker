@@ -8,23 +8,28 @@
  * Guarda só que há algo pendente; o backup é sempre o banco inteiro.
  */
 
-import { montarBackup, validarBackup, restaurar, conferirRestauracao } from '../services/backup-service.js';
+import {
+  conferirRestauracao,
+  montarBackup,
+  restaurar,
+  validarBackup,
+} from '../services/backup-service.js';
 import { hojeIso } from '../utils/date.js';
 import {
   ARQUIVO_ATUAL,
-  PASTA_DIARIO,
-  ESPERA_ENTRE_BACKUPS_MS,
   DEBOUNCE_MS,
+  ESPERA_ENTRE_BACKUPS_MS,
   INTERVALO_MS,
+  PASTA_DIARIO,
 } from './dropbox-config.js';
-import { lerEstado, salvarEstado, conectado } from './dropbox-estado.js';
-import { enviar, baixar, listar, apagarArquivo, SemInternet } from './dropbox-api.js';
+import { conectado, lerEstado, salvarEstado } from './dropbox-estado.js';
+import { apagarArquivo, baixar, enviar, listar, SemInternet } from './dropbox-api.js';
 import {
   caminhoDoDiario,
-  diariosParaApagar,
-  passouDoIntervalo,
   devoEnviar,
+  diariosParaApagar,
   ordenarParaRestaurar,
+  passouDoIntervalo,
 } from './rotacao-backups.js';
 
 /** Quem quer saber quando o estado muda. */
@@ -149,7 +154,7 @@ export function agendarBackup(motivo = 'alteracao') {
   if (agendado) clearTimeout(agendado);
   agendado = setTimeout(
     () => dispararSeJaPode(motivo),
-    motivo === 'sessao' ? 0 : DEBOUNCE_MS
+    motivo === 'sessao' ? 0 : DEBOUNCE_MS,
   );
 }
 

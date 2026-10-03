@@ -5,11 +5,17 @@
 
 import * as exercicios from '../services/exercicio-service.js';
 import * as treinos from '../services/treino-service.js';
-import { TIPOS_CARGA, NOME_TIPO_CARGA, ROTULO_CARGA } from '../utils/constantes.js';
+import { NOME_TIPO_CARGA, ROTULO_CARGA, TIPOS_CARGA } from '../utils/constantes.js';
 import { num, paraNumero } from '../utils/format.js';
-import { confirmar, escolher, escolherComBusca, formulario, avisar } from '../components/dialogo.js';
+import {
+  avisar,
+  confirmar,
+  escolher,
+  escolherComBusca,
+  formulario,
+} from '../components/dialogo.js';
 import { blocoVazio } from '../components/ui.js';
-import { definirTitulo, abrir, voltarUmaTela, recarregar } from '../navegacao.js';
+import { abrir, definirTitulo, recarregar, voltarUmaTela } from '../navegacao.js';
 
 /* --- Lista --- */
 
@@ -137,10 +143,11 @@ export async function montarEditorDeExercicio(elemento, params) {
             valor: t,
             rotulo: NOME_TIPO_CARGA[t],
           })),
-          dica: 'Carga: kg na máquina. Peso corporal: reps e kg a mais. Assistido: kg de assistência (menos é melhor).',
+          dica:
+            'Carga: kg na máquina. Peso corporal: reps e kg a mais. Assistido: kg de assistência (menos é melhor).',
         },
       ],
-      'Criar'
+      'Criar',
     );
     if (!dados || !dados.nome.trim()) {
       await voltarUmaTela();
@@ -206,7 +213,8 @@ function cardIdentidade(ex) {
           valor: t,
           rotulo: NOME_TIPO_CARGA[t],
         })),
-        dica: 'Mudar o tipo não altera as séries já registradas; muda só o rótulo do campo daqui para frente.',
+        dica:
+          'Mudar o tipo não altera as séries já registradas; muda só o rótulo do campo daqui para frente.',
       },
     ]);
     if (!dados || !dados.nome.trim()) return;
@@ -314,7 +322,7 @@ async function editarMusculo(ex, m) {
         valor: num(m.fracao ?? 0.5, 2),
         dica: 'Entre 0 e 1. Ignorado quando o músculo é direto.',
       },
-    ]
+    ],
   );
   if (!dados) return;
 
@@ -337,7 +345,7 @@ async function adicionarMusculo(ex) {
   if (!opcoes.length) {
     await avisar(
       'Sem músculos disponíveis',
-      'Todos os músculos cadastrados já estão neste exercício. Crie outros na tela Músculos.'
+      'Todos os músculos cadastrados já estão neste exercício. Crie outros na tela Músculos.',
     );
     return;
   }
@@ -353,7 +361,11 @@ async function adicionarMusculo(ex) {
 
   estado.exercicio = await exercicios.salvar({
     ...ex,
-    musculos: [...(ex.musculos ?? []), { musculoId, tipo, fracao: tipo === 'direto' ? 1 : 0.5 }],
+    musculos: [...(ex.musculos ?? []), {
+      musculoId,
+      tipo,
+      fracao: tipo === 'direto' ? 1 : 0.5,
+    }],
   });
   desenharEditor();
 }
@@ -372,7 +384,7 @@ function botaoExcluir(ex) {
     }
     if (uso.series) {
       partes.push(
-        `Existem ${uso.series} séries registradas com ele. O histórico não é apagado, mas o exercício some do nome nas telas.`
+        `Existem ${uso.series} séries registradas com ele. O histórico não é apagado, mas o exercício some do nome nas telas.`,
       );
     }
     if (!partes.length) partes.push('Ele não está em nenhum treino nem tem histórico.');

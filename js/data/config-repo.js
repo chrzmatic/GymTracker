@@ -1,5 +1,5 @@
 /** Configurações (chave/valor): início da semana, X da rotação etc. */
-import { lerTudo, ler, gravar, apagar } from './db.js';
+import { apagar, gravar, ler, lerTudo } from './db.js';
 
 const STORE = 'config';
 

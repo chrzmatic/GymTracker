@@ -11,12 +11,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  deveReiniciar,
+  diaDaProximaSugestao,
+  explicarSugestao,
+  MOTIVO,
   sugerirTreino,
   ultimaSessaoDaRotacao,
-  deveReiniciar,
-  explicarSugestao,
-  diaDaProximaSugestao,
-  MOTIVO,
 } from '../js/domain/rotacao.js';
 
 /** Semana começando na segunda e X = 2 dias. */
@@ -115,9 +115,13 @@ test('X é a fronteira exata: X dias reinicia, X-1 não', () => {
   assert.equal(
     sugerido(sessoes, '2025-09-08', ROTACAO, config3),
     'C',
-    'com X=3, dois dias ainda não bastam'
+    'com X=3, dois dias ainda não bastam',
   );
-  assert.equal(sugerido(sessoes, '2025-09-09', ROTACAO, config3), 'A', 'com X=3, três dias bastam');
+  assert.equal(
+    sugerido(sessoes, '2025-09-09', ROTACAO, config3),
+    'A',
+    'com X=3, três dias bastam',
+  );
 });
 
 test('muitas semanas paradas ainda reiniciam no primeiro', () => {
@@ -143,12 +147,12 @@ test('mudar o início da semana para domingo muda o resultado', () => {
   assert.equal(
     sugerido(sessoes, '2025-09-07', ROTACAO, domingo),
     'A',
-    'com semana começando no domingo, 07/09 já é semana nova e passaram 2 dias'
+    'com semana começando no domingo, 07/09 já é semana nova e passaram 2 dias',
   );
   assert.equal(
     sugerido(sessoes, '2025-09-07'),
     'C',
-    'com semana começando na segunda, 07/09 ainda é a mesma semana'
+    'com semana começando na segunda, 07/09 ainda é a mesma semana',
   );
 });
 
@@ -170,12 +174,12 @@ test('a ordem da rotação é a que o usuário definiu, não a alfabética', () 
   assert.equal(
     sugerido([sessao(C, '2025-09-08')], '2025-09-09', invertida),
     'B',
-    'depois de C vem B nesta ordem'
+    'depois de C vem B nesta ordem',
   );
   assert.equal(
     sugerido([sessao(A, '2025-09-08')], '2025-09-09', invertida),
     'C',
-    'A é o último, então dá a volta para C'
+    'A é o último, então dá a volta para C',
   );
 });
 
@@ -193,7 +197,7 @@ test('a sugestão de um dia ignora as sessões daquele mesmo dia', () => {
   assert.equal(
     sugerido(sessoes, '2025-09-09'),
     'B',
-    'o B de 09/09 não conta para a sugestão de 09/09; vale o A do dia anterior'
+    'o B de 09/09 não conta para a sugestão de 09/09; vale o A do dia anterior',
   );
 });
 
@@ -202,7 +206,11 @@ test('registro retroativo muda a sugestão dos dias seguintes', () => {
   assert.equal(sugerido(sessoes, '2025-09-10'), 'B');
 
   sessoes.push(sessao(B, '2025-09-09'));
-  assert.equal(sugerido(sessoes, '2025-09-10'), 'C', 'inserir o B no meio empurra a sequência');
+  assert.equal(
+    sugerido(sessoes, '2025-09-10'),
+    'C',
+    'inserir o B no meio empurra a sequência',
+  );
 });
 
 test('duas sessões no mesmo dia: vale a criada por último', () => {
@@ -219,7 +227,7 @@ test('treino tirado da rotação deixa de contar como último', () => {
   assert.equal(
     sugerido(sessoes, '2025-09-10', semB),
     'C',
-    'sem o B na rotação, o último que conta é o A'
+    'sem o B na rotação, o último que conta é o A',
   );
 });
 
@@ -228,7 +236,7 @@ test('ultimaSessaoDaRotacao devolve null quando nada se aplica', () => {
   assert.equal(
     ultimaSessaoDaRotacao([sessao(A, '2025-09-10')], ROTACAO, '2025-09-08'),
     null,
-    'sessão posterior ao dia não conta'
+    'sessão posterior ao dia não conta',
   );
 });
 
@@ -238,11 +246,21 @@ test('a explicação diz por que o treino foi sugerido', () => {
   const semHistorico = sugerirTreino([], ROTACAO, '2025-09-08', PADRAO);
   assert.match(explicarSugestao(semHistorico), /Primeiro treino/);
 
-  const sequencia = sugerirTreino([sessao(A, '2025-09-08')], ROTACAO, '2025-09-09', PADRAO);
+  const sequencia = sugerirTreino(
+    [sessao(A, '2025-09-08')],
+    ROTACAO,
+    '2025-09-09',
+    PADRAO,
+  );
   assert.match(explicarSugestao(sequencia), /Seguindo a rotação/);
   assert.match(explicarSugestao(sequencia), /ontem/);
 
-  const reinicio = sugerirTreino([sessao(B, '2025-09-06')], ROTACAO, '2025-09-08', PADRAO);
+  const reinicio = sugerirTreino(
+    [sessao(B, '2025-09-06')],
+    ROTACAO,
+    '2025-09-08',
+    PADRAO,
+  );
   assert.match(explicarSugestao(reinicio), /Semana nova/);
 
   assert.equal(explicarSugestao(null), '');
@@ -258,7 +276,7 @@ test('com treino hoje, a sugestão passa para amanhã', () => {
   assert.equal(
     diaDaProximaSugestao('2025-09-08', [sessao(A, '2025-09-08')]),
     '2025-09-09',
-    'sugerir hoje um treino já feito hoje não ajuda em nada'
+    'sugerir hoje um treino já feito hoje não ajuda em nada',
   );
 });
 
@@ -269,12 +287,12 @@ test('a sugestão de amanhã já conta o treino de hoje', () => {
   assert.equal(
     sugerido(sessoes, dia),
     'B',
-    'feito o A hoje, amanhã vem o B'
+    'feito o A hoje, amanhã vem o B',
   );
   assert.equal(
     sugerido(sessoes, hoje),
     'A',
-    'para hoje ainda diria A, porque a regra ignora as sessões do próprio dia — por isso a tela olha amanhã'
+    'para hoje ainda diria A, porque a regra ignora as sessões do próprio dia — por isso a tela olha amanhã',
   );
 });
 
@@ -286,6 +304,12 @@ test('com dois treinos hoje, ainda olha para amanhã', () => {
 });
 
 test('a virada do mês não quebra o "amanhã"', () => {
-  assert.equal(diaDaProximaSugestao('2025-09-30', [sessao(A, '2025-09-30')]), '2025-10-01');
-  assert.equal(diaDaProximaSugestao('2025-12-31', [sessao(A, '2025-12-31')]), '2026-01-01');
+  assert.equal(
+    diaDaProximaSugestao('2025-09-30', [sessao(A, '2025-09-30')]),
+    '2025-10-01',
+  );
+  assert.equal(
+    diaDaProximaSugestao('2025-12-31', [sessao(A, '2025-12-31')]),
+    '2026-01-01',
+  );
 });

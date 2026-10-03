@@ -1,6 +1,6 @@
 /** Regras puras do backup (o que manter e quando enviar), testadas em tests/dropbox.test.js. */
 
-import { PASTA_DIARIO, MAX_DIARIOS, INTERVALO_MS } from './dropbox-config.js';
+import { INTERVALO_MS, MAX_DIARIOS, PASTA_DIARIO } from './dropbox-config.js';
 
 /** Nome das cópias diárias: `backup-AAAA-MM-DD.json`. */
 const PADRAO_DIARIO = /^backup-(\d{4}-\d{2}-\d{2})\.json$/;
@@ -37,7 +37,11 @@ export function diariosParaApagar(entradas, maximo = MAX_DIARIOS) {
  * @param {number} [agora] epoch ms
  * @param {number} [intervalo] ms
  */
-export function passouDoIntervalo(ultimoEm, agora = Date.now(), intervalo = INTERVALO_MS) {
+export function passouDoIntervalo(
+  ultimoEm,
+  agora = Date.now(),
+  intervalo = INTERVALO_MS,
+) {
   if (!ultimoEm) return true;
   const quando = Date.parse(ultimoEm);
   if (Number.isNaN(quando)) return true;

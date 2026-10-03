@@ -10,12 +10,12 @@
  */
 
 import {
+  CHAVE_VERIFIER,
   OAUTH_AUTORIZAR,
   OAUTH_TOKEN,
-  CHAVE_VERIFIER,
   redirectUri,
 } from './dropbox-config.js';
-import { lerEstado, salvarEstado, limparEstado, lerAppKey } from './dropbox-estado.js';
+import { lerAppKey, lerEstado, limparEstado, salvarEstado } from './dropbox-estado.js';
 
 /** Falta o app key. */
 export class SemAppKey extends Error {
@@ -119,7 +119,7 @@ export async function trocarCodigoPorToken(codigo, { comRedirect }) {
   const verifier = consumirVerifier();
   if (!verifier) {
     throw new Error(
-      'O pedido de login se perdeu neste aparelho. Toque em conectar e tente de novo, sem fechar o app no meio.'
+      'O pedido de login se perdeu neste aparelho. Toque em conectar e tente de novo, sem fechar o app no meio.',
     );
   }
 
@@ -144,7 +144,7 @@ export async function trocarCodigoPorToken(codigo, { comRedirect }) {
   const dados = await resposta.json();
   if (!dados.refresh_token) {
     throw new Error(
-      'O Dropbox não devolveu um token de longa duração. Confira se o app foi criado com acesso offline.'
+      'O Dropbox não devolveu um token de longa duração. Confira se o app foi criado com acesso offline.',
     );
   }
 
@@ -200,11 +200,13 @@ async function renovarAcesso() {
   if (resposta.status === 400 || resposta.status === 401) {
     limparEstado();
     throw new Error(
-      'O Dropbox não aceita mais esta conexão. Conecte de novo nas configurações.'
+      'O Dropbox não aceita mais esta conexão. Conecte de novo nas configurações.',
     );
   }
   if (!resposta.ok) {
-    throw new Error('Não consegui renovar o acesso ao Dropbox (' + resposta.status + ').');
+    throw new Error(
+      'Não consegui renovar o acesso ao Dropbox (' + resposta.status + ').',
+    );
   }
 
   const dados = await resposta.json();
@@ -247,8 +249,8 @@ export async function concluirLoginDoRedirect() {
     return {
       houve: true,
       ok: false,
-      erro:
-        params.get('error_description') || 'O login no Dropbox foi cancelado ou recusado.',
+      erro: params.get('error_description') ||
+        'O login no Dropbox foi cancelado ou recusado.',
     };
   }
 

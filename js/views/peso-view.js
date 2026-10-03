@@ -1,8 +1,8 @@
 /** Peso corporal: registrar e ver o histórico. */
 
 import * as peso from '../services/peso-service.js';
-import { hojeIso, formatarLongo, descreverDistancia } from '../utils/date.js';
-import { num, paraNumero, comSinal } from '../utils/format.js';
+import { descreverDistancia, formatarLongo, hojeIso } from '../utils/date.js';
+import { comSinal, num, paraNumero } from '../utils/format.js';
 import { confirmar, escolher, formulario } from '../components/dialogo.js';
 import { blocoVazio } from '../components/ui.js';
 import { recarregar } from '../navegacao.js';
@@ -54,7 +54,7 @@ function cardResumo(resumo) {
   const partes = [descreverDistancia(resumo.ultimo.data)];
   if (resumo.primeiro.id !== resumo.ultimo.id) {
     partes.push(
-      `${comSinal(resumo.variacao, 1)} kg desde ${formatarLongo(resumo.primeiro.data)}`
+      `${comSinal(resumo.variacao, 1)} kg desde ${formatarLongo(resumo.primeiro.data)}`,
     );
   }
   detalhe.textContent = partes.join(' · ');
@@ -103,7 +103,7 @@ async function menuDoRegistro(registro) {
     [
       { valor: 'editar', rotulo: 'Editar' },
       { valor: 'excluir', rotulo: 'Excluir' },
-    ]
+    ],
   );
 
   if (acao === 'editar') return abrirFormulario(registro);
@@ -111,7 +111,7 @@ async function menuDoRegistro(registro) {
   if (acao === 'excluir') {
     const ok = await confirmar(
       'Excluir o peso de ' + formatarLongo(registro.data) + '?',
-      'As comparações que usavam este peso passam a usar o registro anterior.'
+      'As comparações que usavam este peso passam a usar o registro anterior.',
     );
     if (!ok) return;
     await peso.removerPeso(registro.id);
@@ -138,7 +138,7 @@ async function abrirFormulario(registro) {
         dica: 'Um registro por data. Gravar de novo na mesma data substitui o anterior.',
       },
     ],
-    registro ? 'Salvar' : 'Registrar'
+    registro ? 'Salvar' : 'Registrar',
   );
   if (!dados) return;
 

@@ -5,9 +5,9 @@
 
 import { carregarSeNecessario } from './services/seed-service.js';
 import {
+  abrir,
   iniciarNavegacao,
   irParaAba,
-  abrir,
   recarregar,
   voltarParaRaiz,
 } from './navegacao.js';
@@ -54,7 +54,7 @@ function mostrarErro(erro) {
   destino.innerHTML =
     '<div class="vazio">Erro ao iniciar o app.<br><span class="pequeno"></span></div>';
   destino.querySelector('.pequeno').textContent = String(
-    erro && erro.message ? erro.message : erro
+    erro && erro.message ? erro.message : erro,
   );
 }
 

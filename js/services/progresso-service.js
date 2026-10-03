@@ -12,31 +12,32 @@ import { listarPesos } from '../data/peso-corporal-repo.js';
 import { lerTodasConfigs } from '../data/config-repo.js';
 import { hojeIso, inicioDaSemana, somarDias } from '../utils/date.js';
 import {
-  historicoDoExercicio,
-  filtrarPorPeriodo,
-  resumoSemanal,
   exerciciosComHistorico,
-  variacao,
+  filtrarPorPeriodo,
+  historicoDoExercicio,
   PERIODO,
+  resumoSemanal,
+  variacao,
 } from '../domain/progressao.js';
 import {
+  arredondarTabela,
+  compararPlanejadoRealizado,
   planejadoPorMusculo,
   realizadoPorMusculo,
-  compararPlanejadoRealizado,
-  arredondarTabela,
 } from '../domain/series-semanais.js';
 
 /** Tudo que a aba precisa, numa leitura só. */
 async function carregarTudo() {
-  const [sessoes, series, treinos, musculos, exercicios, pesos, config] = await Promise.all([
-    listarSessoes(),
-    listarTodasSeries(),
-    listarTreinos(),
-    listarMusculos(),
-    mapaExercicios(),
-    listarPesos(),
-    lerTodasConfigs(),
-  ]);
+  const [sessoes, series, treinos, musculos, exercicios, pesos, config] = await Promise
+    .all([
+      listarSessoes(),
+      listarTodasSeries(),
+      listarTreinos(),
+      listarMusculos(),
+      mapaExercicios(),
+      listarPesos(),
+      lerTodasConfigs(),
+    ]);
   return { sessoes, series, treinos, musculos, exercicios, pesos, config };
 }
 
@@ -88,7 +89,7 @@ export async function seriesPorMusculo(semana) {
   const fim = somarDias(inicio, 6);
 
   const daSemana = new Set(
-    sessoes.filter((s) => s.data >= inicio && s.data <= fim).map((s) => s.id)
+    sessoes.filter((s) => s.data >= inicio && s.data <= fim).map((s) => s.id),
   );
   const seriesDaSemana = series.filter((s) => daSemana.has(s.sessaoId));
 
@@ -100,12 +101,14 @@ export async function seriesPorMusculo(semana) {
     treinosNaSemana: sessoes.filter((s) => s.data >= inicio && s.data <= fim).length,
     planejado: arredondarTabela(planejadoPorMusculo(rotacao, exercicios, musculos)),
     planejadoSemOpcionais: arredondarTabela(
-      planejadoPorMusculo(rotacao, exercicios, musculos, { incluirOpcionais: false })
+      planejadoPorMusculo(rotacao, exercicios, musculos, { incluirOpcionais: false }),
     ),
-    realizado: arredondarTabela(realizadoPorMusculo(seriesDaSemana, exercicios, musculos)),
+    realizado: arredondarTabela(
+      realizadoPorMusculo(seriesDaSemana, exercicios, musculos),
+    ),
     comparacao: compararPlanejadoRealizado(
       arredondarTabela(planejadoPorMusculo(rotacao, exercicios, musculos)),
-      arredondarTabela(realizadoPorMusculo(seriesDaSemana, exercicios, musculos))
+      arredondarTabela(realizadoPorMusculo(seriesDaSemana, exercicios, musculos)),
     ),
     /** Treinos num ciclo, para o rótulo. */
     treinosPorCiclo: rotacao.length,

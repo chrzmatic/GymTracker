@@ -24,7 +24,6 @@ export async function montarTreinos(raiz) {
   raiz.appendChild(botoesDoRodape());
 }
 
-
 /** Seção da lista (rotação ou extras). */
 function secao(raiz, titulo, lista, naRotacao) {
   const h = document.createElement('h2');
@@ -35,9 +34,7 @@ function secao(raiz, titulo, lista, naRotacao) {
   if (!lista.length) {
     const vazio = document.createElement('p');
     vazio.className = 'texto-fraco pequeno';
-    vazio.textContent = naRotacao
-      ? 'Nenhum treino na rotação.'
-      : 'Nenhum treino extra.';
+    vazio.textContent = naRotacao ? 'Nenhum treino na rotação.' : 'Nenhum treino extra.';
     raiz.appendChild(vazio);
     return;
   }
@@ -133,7 +130,12 @@ async function menuDoTreino(treino) {
   if (acao === 'renomear') {
     const dados = await formulario('Treino ' + treino.nome, [
       { nome: 'nome', rotulo: 'Nome', valor: treino.nome },
-      { nome: 'cor', rotulo: 'Cor no calendário', tipo: 'color', valor: treino.cor || '#4f8cff' },
+      {
+        nome: 'cor',
+        rotulo: 'Cor no calendário',
+        tipo: 'color',
+        valor: treino.cor || '#4f8cff',
+      },
     ]);
     if (!dados || !dados.nome.trim()) return;
     await treinos.salvar({ ...treino, nome: dados.nome.trim(), cor: dados.cor });
@@ -148,7 +150,7 @@ async function menuDoTreino(treino) {
   if (acao === 'excluir') {
     const ok = await confirmar(
       'Excluir o treino ' + treino.nome + '?',
-      'As sessões já registradas com ele continuam no histórico, intactas. Só o modelo é apagado.'
+      'As sessões já registradas com ele continuam no histórico, intactas. Só o modelo é apagado.',
     );
     if (!ok) return;
     await treinos.excluirTreino(treino.id);
@@ -177,7 +179,7 @@ function botoesDoRodape() {
           dica: 'Desmarque para criar um treino extra, que não afeta a sequência.',
         },
       ],
-      'Criar'
+      'Criar',
     );
     if (!dados || !dados.nome.trim()) return;
     const treino = await treinos.criarTreino(dados.nome, dados.naRotacao);

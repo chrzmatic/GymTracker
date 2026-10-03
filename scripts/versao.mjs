@@ -10,7 +10,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { montarVersao, conteudoDoArquivo, atualizarServiceWorker } from './versao-lib.js';
+import { atualizarServiceWorker, conteudoDoArquivo, montarVersao } from './versao-lib.js';
 
 const raiz = fileURLToPath(new URL('../', import.meta.url));
 const proximo = process.argv.includes('--proximo');
@@ -21,7 +21,7 @@ try {
     execFileSync('git', ['rev-list', '--count', 'HEAD'], {
       cwd: raiz,
       encoding: 'utf8',
-    }).trim()
+    }).trim(),
   );
 } catch {
   commits = 0; // repositório sem nenhum commit ainda

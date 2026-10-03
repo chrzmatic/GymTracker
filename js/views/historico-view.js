@@ -2,7 +2,12 @@
 
 import * as sessoes from '../services/sessao-service.js';
 import { anteriorDoMesmoTreino } from '../services/comparacao-service.js';
-import { formatarCurto, partesIso, NOMES_MES, descreverDistancia } from '../utils/date.js';
+import {
+  descreverDistancia,
+  formatarCurto,
+  NOMES_MES,
+  partesIso,
+} from '../utils/date.js';
 import { confirmar, escolher } from '../components/dialogo.js';
 import { blocoVazio } from '../components/ui.js';
 import { abrir, recarregar } from '../navegacao.js';
@@ -128,7 +133,7 @@ async function menuDaSessao(sessao) {
 
   const acao = await escolher(
     'Treino ' + sessao.treinoNome + ' · ' + formatarCurto(sessao.data),
-    opcoes
+    opcoes,
   );
 
   if (acao === 'ver') return abrir('sessao-resumo', { sessaoId: sessao.id });
@@ -141,7 +146,7 @@ async function menuDaSessao(sessao) {
   if (acao === 'excluir') {
     const ok = await confirmar(
       'Excluir a sessão de ' + formatarCurto(sessao.data) + '?',
-      'As séries registradas nela serão apagadas.'
+      'As séries registradas nela serão apagadas.',
     );
     if (!ok) return;
     await sessoes.apagarSessao(sessao.id);

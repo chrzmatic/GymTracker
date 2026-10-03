@@ -1,10 +1,10 @@
 /** Exercícios: nome, tipo de carga e músculos trabalhados. */
-import { lerTudo, ler, gravar, apagar, gravarVarios, contar } from './db.js';
-import { TIPOS_CARGA, ROTULO_CARGA } from '../utils/constantes.js';
+import { apagar, contar, gravar, gravarVarios, ler, lerTudo } from './db.js';
+import { ROTULO_CARGA, TIPOS_CARGA } from '../utils/constantes.js';
 
 const STORE = 'exercicios';
 
-export { TIPOS_CARGA, ROTULO_CARGA };
+export { ROTULO_CARGA, TIPOS_CARGA };
 
 /** Exercícios em ordem alfabética. */
 export async function listarExercicios() {

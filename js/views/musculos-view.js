@@ -40,7 +40,7 @@ export async function montarMusculos(raiz) {
     const dados = await formulario(
       'Novo músculo',
       [{ nome: 'nome', rotulo: 'Nome', placeholder: 'Antebraço' }],
-      'Criar'
+      'Criar',
     );
     if (!dados || !dados.nome.trim()) return;
     await exercicios.criarMusculo(dados.nome);
@@ -110,7 +110,9 @@ async function menuDoMusculo(musculo, quantosExercicios) {
 
   if (acao === 'excluir') {
     const aviso = quantosExercicios
-      ? `Ele vai ser removido de ${quantosExercicios} exercício${quantosExercicios > 1 ? 's' : ''}, que deixam de contar séries para ele.`
+      ? `Ele vai ser removido de ${quantosExercicios} exercício${
+        quantosExercicios > 1 ? 's' : ''
+      }, que deixam de contar séries para ele.`
       : 'Nenhum exercício usa este músculo.';
     const ok = await confirmar('Excluir ' + musculo.nome + '?', aviso);
     if (!ok) return;

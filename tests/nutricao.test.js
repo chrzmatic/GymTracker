@@ -4,56 +4,105 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  zeros,
-  somar,
-  escalar,
   arredondar,
-  valoresDeReferencia,
   calcularAlimento,
-  calcularPrato,
   calcularItem,
-  calcularRefeicao,
   calcularPlano,
+  calcularPrato,
+  calcularRefeicao,
   compararComMetas,
-  metasDoPlano,
-  tirarDasRefeicoes,
-  NUTRIENTES,
+  escalar,
   INFO_NUTRIENTES,
+  metasDoPlano,
+  NUTRIENTES,
+  somar,
   TIPO_ITEM,
+  tirarDasRefeicoes,
+  valoresDeReferencia,
+  zeros,
 } from '../js/domain/nutricao.js';
 
 /* Alimentos com números reais. */
 const AVEIA = {
-  id: 'alim-aveia', nome: 'Aveia', quantidadeRef: 100, unidade: 'g',
-  kcal: 380, proteina: 13, gordura: 9, carbo: 55.7, fibra: null,
+  id: 'alim-aveia',
+  nome: 'Aveia',
+  quantidadeRef: 100,
+  unidade: 'g',
+  kcal: 380,
+  proteina: 13,
+  gordura: 9,
+  carbo: 55.7,
+  fibra: null,
 };
 const LEITE = {
-  id: 'alim-leite', nome: 'Leite integral', quantidadeRef: 100, unidade: 'ml',
-  kcal: 61, proteina: 3.2, gordura: 3.3, carbo: 4.7, fibra: null,
+  id: 'alim-leite',
+  nome: 'Leite integral',
+  quantidadeRef: 100,
+  unidade: 'ml',
+  kcal: 61,
+  proteina: 3.2,
+  gordura: 3.3,
+  carbo: 4.7,
+  fibra: null,
 };
 const OVO = {
-  id: 'alim-ovo', nome: 'Ovo', quantidadeRef: 1, unidade: 'unidade',
-  kcal: 72, proteina: 6.3, gordura: 4.8, carbo: 0.4, fibra: null,
+  id: 'alim-ovo',
+  nome: 'Ovo',
+  quantidadeRef: 1,
+  unidade: 'unidade',
+  kcal: 72,
+  proteina: 6.3,
+  gordura: 4.8,
+  carbo: 0.4,
+  fibra: null,
 };
 const PAO_TURCO = {
-  id: 'alim-pao-turco', nome: 'Pão turco', quantidadeRef: 100, unidade: 'g',
-  kcal: 261, proteina: 9.3, gordura: 3.1, carbo: 46.3, fibra: 3.9,
+  id: 'alim-pao-turco',
+  nome: 'Pão turco',
+  quantidadeRef: 100,
+  unidade: 'g',
+  kcal: 261,
+  proteina: 9.3,
+  gordura: 3.1,
+  carbo: 46.3,
+  fibra: 3.9,
 };
 const PRESUNTO = {
-  id: 'alim-presunto', nome: 'Presunto fatiado', quantidadeRef: 100, unidade: 'g',
-  kcal: 96, proteina: 17, gordura: 1.7, carbo: 3, fibra: null,
+  id: 'alim-presunto',
+  nome: 'Presunto fatiado',
+  quantidadeRef: 100,
+  unidade: 'g',
+  kcal: 96,
+  proteina: 17,
+  gordura: 1.7,
+  carbo: 3,
+  fibra: null,
 };
 const ARROZ = {
-  id: 'alim-arroz', nome: 'Arroz branco cozido', quantidadeRef: 100, unidade: 'g',
-  kcal: 130, proteina: 2.7, gordura: 0.3, carbo: 28.2, fibra: 0.4,
+  id: 'alim-arroz',
+  nome: 'Arroz branco cozido',
+  quantidadeRef: 100,
+  unidade: 'g',
+  kcal: 130,
+  proteina: 2.7,
+  gordura: 0.3,
+  carbo: 28.2,
+  fibra: 0.4,
 };
 const FRANGO = {
-  id: 'alim-frango', nome: 'Peito de frango grelhado', quantidadeRef: 100, unidade: 'g',
-  kcal: 159, proteina: 32, gordura: 2.5, carbo: 0, fibra: null,
+  id: 'alim-frango',
+  nome: 'Peito de frango grelhado',
+  quantidadeRef: 100,
+  unidade: 'g',
+  kcal: 159,
+  proteina: 32,
+  gordura: 2.5,
+  carbo: 0,
+  fibra: null,
 };
 
 const alimentos = new Map(
-  [AVEIA, LEITE, OVO, PAO_TURCO, PRESUNTO, ARROZ, FRANGO].map((a) => [a.id, a])
+  [AVEIA, LEITE, OVO, PAO_TURCO, PRESUNTO, ARROZ, FRANGO].map((a) => [a.id, a]),
 );
 
 const SANDUICHE = {
@@ -80,17 +129,41 @@ test('zeros tem os cinco nutrientes em zero', () => {
 test('somar junta nutriente a nutriente', () => {
   const a = { kcal: 100, proteina: 10, gordura: 5, carbo: 2, fibra: 1 };
   const b = { kcal: 50, proteina: 4, gordura: 1, carbo: 8, fibra: 0 };
-  assert.deepEqual(somar(a, b), { kcal: 150, proteina: 14, gordura: 6, carbo: 10, fibra: 1 });
+  assert.deepEqual(somar(a, b), {
+    kcal: 150,
+    proteina: 14,
+    gordura: 6,
+    carbo: 10,
+    fibra: 1,
+  });
 });
 
 test('somar trata campo ausente como zero', () => {
-  assert.deepEqual(somar({ kcal: 100 }, {}), { kcal: 100, proteina: 0, gordura: 0, carbo: 0, fibra: 0 });
+  assert.deepEqual(somar({ kcal: 100 }, {}), {
+    kcal: 100,
+    proteina: 0,
+    gordura: 0,
+    carbo: 0,
+    fibra: 0,
+  });
 });
 
 test('escalar multiplica tudo pelo fator', () => {
   const v = { kcal: 100, proteina: 10, gordura: 5, carbo: 2, fibra: 1 };
-  assert.deepEqual(escalar(v, 2), { kcal: 200, proteina: 20, gordura: 10, carbo: 4, fibra: 2 });
-  assert.deepEqual(escalar(v, 0.5), { kcal: 50, proteina: 5, gordura: 2.5, carbo: 1, fibra: 0.5 });
+  assert.deepEqual(escalar(v, 2), {
+    kcal: 200,
+    proteina: 20,
+    gordura: 10,
+    carbo: 4,
+    fibra: 2,
+  });
+  assert.deepEqual(escalar(v, 0.5), {
+    kcal: 50,
+    proteina: 5,
+    gordura: 2.5,
+    carbo: 1,
+    fibra: 0.5,
+  });
 });
 
 test('arredondar mata o lixo de ponto flutuante', () => {
@@ -188,7 +261,10 @@ for (const campo of ['kcal', 'proteina', 'gordura', 'carbo']) {
   test(`${campo} em branco marca o item como incompleto`, () => {
     assert.equal(calcularAlimento({ ...PAO_TURCO, [campo]: null }, 100).incompleto, true);
     assert.equal(calcularAlimento({ ...PAO_TURCO, [campo]: '' }, 100).incompleto, true);
-    assert.equal(calcularAlimento({ ...PAO_TURCO, [campo]: undefined }, 100).incompleto, true);
+    assert.equal(
+      calcularAlimento({ ...PAO_TURCO, [campo]: undefined }, 100).incompleto,
+      true,
+    );
   });
 }
 
@@ -254,19 +330,30 @@ test('o prato herda o "incompleto" de um ingrediente sem valor obrigatório', ()
 test('o prato é incompleto enquanto um ingrediente estiver sem quantidade', () => {
   const semQuantidade = {
     ...SANDUICHE,
-    ingredientes: [SANDUICHE.ingredientes[0], { alimentoId: 'alim-presunto', quantidade: null }],
+    ingredientes: [SANDUICHE.ingredientes[0], {
+      alimentoId: 'alim-presunto',
+      quantidade: null,
+    }],
   };
   assert.equal(calcularPrato(semQuantidade, alimentos).incompleto, true);
   const preenchido = {
     ...semQuantidade,
-    ingredientes: [SANDUICHE.ingredientes[0], { alimentoId: 'alim-presunto', quantidade: 40 }],
+    ingredientes: [SANDUICHE.ingredientes[0], {
+      alimentoId: 'alim-presunto',
+      quantidade: 40,
+    }],
   };
-  assert.equal(calcularPrato(preenchido, alimentos).incompleto, false, 'preencher resolve');
+  assert.equal(
+    calcularPrato(preenchido, alimentos).incompleto,
+    false,
+    'preencher resolve',
+  );
 });
 
 test('prato com ingrediente apagado reporta o erro', () => {
   const quebrado = {
-    id: 'p', nome: 'Quebrado',
+    id: 'p',
+    nome: 'Quebrado',
     ingredientes: [{ alimentoId: 'alim-sumiu', quantidade: 10 }],
   };
   const r = calcularPrato(quebrado, alimentos);
@@ -286,11 +373,11 @@ test('prato inexistente vira erro', () => {
 test('no plano, o prato é contado em porções', () => {
   const uma = calcularItem(
     { id: 'i1', tipo: TIPO_ITEM.PRATO, pratoId: 'prato-sanduiche', porcoes: 1 },
-    indice
+    indice,
   );
   const duas = calcularItem(
     { id: 'i2', tipo: TIPO_ITEM.PRATO, pratoId: 'prato-sanduiche', porcoes: 2 },
-    indice
+    indice,
   );
   assert.equal(r1(duas.valores.kcal), r1(uma.valores.kcal * 2));
   assert.equal(r1(duas.valores.kcal), 722.4);
@@ -299,7 +386,7 @@ test('no plano, o prato é contado em porções', () => {
 test('meia porção de prato conta metade', () => {
   const meia = calcularItem(
     { id: 'i', tipo: TIPO_ITEM.PRATO, pratoId: 'prato-sanduiche', porcoes: 0.5 },
-    indice
+    indice,
   );
   assert.equal(r1(meia.valores.kcal), 180.6);
 });
@@ -312,8 +399,18 @@ const GRUPO = {
   nome: 'Carboidrato',
   padraoId: 'o-arroz',
   opcoes: [
-    { id: 'o-arroz', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-arroz', quantidade: 200 },
-    { id: 'o-frango', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-frango', quantidade: 180 },
+    {
+      id: 'o-arroz',
+      tipo: TIPO_ITEM.ALIMENTO,
+      alimentoId: 'alim-arroz',
+      quantidade: 200,
+    },
+    {
+      id: 'o-frango',
+      tipo: TIPO_ITEM.ALIMENTO,
+      alimentoId: 'alim-frango',
+      quantidade: 180,
+    },
     { id: 'o-ovo', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-ovo', quantidade: 6 },
   ],
 };
@@ -352,14 +449,20 @@ test('grupo de uma opção só não varia', () => {
 });
 
 test('grupo sem opção nenhuma reporta erro', () => {
-  const r = calcularItem({ id: 'g', tipo: TIPO_ITEM.GRUPO, nome: 'Vazio', opcoes: [] }, indice);
+  const r = calcularItem(
+    { id: 'g', tipo: TIPO_ITEM.GRUPO, nome: 'Vazio', opcoes: [] },
+    indice,
+  );
   assert.match(r.erro, /sem opções/);
   assert.equal(r.incompleto, true);
 });
 
 test('um grupo pode ter prato entre as opções', () => {
   const comPrato = {
-    id: 'g', tipo: TIPO_ITEM.GRUPO, nome: 'Lanche', padraoId: 'o-s',
+    id: 'g',
+    tipo: TIPO_ITEM.GRUPO,
+    nome: 'Lanche',
+    padraoId: 'o-s',
     opcoes: [
       { id: 'o-s', tipo: TIPO_ITEM.PRATO, pratoId: 'prato-sanduiche', porcoes: 1 },
       { id: 'o-o', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-ovo', quantidade: 3 },
@@ -373,7 +476,10 @@ test('um grupo pode ter prato entre as opções', () => {
 /* --- Item livre --- */
 
 test('item livre não entra em conta nenhuma', () => {
-  const r = calcularItem({ id: 'i', tipo: TIPO_ITEM.LIVRE, texto: 'Salada à vontade' }, indice);
+  const r = calcularItem(
+    { id: 'i', tipo: TIPO_ITEM.LIVRE, texto: 'Salada à vontade' },
+    indice,
+  );
   assert.deepEqual(r.valores, zeros());
   assert.equal(r.incompleto, false, 'não ter valor é o esperado, não um dado faltando');
   assert.equal(r.livre, true);
@@ -420,14 +526,21 @@ test('o item livre não muda o total nem a faixa da refeição', () => {
   };
   assert.equal(
     r1(calcularRefeicao(comLivre, indice).total.kcal),
-    r1(calcularRefeicao(CAFE, indice).total.kcal)
+    r1(calcularRefeicao(CAFE, indice).total.kcal),
   );
 });
 
 test('a refeição marca incompleto e junta os erros dos itens', () => {
   const comErro = {
-    id: 'r', nome: 'Com erro', ordem: 0,
-    itens: [{ id: 'i', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-sumiu', quantidade: 10 }],
+    id: 'r',
+    nome: 'Com erro',
+    ordem: 0,
+    itens: [{
+      id: 'i',
+      tipo: TIPO_ITEM.ALIMENTO,
+      alimentoId: 'alim-sumiu',
+      quantidade: 10,
+    }],
   };
   const r = calcularRefeicao(comErro, indice);
   assert.equal(r.incompleto, true);
@@ -443,7 +556,9 @@ test('refeição vazia soma zero', () => {
 /* --- Plano do dia e metas --- */
 
 const LANCHE = {
-  id: 'ref-lanche', nome: 'Lanche', ordem: 1,
+  id: 'ref-lanche',
+  nome: 'Lanche',
+  ordem: 1,
   itens: [{ id: 'i', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-ovo', quantidade: 3 }],
 };
 const JANTAR = { id: 'ref-jantar', nome: 'Jantar', ordem: 2, itens: [GRUPO] };
@@ -513,8 +628,15 @@ test('plano sem refeição nenhuma soma zero', () => {
 
 test('o erro de um item sobe até o plano, dizendo em que refeição está', () => {
   const comErro = {
-    id: 'r', nome: 'Almoço', ordem: 0,
-    itens: [{ id: 'i', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-sumiu', quantidade: 10 }],
+    id: 'r',
+    nome: 'Almoço',
+    ordem: 0,
+    itens: [{
+      id: 'i',
+      tipo: TIPO_ITEM.ALIMENTO,
+      alimentoId: 'alim-sumiu',
+      quantidade: 10,
+    }],
   };
   const r = calcularPlano(PLANO, [comErro], indice);
   assert.equal(r.erros.length, 1);
@@ -528,7 +650,7 @@ test('a mesma refeição em dois planos dá o mesmo resultado', () => {
   const semTreino = calcularPlano(
     { id: 'p2', nome: 'Dia sem treino', metaKcal: 2300 },
     [JANTAR],
-    indice
+    indice,
   );
   assert.deepEqual(treino.refeicoes[0].total, semTreino.refeicoes[0].total);
   assert.notEqual(treino.diferencas.kcal.meta, semTreino.diferencas.kcal.meta);
@@ -559,14 +681,28 @@ const REFEICOES = [
         padraoId: 'o-prato',
         opcoes: [
           { id: 'o-prato', tipo: TIPO_ITEM.PRATO, pratoId: 'prato-x', porcoes: 1 },
-          { id: 'o-arroz', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-arroz', quantidade: 200 },
+          {
+            id: 'o-arroz',
+            tipo: TIPO_ITEM.ALIMENTO,
+            alimentoId: 'alim-arroz',
+            quantidade: 200,
+          },
         ],
       },
       { id: 'i1', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-ovo', quantidade: 2 },
       { id: 'i2', tipo: TIPO_ITEM.LIVRE, texto: 'Salada' },
     ],
   },
-  { id: 'r2', nome: 'Café', itens: [{ id: 'i3', tipo: TIPO_ITEM.ALIMENTO, alimentoId: 'alim-aveia', quantidade: 40 }] },
+  {
+    id: 'r2',
+    nome: 'Café',
+    itens: [{
+      id: 'i3',
+      tipo: TIPO_ITEM.ALIMENTO,
+      alimentoId: 'alim-aveia',
+      quantidade: 40,
+    }],
+  },
 ];
 
 test('tirar um prato que é opção de grupo muda a refeição (o bug antigo não salvava)', () => {
@@ -596,7 +732,10 @@ test('só devolve as refeições que mudaram, sem alterar as originais', () => {
 });
 
 test('grupo que fica sem opções fica com padrão null', () => {
-  const soPrato = [{ id: 'r', itens: [{ ...REFEICOES[0].itens[0], opcoes: [REFEICOES[0].itens[0].opcoes[0]] }] }];
+  const soPrato = [{
+    id: 'r',
+    itens: [{ ...REFEICOES[0].itens[0], opcoes: [REFEICOES[0].itens[0].opcoes[0]] }],
+  }];
   const r = tirarDasRefeicoes(soPrato, (x) => x.pratoId === 'prato-x');
   assert.deepEqual(r[0].itens[0].opcoes, []);
   assert.equal(r[0].itens[0].padraoId, null);

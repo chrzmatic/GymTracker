@@ -54,8 +54,9 @@ export function planejadoPorMusculo(treinos, exercicios, musculos, opcoes = {}) 
     (treino.itens ?? []).forEach((item) => {
       if (item.opcional && !incluirOpcionais) return;
       // Num grupo, vale a alternativa padrão.
-      const exercicioId =
-        item.tipo === 'alternativas' ? item.exercicioPadraoId : item.exercicioId;
+      const exercicioId = item.tipo === 'alternativas'
+        ? item.exercicioPadraoId
+        : item.exercicioId;
       somarExercicio(acumulador, exercicios.get(exercicioId), item.seriesPlanejadas ?? 0);
     });
   });

@@ -6,10 +6,10 @@
 import { carregarSessao } from '../services/sessao-service.js';
 import {
   resumirSessao,
-  textoParaCopiar,
   textoDosTotais,
+  textoParaCopiar,
 } from '../domain/resumo-sessao.js';
-import { formatarLongo, descreverDistancia } from '../utils/date.js';
+import { descreverDistancia, formatarLongo } from '../utils/date.js';
 import { copiarTexto } from '../components/copiar.js';
 import { formulario } from '../components/dialogo.js';
 import { abrir, definirTitulo, voltarUmaTela } from '../navegacao.js';
@@ -149,7 +149,7 @@ function botoes(resumo) {
       await formulario(
         'Não consegui copiar',
         [{ nome: 'texto', rotulo: 'Selecione e copie', tipo: 'textarea', valor: texto }],
-        'Fechar'
+        'Fechar',
       );
       return;
     }

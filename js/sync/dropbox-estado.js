@@ -18,7 +18,7 @@
  * ```
  */
 
-import { CHAVE_ESTADO, CHAVE_APP_KEY, APP_KEY } from './dropbox-config.js';
+import { APP_KEY, CHAVE_APP_KEY, CHAVE_ESTADO } from './dropbox-config.js';
 
 /** Estado de quem nunca conectou. */
 const VAZIO = {

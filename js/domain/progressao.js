@@ -3,7 +3,7 @@
  * Cada ponto do gráfico é uma sessão.
  */
 
-import { inicioDaSemana, somarDias, diffEmDias } from '../utils/date.js';
+import { diffEmDias, inicioDaSemana, somarDias } from '../utils/date.js';
 import { metricasDeSeries, pesoCorporalEm } from './metricas.js';
 
 /** Períodos do filtro. */
@@ -43,7 +43,7 @@ export function historicoDoExercicio(sessoes, series, exercicioId, exercicio, pe
       const m = metricasDeSeries(
         porSessao.get(sessao.id),
         exercicio,
-        pesoCorporalEm(pesos, sessao.data)
+        pesoCorporalEm(pesos, sessao.data),
       );
       return {
         data: sessao.data,
@@ -95,7 +95,14 @@ export function resumoSemanal(sessoes, series, exercicios, pesos, inicioSemana =
   sessoes.forEach((sessao) => {
     const chave = inicioDaSemana(sessao.data, inicioSemana);
     if (!semanas.has(chave)) {
-      semanas.set(chave, { semana: chave, treinos: 0, series: 0, reps: 0, volume: 0, temVolume: false });
+      semanas.set(chave, {
+        semana: chave,
+        treinos: 0,
+        series: 0,
+        reps: 0,
+        volume: 0,
+        temVolume: false,
+      });
     }
     const alvo = semanas.get(chave);
     alvo.treinos += 1;
@@ -153,7 +160,9 @@ export function exerciciosComHistorico(sessoes, series, exercicios) {
       sessoes: dados.sessoes.size,
       ultima: dados.ultima,
     }))
-    .sort((a, b) => b.ultima.localeCompare(a.ultima) || a.nome.localeCompare(b.nome, 'pt-BR'));
+    .sort((a, b) =>
+      b.ultima.localeCompare(a.ultima) || a.nome.localeCompare(b.nome, 'pt-BR')
+    );
 }
 
 /**
@@ -174,7 +183,9 @@ export function variacao(pontos, campo) {
     primeiro: primeiro[campo],
     ultimo: ultimo[campo],
     absoluta,
-    percentual: primeiro[campo] === 0 ? null : (absoluta / Math.abs(primeiro[campo])) * 100,
+    percentual: primeiro[campo] === 0
+      ? null
+      : (absoluta / Math.abs(primeiro[campo])) * 100,
     dias: diffEmDias(primeiro.data, ultimo.data),
   };
 }

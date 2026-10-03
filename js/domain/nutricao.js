@@ -84,7 +84,7 @@ export function escalar(valores, fator) {
 export function arredondar(valores, casas = 1) {
   const f = 10 ** casas;
   return Object.fromEntries(
-    NUTRIENTES.map((n) => [n, Math.round((valores[n] ?? 0) * f) / f])
+    NUTRIENTES.map((n) => [n, Math.round((valores[n] ?? 0) * f) / f]),
   );
 }
 
@@ -94,10 +94,10 @@ export function arredondar(valores, casas = 1) {
  */
 export function valoresDeReferencia(alimento) {
   const faltando = NUTRIENTES.filter(
-    (n) => alimento[n] === null || alimento[n] === undefined || alimento[n] === ''
+    (n) => alimento[n] === null || alimento[n] === undefined || alimento[n] === '',
   );
   const valores = Object.fromEntries(
-    NUTRIENTES.map((n) => [n, Number(alimento[n]) || 0])
+    NUTRIENTES.map((n) => [n, Number(alimento[n]) || 0]),
   );
   const incompleto = faltando.some((n) => NUTRIENTES_OBRIGATORIOS.includes(n));
   return { valores, incompleto, faltando };
@@ -112,14 +112,20 @@ export function valoresDeReferencia(alimento) {
  */
 export function calcularAlimento(alimento, quantidade, unidade) {
   if (!alimento) {
-    return { valores: zeros(), erro: 'Alimento não está mais no índice.', incompleto: true, faltando: [] };
+    return {
+      valores: zeros(),
+      erro: 'Alimento não está mais no índice.',
+      incompleto: true,
+      faltando: [],
+    };
   }
 
   const daQuantidade = unidade ?? alimento.unidade;
   if (daQuantidade !== alimento.unidade) {
     return {
       valores: zeros(),
-      erro: `Unidades incompatíveis: o item está em ${daQuantidade} e ${alimento.nome} é medido em ${alimento.unidade}.`,
+      erro:
+        `Unidades incompatíveis: o item está em ${daQuantidade} e ${alimento.nome} é medido em ${alimento.unidade}.`,
       incompleto: true,
       faltando: [],
     };
@@ -135,7 +141,9 @@ export function calcularAlimento(alimento, quantidade, unidade) {
     };
   }
 
-  if (quantidade === null || quantidade === undefined || Number.isNaN(Number(quantidade))) {
+  if (
+    quantidade === null || quantidade === undefined || Number.isNaN(Number(quantidade))
+  ) {
     return { valores: zeros(), erro: null, incompleto: true, faltando: ['quantidade'] };
   }
 
@@ -154,7 +162,12 @@ export function calcularAlimento(alimento, quantidade, unidade) {
  */
 export function calcularPrato(prato, alimentos) {
   if (!prato) {
-    return { valores: zeros(), erro: 'Prato não existe mais.', incompleto: true, ingredientes: [] };
+    return {
+      valores: zeros(),
+      erro: 'Prato não existe mais.',
+      incompleto: true,
+      ingredientes: [],
+    };
   }
 
   let total = zeros();
@@ -278,7 +291,7 @@ export function calcularItem(item, indice) {
  */
 function extremo(opcoes, escolher) {
   return Object.fromEntries(
-    NUTRIENTES.map((n) => [n, escolher(...opcoes.map((o) => o.valores[n] ?? 0))])
+    NUTRIENTES.map((n) => [n, escolher(...opcoes.map((o) => o.valores[n] ?? 0))]),
   );
 }
 
@@ -422,6 +435,6 @@ export function compararComMetas(total, metas) {
           percentual: meta === 0 ? null : (valor / meta) * 100,
         },
       ];
-    })
+    }),
   );
 }

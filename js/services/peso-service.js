@@ -1,10 +1,10 @@
 /** Peso corporal. Vale sempre o peso mais recente até a data da sessão. */
 
 import {
-  listarPesos,
   buscarPeso,
-  salvarPeso,
+  listarPesos,
   removerPeso,
+  salvarPeso,
 } from '../data/peso-corporal-repo.js';
 import { novoId } from '../utils/id.js';
 import { hojeIso } from '../utils/date.js';
@@ -49,4 +49,4 @@ export async function resumo() {
   return { primeiro, ultimo, variacao: ultimo.kg - primeiro.kg };
 }
 
-export { listarPesos, buscarPeso, removerPeso };
+export { buscarPeso, listarPesos, removerPeso };

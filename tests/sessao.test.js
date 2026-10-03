@@ -4,15 +4,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  montarSessao,
+  alternarAquecimento,
   itemDaSessao,
-  ultimaVezDoExercicio,
-  valoresIniciaisDaSerie,
-  renumerar,
+  montarSessao,
+  moverItem,
   ordenarSeries,
   proximoNumero,
-  alternarAquecimento,
-  moverItem,
+  renumerar,
+  ultimaVezDoExercicio,
+  valoresIniciaisDaSerie,
 } from '../js/domain/sessao.js';
 import { STATUS } from '../js/utils/constantes.js';
 
@@ -87,11 +87,51 @@ const sessoes = [
 ];
 
 const series = [
-  { id: 'a1', sessaoId: 's1', exercicioId: 'ex-supino', numero: 1, carga: 50, reps: 10, aquecimento: false },
-  { id: 'a2', sessaoId: 's2', exercicioId: 'ex-supino', numero: 1, carga: 55, reps: 10, aquecimento: false },
-  { id: 'a3', sessaoId: 's2', exercicioId: 'ex-supino', numero: 2, carga: 55, reps: 9, aquecimento: false },
-  { id: 'a4', sessaoId: 's3', exercicioId: 'ex-supino', numero: 1, carga: 60, reps: 8, aquecimento: false },
-  { id: 'b1', sessaoId: 's3', exercicioId: 'ex-remada', numero: 1, carga: 40, reps: 12, aquecimento: false },
+  {
+    id: 'a1',
+    sessaoId: 's1',
+    exercicioId: 'ex-supino',
+    numero: 1,
+    carga: 50,
+    reps: 10,
+    aquecimento: false,
+  },
+  {
+    id: 'a2',
+    sessaoId: 's2',
+    exercicioId: 'ex-supino',
+    numero: 1,
+    carga: 55,
+    reps: 10,
+    aquecimento: false,
+  },
+  {
+    id: 'a3',
+    sessaoId: 's2',
+    exercicioId: 'ex-supino',
+    numero: 2,
+    carga: 55,
+    reps: 9,
+    aquecimento: false,
+  },
+  {
+    id: 'a4',
+    sessaoId: 's3',
+    exercicioId: 'ex-supino',
+    numero: 1,
+    carga: 60,
+    reps: 8,
+    aquecimento: false,
+  },
+  {
+    id: 'b1',
+    sessaoId: 's3',
+    exercicioId: 'ex-remada',
+    numero: 1,
+    carga: 40,
+    reps: 12,
+    aquecimento: false,
+  },
 ];
 
 test('ultimaVezDoExercicio pega a sessão mais recente até a data', () => {
@@ -153,7 +193,7 @@ test('cada série repete a série de mesmo número da última vez', () => {
     assert.deepEqual(
       valoresIniciaisDaSerie(item, atuais, anterior),
       valores,
-      `série ${i + 1}`
+      `série ${i + 1}`,
     );
     atuais.push({ ...valores, numero: i + 1, aquecimento: false });
   });
@@ -180,12 +220,12 @@ test('aquecimento e série valendo não se misturam no pré-preenchimento', () =
   assert.deepEqual(
     valoresIniciaisDaSerie(item, [], anterior, false),
     { carga: 60, reps: 8 },
-    'a série valendo ignora o aquecimento da última vez'
+    'a série valendo ignora o aquecimento da última vez',
   );
   assert.deepEqual(
     valoresIniciaisDaSerie(item, [], anterior, true),
     { carga: 20, reps: 15 },
-    'o aquecimento repete o aquecimento da última vez'
+    'o aquecimento repete o aquecimento da última vez',
   );
 });
 
@@ -217,7 +257,7 @@ test('aquecimento vem sempre antes das séries valendo', () => {
   assert.deepEqual(
     ordenarSeries(misturadas).map((s) => s.id),
     ['a', 'b', 'c', 'd'],
-    'primeiro por exercício, depois aquecimento, depois número'
+    'primeiro por exercício, depois aquecimento, depois número',
   );
 });
 
@@ -235,7 +275,7 @@ test('renumerar usa sequências separadas para aquecimento e séries valendo', (
       ['d', 'aq', 2],
       ['a', 'ok', 1],
       ['c', 'ok', 2],
-    ]
+    ],
   );
 });
 
@@ -257,7 +297,7 @@ test('marcar como aquecimento move a série para o começo e renumera', () => {
       ['s3', 'aq', 1],
       ['s1', 'ok', 1],
       ['s2', 'ok', 2],
-    ]
+    ],
   );
 });
 
@@ -272,7 +312,7 @@ test('desmarcar aquecimento devolve a série ao grupo das que valem', () => {
     [
       ['aq1', 'ok', 1],
       ['s1', 'ok', 2],
-    ]
+    ],
   );
 });
 
@@ -291,11 +331,11 @@ test('moverItem sobe e desce um exercício, recalculando a ordem', () => {
       ['i1', 0],
       ['i3', 1],
       ['i2', 2],
-    ]
+    ],
   );
   assert.deepEqual(
     moverItem(itensDaSessao, 'i1', 1).map((i) => i.itemId),
-    ['i2', 'i1', 'i3']
+    ['i2', 'i1', 'i3'],
   );
 });
 
@@ -313,6 +353,6 @@ test('moverItem não altera a lista original', () => {
       ['i1', 0],
       ['i2', 1],
       ['i3', 2],
-    ]
+    ],
   );
 });

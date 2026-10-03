@@ -6,7 +6,7 @@
  * Falta de rede vira `SemInternet`: o backup fica pendente em vez de dar erro.
  */
 
-import { API_RPC, API_CONTEUDO } from './dropbox-config.js';
+import { API_CONTEUDO, API_RPC } from './dropbox-config.js';
 import { tokenValido } from './dropbox-auth.js';
 
 /** Falha de rede. O backup fica pendente em vez de dar erro. */
@@ -56,7 +56,7 @@ async function erroDaResposta(resposta) {
 
   if (/missing_scope/.test(texto)) {
     return new Error(
-      'O app no Dropbox não tem permissão para gravar arquivos. Marque files.content.write e files.content.read na aba Permissions e conecte de novo.'
+      'O app no Dropbox não tem permissão para gravar arquivos. Marque files.content.write e files.content.read na aba Permissions e conecte de novo.',
     );
   }
   if (/insufficient_space/.test(texto)) {

@@ -1,18 +1,18 @@
 /** Tela do backup no Dropbox: estado em cima, botões embaixo. */
 
-import { formulario, confirmar, avisar, escolher } from '../components/dialogo.js';
+import { avisar, confirmar, escolher, formulario } from '../components/dialogo.js';
 import { formatarDataHora } from '../utils/date.js';
 import { recarregar, recomecar } from '../navegacao.js';
-import { podeUsarRedirect, APP_KEY } from '../sync/dropbox-config.js';
+import { APP_KEY, podeUsarRedirect } from '../sync/dropbox-config.js';
 import { lerAppKey, salvarAppKey, salvarEstado } from '../sync/dropbox-estado.js';
 import {
-  urlDeAutorizacao,
-  trocarCodigoPorToken,
-  nomeDaConta,
-  desconectar,
-  temPedidoPendente,
   concluirLoginDoRedirect,
+  desconectar,
+  nomeDaConta,
   SemAppKey,
+  temPedidoPendente,
+  trocarCodigoPorToken,
+  urlDeAutorizacao,
 } from '../sync/dropbox-auth.js';
 import * as sync from '../sync/dropbox-backup.js';
 
@@ -95,7 +95,7 @@ function cardDesconectado() {
   const pendente = temPedidoPendente();
   const el = card(
     'Não conectado',
-    pendente ? 'Há um login começado esperando o código.' : ''
+    pendente ? 'Há um login começado esperando o código.' : '',
   );
 
   if (pendente) {
@@ -105,7 +105,9 @@ function cardDesconectado() {
     el.appendChild(botao('Conectar', conectar, true));
   }
 
-  el.appendChild(acoesSecundarias([{ rotulo: 'Trocar o app key', aoTocar: pedirAppKey }]));
+  el.appendChild(
+    acoesSecundarias([{ rotulo: 'Trocar o app key', aoTocar: pedirAppKey }]),
+  );
   return el;
 }
 
@@ -114,7 +116,7 @@ function cardConectado(estado) {
   const linhas = [];
   if (estado.conta) linhas.push(estado.conta);
   linhas.push(
-    estado.ultimoEm ? formatarDataHora(estado.ultimoEm) : 'nenhum backup ainda'
+    estado.ultimoEm ? formatarDataHora(estado.ultimoEm) : 'nenhum backup ainda',
   );
   if (estado.pendente) linhas.push('pendente');
 
@@ -135,7 +137,7 @@ function cardConectado(estado) {
     acoesSecundarias([
       { rotulo: 'Desconectar', aoTocar: desconectarComConfirmacao },
       ...(APP_KEY ? [] : [{ rotulo: 'Trocar o app key', aoTocar: pedirAppKey }]),
-    ])
+    ]),
   );
 
   return el;
@@ -153,10 +155,11 @@ async function pedirAppKey() {
         rotulo: 'App key',
         tipo: 'text',
         valor: lerAppKey(),
-        dica: 'dropbox.com/developers/apps → GymTracker → Settings. Fica só neste aparelho.',
+        dica:
+          'dropbox.com/developers/apps → GymTracker → Settings. Fica só neste aparelho.',
       },
     ],
-    'Salvar'
+    'Salvar',
   );
   if (!dados || !dados.chave.trim()) return;
   salvarAppKey(dados.chave);
@@ -227,7 +230,10 @@ async function avisarErroDeLogin(erro) {
     await recarregar();
     return;
   }
-  await avisar('Não consegui conectar', String(erro && erro.message ? erro.message : erro));
+  await avisar(
+    'Não consegui conectar',
+    String(erro && erro.message ? erro.message : erro),
+  );
 }
 
 /** Termina o login e já faz o primeiro backup, para confirmar que funciona. */
@@ -237,7 +243,10 @@ async function depoisDeConectar() {
   await recarregar();
 
   if (!resultado.ok && !resultado.pendente) {
-    await avisar('Conectado, mas o backup falhou', resultado.erro || 'Motivo desconhecido.');
+    await avisar(
+      'Conectado, mas o backup falhou',
+      resultado.erro || 'Motivo desconhecido.',
+    );
   }
 }
 
@@ -270,7 +279,10 @@ async function escolherERestaurar(evento) {
   try {
     lista = await sync.listarBackups();
   } catch (erro) {
-    return avisar('Não consegui listar', String(erro && erro.message ? erro.message : erro));
+    return avisar(
+      'Não consegui listar',
+      String(erro && erro.message ? erro.message : erro),
+    );
   } finally {
     btn.disabled = false;
     btn.textContent = 'Restaurar';
@@ -285,7 +297,7 @@ async function escolherERestaurar(evento) {
     lista.map((e) => ({
       valor: e.caminho,
       rotulo: e.rotulo + ' · ' + formatarDataHora(e.modificadoEm),
-    }))
+    })),
   );
   if (!escolhido) return;
 
@@ -302,7 +314,10 @@ async function restaurarCaminho(caminho) {
   try {
     backup = await sync.baixarBackup(caminho);
   } catch (erro) {
-    return avisar('Não consegui baixar', String(erro && erro.message ? erro.message : erro));
+    return avisar(
+      'Não consegui baixar',
+      String(erro && erro.message ? erro.message : erro),
+    );
   }
 
   let perdas = [];
@@ -318,7 +333,7 @@ async function restaurarCaminho(caminho) {
       '. ' +
       (perdas.length ? 'VOCÊ VAI PERDER — ' + perdas.join('; ') + '. ' : '') +
       'Substitui os dados deste aparelho e não dá para desfazer.',
-    'Restaurar'
+    'Restaurar',
   );
   if (!ok) return;
 
@@ -326,7 +341,10 @@ async function restaurarCaminho(caminho) {
   try {
     resultado = await sync.restaurarDoDropbox(backup);
   } catch (erro) {
-    return avisar('Não consegui restaurar', String(erro && erro.message ? erro.message : erro));
+    return avisar(
+      'Não consegui restaurar',
+      String(erro && erro.message ? erro.message : erro),
+    );
   }
 
   if (resultado.divergencias.length) {
@@ -334,7 +352,7 @@ async function restaurarCaminho(caminho) {
       'O backup não entrou inteiro',
       'Falta ' +
         resultado.divergencias.join('; ') +
-        '. Nada foi perdido no Dropbox: tente de novo.'
+        '. Nada foi perdido no Dropbox: tente de novo.',
     );
   } else {
     const total = Object.values(resultado.gravados).reduce((soma, n) => soma + n, 0);
@@ -349,7 +367,7 @@ async function desconectarComConfirmacao() {
   const ok = await confirmar(
     'Desconectar do Dropbox?',
     'Os backups automáticos param. Os arquivos já enviados continuam lá.',
-    'Desconectar'
+    'Desconectar',
   );
   if (!ok) return;
   desconectar();

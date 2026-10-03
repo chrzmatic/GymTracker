@@ -5,7 +5,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 
 const raiz = new URL('../', import.meta.url);
 const ler = (caminho) => readFileSync(new URL(caminho, raiz), 'utf8');
@@ -16,13 +16,13 @@ function arquivosDoApp(pasta = 'js/') {
     e.isDirectory()
       ? arquivosDoApp(`${pasta}${e.name}/`)
       : /\.(js|json)$/.test(e.name)
-        ? [`${pasta}${e.name}`]
-        : []
+      ? [`${pasta}${e.name}`]
+      : []
   );
 }
 
 const listaDoServiceWorker = [...ler('service-worker.js').matchAll(/'\.\/([^']*)'/g)].map(
-  (m) => m[1]
+  (m) => m[1],
 );
 
 test('todo arquivo de js/ está na lista offline do service worker', () => {
@@ -32,7 +32,7 @@ test('todo arquivo de js/ está na lista offline do service worker', () => {
 
 test('todo arquivo da lista do service worker existe', () => {
   const inexistentes = listaDoServiceWorker.filter(
-    (a) => a && !existsSync(new URL(a, raiz))
+    (a) => a && !existsSync(new URL(a, raiz)),
   );
   assert.deepEqual(inexistentes, []);
 });
@@ -48,7 +48,7 @@ test('toda tela registrada na navegação aponta para uma função exportada que
     assert.match(
       ler(arquivo),
       new RegExp(`export async function ${funcao}\\b`),
-      `${arquivo} exporta ${funcao}`
+      `${arquivo} exporta ${funcao}`,
     );
   });
 });

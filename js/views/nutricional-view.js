@@ -1,11 +1,17 @@
 /** Informação nutricional de um item do plano. */
 
 import * as dieta from '../services/dieta-service.js';
-import { TIPO_ITEM, INFO_NUTRIENTES, calcularPrato, calcularItem, calcularOpcao } from '../domain/nutricao.js';
+import {
+  calcularItem,
+  calcularOpcao,
+  calcularPrato,
+  INFO_NUTRIENTES,
+  TIPO_ITEM,
+} from '../domain/nutricao.js';
 import { num, paraNumero } from '../utils/format.js';
 import { formulario } from '../components/dialogo.js';
 import { textoFraco } from '../components/ui.js';
-import { abrir, definirTitulo, voltarUmaTela, recarregar } from '../navegacao.js';
+import { abrir, definirTitulo, recarregar, voltarUmaTela } from '../navegacao.js';
 
 /**
  * Um item do plano: o que ele dá na quantidade planejada e o valor
@@ -78,7 +84,7 @@ export async function montarNutricional(raiz, params) {
         params.refeicaoId,
         params.itemId,
         params.opcaoId,
-        valor
+        valor,
       );
     } else {
       await dieta.alterarQuantidade(params.refeicaoId, params.itemId, valor);
@@ -127,10 +133,9 @@ export async function montarNutricional(raiz, params) {
 
       const q = document.createElement('span');
       q.className = 'item-dieta-quantidade';
-      q.textContent =
-        ing.quantidade === null || ing.quantidade === undefined
-          ? '— preencher'
-          : `${num(ing.quantidade, 2)} ${ing.unidade}`;
+      q.textContent = ing.quantidade === null || ing.quantidade === undefined
+        ? '— preencher'
+        : `${num(ing.quantidade, 2)} ${ing.unidade}`;
       linha.appendChild(q);
 
       const k = document.createElement('span');
@@ -145,10 +150,16 @@ export async function montarNutricional(raiz, params) {
 
     if (fonte.fonte) {
       referencia.appendChild(
-        textoFraco('Fonte: ' + fonte.fonte + (fonte.generico ? ' (valor genérico)' : ''), 'm-0', 'mt-3')
+        textoFraco(
+          'Fonte: ' + fonte.fonte + (fonte.generico ? ' (valor genérico)' : ''),
+          'm-0',
+          'mt-3',
+        ),
       );
     }
-    if (fonte.observacao) referencia.appendChild(textoFraco(fonte.observacao, 'm-0', 'mt-1'));
+    if (fonte.observacao) {
+      referencia.appendChild(textoFraco(fonte.observacao, 'm-0', 'mt-1'));
+    }
   }
 
   const editar = document.createElement('button');

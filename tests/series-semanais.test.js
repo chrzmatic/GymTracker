@@ -8,14 +8,14 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 import {
+  arredondarTabela,
+  compararPlanejadoRealizado,
   planejadoPorMusculo,
   realizadoPorMusculo,
-  compararPlanejadoRealizado,
-  arredondarTabela,
 } from '../js/domain/series-semanais.js';
 
 const seed = JSON.parse(
-  await readFile(new URL('../js/data/seed-treino.json', import.meta.url), 'utf8')
+  await readFile(new URL('../js/data/seed-treino.json', import.meta.url), 'utf8'),
 );
 
 const exercicios = new Map(seed.exercicios.map((e) => [e.id, e]));
@@ -57,14 +57,14 @@ test('a rotação inicial reproduz a tabela de séries semanais do TREINO-DADOS.
   assert.equal(
     calculado.length,
     ESPERADO_COM_OPCIONAIS.length,
-    'a tabela tem exatamente os músculos da especificação'
+    'a tabela tem exatamente os músculos da especificação',
   );
 });
 
 test('sem os opcionais, só Panturrilha e Abdômen zeram', () => {
   const comOpcionais = comoTabela(planejadoPorMusculo(rotacao, exercicios, musculos));
   const semOpcionais = comoTabela(
-    planejadoPorMusculo(rotacao, exercicios, musculos, { incluirOpcionais: false })
+    planejadoPorMusculo(rotacao, exercicios, musculos, { incluirOpcionais: false }),
   );
 
   const mudaram = semOpcionais.filter((linha, i) => linha[3] !== comOpcionais[i][3]);
@@ -74,7 +74,7 @@ test('sem os opcionais, só Panturrilha e Abdômen zeram', () => {
       ['Panturrilha', 0],
       ['Abdômen', 0],
     ],
-    'os opcionais do seed são só panturrilha (treino A) e abdominal (treino C)'
+    'os opcionais do seed são só panturrilha (treino A) e abdominal (treino C)',
   );
 });
 
@@ -125,7 +125,12 @@ test('quatro séries de supino dão 4 diretas de peito e 2 indiretas de tríceps
   const treino = {
     id: 'tr-a',
     naRotacao: true,
-    itens: [{ id: 'i1', tipo: 'exercicio', exercicioId: 'ex-supino', seriesPlanejadas: 4 }],
+    itens: [{
+      id: 'i1',
+      tipo: 'exercicio',
+      exercicioId: 'ex-supino',
+      seriesPlanejadas: 4,
+    }],
   };
   const t = planejadoPorMusculo([treino], exerciciosTeste, musculosTeste);
   assert.deepEqual(acharPorNome(t, 'Peito'), {
@@ -177,9 +182,16 @@ test('exercício que não existe mais é ignorado', () => {
   const treino = {
     id: 'tr-d',
     naRotacao: true,
-    itens: [{ id: 'i1', tipo: 'exercicio', exercicioId: 'ex-apagado', seriesPlanejadas: 3 }],
+    itens: [{
+      id: 'i1',
+      tipo: 'exercicio',
+      exercicioId: 'ex-apagado',
+      seriesPlanejadas: 3,
+    }],
   };
-  assert.doesNotThrow(() => planejadoPorMusculo([treino], exerciciosTeste, musculosTeste));
+  assert.doesNotThrow(() =>
+    planejadoPorMusculo([treino], exerciciosTeste, musculosTeste)
+  );
 });
 
 /* --- Realizado --- */
@@ -217,7 +229,12 @@ test('a diferença mostra o que faltou e o que sobrou', () => {
   const treino = {
     id: 'tr-a',
     naRotacao: true,
-    itens: [{ id: 'i1', tipo: 'exercicio', exercicioId: 'ex-supino', seriesPlanejadas: 4 }],
+    itens: [{
+      id: 'i1',
+      tipo: 'exercicio',
+      exercicioId: 'ex-supino',
+      seriesPlanejadas: 4,
+    }],
   };
   const planejado = planejadoPorMusculo([treino], exerciciosTeste, musculosTeste);
   const realizado = realizadoPorMusculo(
@@ -227,7 +244,7 @@ test('a diferença mostra o que faltou e o que sobrou', () => {
       { exercicioId: 'ex-remada', aquecimento: false },
     ],
     exerciciosTeste,
-    musculosTeste
+    musculosTeste,
   );
 
   const comparado = compararPlanejadoRealizado(planejado, realizado);

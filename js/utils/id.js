@@ -2,10 +2,9 @@
 
 /** ID único com prefixo legível (ex.: 'ses-…'). */
 export function novoId(prefixo) {
-  const aleatorio =
-    typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID().slice(0, 8)
-      : Math.random().toString(36).slice(2, 10);
+  const aleatorio = typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID().slice(0, 8)
+    : Math.random().toString(36).slice(2, 10);
   return `${prefixo}-${Date.now().toString(36)}-${aleatorio}`;
 }
 

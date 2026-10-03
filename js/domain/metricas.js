@@ -81,16 +81,16 @@ export function metricasDeSeries(series, exercicio, pesoCorporal) {
     else faltando.reps += 1;
 
     if (temCarga) {
-      cargaRegistradaMaxima =
-        cargaRegistradaMaxima === null
-          ? serie.carga
-          : Math.max(cargaRegistradaMaxima, serie.carga);
+      cargaRegistradaMaxima = cargaRegistradaMaxima === null
+        ? serie.carga
+        : Math.max(cargaRegistradaMaxima, serie.carga);
     }
 
     const efetiva = cargaEfetiva(serie, exercicio, pesoCorporal);
     if (efetiva === null) {
       // Carga sem kg é falha do registro; peso corporal/assistido sem peso é outro aviso.
-      const precisaPeso = (exercicio?.tipoCarga ?? TIPOS_CARGA.CARGA) !== TIPOS_CARGA.CARGA;
+      const precisaPeso =
+        (exercicio?.tipoCarga ?? TIPOS_CARGA.CARGA) !== TIPOS_CARGA.CARGA;
       if (precisaPeso && (pesoCorporal === null || pesoCorporal === undefined)) {
         faltando.pesoCorporal += 1;
       } else {
@@ -190,9 +190,16 @@ export function somarMetricas(lista) {
  * @returns {{antes: number|null, depois: number|null, absoluta: number|null, percentual: number|null, direcao: 'melhora'|'piora'|'igual'|'—'}}
  */
 export function diferenca(antes, depois, maiorEhMelhor = true) {
-  const vazio = antes === null || antes === undefined || depois === null || depois === undefined;
+  const vazio = antes === null || antes === undefined || depois === null ||
+    depois === undefined;
   if (vazio) {
-    return { antes: antes ?? null, depois: depois ?? null, absoluta: null, percentual: null, direcao: '—' };
+    return {
+      antes: antes ?? null,
+      depois: depois ?? null,
+      absoluta: null,
+      percentual: null,
+      direcao: '—',
+    };
   }
 
   const absoluta = depois - antes;

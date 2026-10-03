@@ -5,16 +5,16 @@
  */
 
 import {
-  listarExercicios,
   buscarExercicio,
-  salvarExercicio,
-  removerExercicio,
+  listarExercicios,
   mapaExercicios,
+  removerExercicio,
+  salvarExercicio,
 } from '../data/exercicios-repo.js';
 import {
   listarMusculos,
-  salvarMusculo,
   removerMusculo,
+  salvarMusculo,
   salvarMusculos,
 } from '../data/musculos-repo.js';
 import { listarTreinos, salvarTreinos } from '../data/treinos-repo.js';
@@ -23,10 +23,10 @@ import { novoId, paraSlug } from '../utils/id.js';
 import {
   criarExercicio,
   normalizarMusculos,
-  usosDoExercicio,
-  usosDoMusculo,
   tirarExercicioDosTreinos,
   tirarMusculoDosExercicios,
+  usosDoExercicio,
+  usosDoMusculo,
 } from '../domain/treino.js';
 
 /* --- Exercícios --- */
@@ -132,4 +132,4 @@ export async function moverMusculo(musculoId, direcao) {
   return true;
 }
 
-export { listarExercicios, buscarExercicio, listarMusculos, mapaExercicios };
+export { buscarExercicio, listarExercicios, listarMusculos, mapaExercicios };

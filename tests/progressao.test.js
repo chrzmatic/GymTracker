@@ -4,12 +4,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  historicoDoExercicio,
-  filtrarPorPeriodo,
-  resumoSemanal,
   exerciciosComHistorico,
-  variacao,
+  filtrarPorPeriodo,
+  historicoDoExercicio,
   PERIODO,
+  resumoSemanal,
+  variacao,
 } from '../js/domain/progressao.js';
 
 const CARGA = { id: 'ex-supino', nome: 'Supino', tipoCarga: 'carga' };
@@ -59,7 +59,13 @@ test('o volume de cada ponto é a soma de carga × reps da sessão', () => {
 });
 
 test('sessão sem o exercício não vira ponto', () => {
-  const pontos = historicoDoExercicio(sessoes, series, 'ex-remada', exercicios.get('ex-remada'), []);
+  const pontos = historicoDoExercicio(
+    sessoes,
+    series,
+    'ex-remada',
+    exercicios.get('ex-remada'),
+    [],
+  );
   assert.equal(pontos.length, 1);
   assert.equal(pontos[0].data, '2025-09-15');
 });
@@ -82,13 +88,25 @@ test('o gráfico de assistido usa o peso corporal válido em cada data', () => {
     { data: '2025-09-10', kg: 80 },
   ];
   const seriesAssist = [s('s1', 'ex-assist', 30, 8), s('s3', 'ex-assist', 20, 8)];
-  const pontos = historicoDoExercicio(sessoes, seriesAssist, 'ex-assist', ASSISTIDO, pesos);
+  const pontos = historicoDoExercicio(
+    sessoes,
+    seriesAssist,
+    'ex-assist',
+    ASSISTIDO,
+    pesos,
+  );
   assert.equal(pontos[0].cargaMaxima, 82 - 30, 'em 01/09 valia o peso de agosto');
   assert.equal(pontos[1].cargaMaxima, 80 - 20, 'em 15/09 já valia o de 10/09');
 });
 
 test('sem peso corporal, o ponto de um assistido fica sem carga', () => {
-  const pontos = historicoDoExercicio(sessoes, [s('s1', 'ex-assist', 30, 8)], 'ex-assist', ASSISTIDO, []);
+  const pontos = historicoDoExercicio(
+    sessoes,
+    [s('s1', 'ex-assist', 30, 8)],
+    'ex-assist',
+    ASSISTIDO,
+    [],
+  );
   assert.equal(pontos[0].cargaMaxima, null);
   assert.equal(pontos[0].reps, 8, 'mas as reps continuam');
 });
@@ -181,7 +199,11 @@ test('sem sessão nenhuma, o resumo é vazio', () => {
 
 test('lista os exercícios já feitos, do mais recente para o mais antigo', () => {
   const r = exerciciosComHistorico(sessoes, series, exercicios);
-  assert.deepEqual(r.map((e) => e.nome), ['Remada', 'Supino'], 'remada foi feita em 15/09');
+  assert.deepEqual(
+    r.map((e) => e.nome),
+    ['Remada', 'Supino'],
+    'remada foi feita em 15/09',
+  );
   assert.equal(r.find((e) => e.nome === 'Supino').sessoes, 3);
 });
 
@@ -209,7 +231,10 @@ test('variação compara o primeiro e o último ponto', () => {
 });
 
 test('com menos de dois pontos não há variação a mostrar', () => {
-  assert.equal(variacao([{ data: '2025-09-01', cargaMaxima: 60 }], 'cargaMaxima').absoluta, null);
+  assert.equal(
+    variacao([{ data: '2025-09-01', cargaMaxima: 60 }], 'cargaMaxima').absoluta,
+    null,
+  );
   assert.equal(variacao([], 'cargaMaxima').absoluta, null);
 });
 

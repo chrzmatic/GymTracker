@@ -5,9 +5,9 @@
 
 import * as progresso from '../services/progresso-service.js';
 import { PERIODO } from '../domain/progressao.js';
-import { formatarCurto, formatarLongo, somarDias, hojeIso } from '../utils/date.js';
-import { num, comSinal, percentual } from '../utils/format.js';
-import { escolherComBusca, escolher } from '../components/dialogo.js';
+import { formatarCurto, formatarLongo, hojeIso, somarDias } from '../utils/date.js';
+import { comSinal, num, percentual } from '../utils/format.js';
+import { escolher, escolherComBusca } from '../components/dialogo.js';
 import { blocoVazio } from '../components/ui.js';
 
 /** Estado da tela (mantido entre montagens). */
@@ -120,7 +120,7 @@ async function desenharGrafico() {
         valor: e.id,
         rotulo: e.nome,
         detalhe: `${e.sessoes} sessões`,
-      }))
+      })),
     );
     if (!id) return;
     estado.exercicioId = id;
@@ -136,10 +136,9 @@ async function desenharGrafico() {
   if (dados.pontos.length < 2) {
     const aviso = document.createElement('p');
     aviso.className = 'texto-fraco pequeno m-0';
-    aviso.textContent =
-      dados.total < 2
-        ? 'Este exercício só tem uma sessão registrada. O gráfico aparece a partir da segunda.'
-        : 'Nenhuma sessão neste período. Escolha um período maior.';
+    aviso.textContent = dados.total < 2
+      ? 'Este exercício só tem uma sessão registrada. O gráfico aparece a partir da segunda.'
+      : 'Nenhuma sessão neste período. Escolha um período maior.';
     card.appendChild(aviso);
     raiz.appendChild(card);
     return;
@@ -199,7 +198,10 @@ async function pintarGrafico(canvas, dados) {
   const Chart = await carregarChart();
   const metrica = METRICAS.find((m) => m.id === estado.metrica);
 
-  const pontos = dados.pontos.map((p) => ({ x: formatarCurto(p.data), y: p[estado.metrica] }));
+  const pontos = dados.pontos.map((p) => ({
+    x: formatarCurto(p.data),
+    y: p[estado.metrica],
+  }));
   const temAlgum = pontos.some((p) => p.y !== null && p.y !== undefined);
 
   if (!temAlgum) {
@@ -243,7 +245,8 @@ async function pintarGrafico(canvas, dados) {
         legend: { labels: { color: corTexto } },
         tooltip: {
           callbacks: {
-            label: (item) => `${metrica.rotulo}: ${num(item.parsed.y, 2)} ${metrica.unidade}`,
+            label: (item) =>
+              `${metrica.rotulo}: ${num(item.parsed.y, 2)} ${metrica.unidade}`,
           },
         },
       },
@@ -291,12 +294,16 @@ function cardDeVariacao(dados) {
     linha.appendChild(para);
 
     const dif = document.createElement('span');
-    const direcao = v.absoluta === null ? 'igual' : v.absoluta > 0 ? 'melhora' : v.absoluta < 0 ? 'piora' : 'igual';
+    const direcao = v.absoluta === null
+      ? 'igual'
+      : v.absoluta > 0
+      ? 'melhora'
+      : v.absoluta < 0
+      ? 'piora'
+      : 'igual';
     dif.className = 'metrica-dif ' + direcao;
-    dif.textContent =
-      v.absoluta === null
-        ? '—'
-        : comSinal(v.absoluta, 1) + (v.percentual === null ? '' : ` (${percentual(v.percentual)})`);
+    dif.textContent = v.absoluta === null ? '—' : comSinal(v.absoluta, 1) +
+      (v.percentual === null ? '' : ` (${percentual(v.percentual)})`);
     linha.appendChild(dif);
 
     card.appendChild(linha);
@@ -363,14 +370,20 @@ async function desenharMusculos() {
   explica.className = 'texto-fraco pequeno m-0 mb-3';
   explica.textContent =
     `Planejado = um ciclo completo da rotação (${dados.treinosPorCiclo} treinos), com os opcionais. ` +
-    `Realizado = o que você registrou nesta semana (${dados.treinosNaSemana} ${dados.treinosNaSemana === 1 ? 'treino' : 'treinos'}), sem aquecimento.`;
+    `Realizado = o que você registrou nesta semana (${dados.treinosNaSemana} ${
+      dados.treinosNaSemana === 1 ? 'treino' : 'treinos'
+    }), sem aquecimento.`;
   card.appendChild(explica);
 
   const cabecalho = document.createElement('div');
   cabecalho.className = 'metrica metrica-cabecalho';
   ['Músculo', 'Plan.', 'Real.', 'Dif.'].forEach((texto, i) => {
     const span = document.createElement('span');
-    span.className = i === 0 ? 'metrica-rotulo' : i === 3 ? 'metrica-dif' : 'metrica-valor';
+    span.className = i === 0
+      ? 'metrica-rotulo'
+      : i === 3
+      ? 'metrica-dif'
+      : 'metrica-valor';
     span.textContent = texto;
     cabecalho.appendChild(span);
   });
@@ -386,7 +399,9 @@ async function desenharMusculos() {
     if (linha.planejado.indiretas > 0) {
       const detalhe = document.createElement('span');
       detalhe.className = 'texto-fraco pequeno';
-      detalhe.textContent = ` (${num(linha.planejado.diretas, 2)} dir. + ${num(linha.planejado.indiretas, 2)} ind.)`;
+      detalhe.textContent = ` (${num(linha.planejado.diretas, 2)} dir. + ${
+        num(linha.planejado.indiretas, 2)
+      } ind.)`;
       nome.appendChild(detalhe);
     }
     div.appendChild(nome);
@@ -402,7 +417,11 @@ async function desenharMusculos() {
     div.appendChild(real);
 
     const dif = document.createElement('span');
-    const direcao = linha.diferenca === 0 ? 'igual' : linha.diferenca > 0 ? 'melhora' : 'piora';
+    const direcao = linha.diferenca === 0
+      ? 'igual'
+      : linha.diferenca > 0
+      ? 'melhora'
+      : 'piora';
     dif.className = 'metrica-dif ' + direcao;
     dif.textContent = comSinal(linha.diferenca, 2);
     div.appendChild(dif);
@@ -432,7 +451,7 @@ async function seletorDeSemana(dados) {
         valor: s,
         rotulo: `${formatarCurto(s)} a ${formatarCurto(somarDias(s, 6))}`,
         detalhe: s === dados.inicio ? 'atual' : '',
-      }))
+      })),
     );
     if (!escolhida) return;
     estado.semana = escolhida;
@@ -465,7 +484,11 @@ async function desenharSemanas() {
   cabecalho.className = 'metrica metrica-cabecalho';
   ['Semana', 'Treinos', 'Séries', 'Volume'].forEach((texto, i) => {
     const span = document.createElement('span');
-    span.className = i === 0 ? 'metrica-rotulo' : i === 3 ? 'metrica-dif' : 'metrica-valor';
+    span.className = i === 0
+      ? 'metrica-rotulo'
+      : i === 3
+      ? 'metrica-dif'
+      : 'metrica-valor';
     span.textContent = texto;
     cabecalho.appendChild(span);
   });
@@ -478,7 +501,9 @@ async function desenharSemanas() {
 
     const semana = document.createElement('span');
     semana.className = 'metrica-rotulo';
-    semana.textContent = `${formatarCurto(s.semana)} a ${formatarCurto(somarDias(s.semana, 6))}`;
+    semana.textContent = `${formatarCurto(s.semana)} a ${
+      formatarCurto(somarDias(s.semana, 6))
+    }`;
     if (s.semana <= hoje && somarDias(s.semana, 6) >= hoje) {
       const etq = document.createElement('span');
       etq.className = 'texto-fraco pequeno';

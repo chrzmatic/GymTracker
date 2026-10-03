@@ -1,21 +1,25 @@
 /** Tela de configurações. */
 
-import { lerTodasConfigs, salvarConfig, CONFIG_PADRAO } from '../services/config-service.js';
-import { NOMES_DIA_SEMANA, formatarDataHora, formatarLongo } from '../utils/date.js';
 import {
-  lerEstado as lerEstadoDropbox,
+  CONFIG_PADRAO,
+  lerTodasConfigs,
+  salvarConfig,
+} from '../services/config-service.js';
+import { formatarDataHora, formatarLongo, NOMES_DIA_SEMANA } from '../utils/date.js';
+import {
   lerAppKey as lerAppKeyDropbox,
+  lerEstado as lerEstadoDropbox,
 } from '../sync/dropbox-estado.js';
 import { paraNumero } from '../utils/format.js';
-import { formulario, confirmar, avisar } from '../components/dialogo.js';
+import { avisar, confirmar, formulario } from '../components/dialogo.js';
 import * as backup from '../services/backup-service.js';
 import {
-  restaurarTreinoPadrao,
-  restaurarDietaPadrao,
   carregarSeNecessario,
+  restaurarDietaPadrao,
+  restaurarTreinoPadrao,
 } from '../services/seed-service.js';
 import { abrir, recarregar, recomecar } from '../navegacao.js';
-import { VERSAO, DATA_DA_VERSAO } from '../versao.js';
+import { DATA_DA_VERSAO, VERSAO } from '../versao.js';
 
 export async function montarConfiguracoes(raiz) {
   const config = await lerTodasConfigs();
@@ -80,13 +84,13 @@ function cardRecomecar() {
       const ok = await confirmar(
         'Restaurar os treinos padrão?',
         'Treinos, exercícios e músculos padrão voltam ao original. O que você criou continua lá, e o histórico de sessões não é tocado.',
-        'Restaurar'
+        'Restaurar',
       );
       if (!ok) return;
       await restaurarTreinoPadrao();
       await avisar('Pronto', 'Os treinos padrão foram restaurados.');
       await recomecar();
-    })
+    }),
   );
 
   card.appendChild(
@@ -94,13 +98,13 @@ function cardRecomecar() {
       const ok = await confirmar(
         'Restaurar a dieta padrão?',
         'Alimentos, pratos, refeições e planos padrão voltam ao original. O que você criou continua lá.',
-        'Restaurar'
+        'Restaurar',
       );
       if (!ok) return;
       await restaurarDietaPadrao();
       await avisar('Pronto', 'A dieta padrão foi restaurada.');
       await recomecar('dieta');
-    })
+    }),
   );
 
   const apagar = document.createElement('button');
@@ -110,7 +114,7 @@ function cardRecomecar() {
     const ok = await confirmar(
       'Apagar tudo?',
       'Isso apaga TODAS as sessões registradas, os treinos, os exercícios, o peso corporal e as configurações, e recarrega os dados iniciais. Não tem como desfazer. Se quiser guardar o que existe hoje, cancele e exporte um backup antes.',
-      'Apagar tudo'
+      'Apagar tudo',
     );
     if (!ok) return;
 
@@ -118,7 +122,7 @@ function cardRecomecar() {
     const mesmo = await confirmar(
       'Tem certeza?',
       'Última chance. Todo o histórico de treino será perdido.',
-      'Sim, apagar tudo'
+      'Sim, apagar tudo',
     );
     if (!mesmo) return;
 
@@ -144,17 +148,17 @@ function cardBackup() {
   card.appendChild(
     linha('Exportar backup (JSON)', 'completo', async () => {
       await exportar(backup.exportarJson());
-    })
+    }),
   );
   card.appendChild(
     linha('Exportar treinos (CSV)', 'uma linha por série', async () => {
       await exportar(backup.exportarTreinosCsv());
-    })
+    }),
   );
   card.appendChild(
     linha('Exportar peso (CSV)', '', async () => {
       await exportar(backup.exportarPesoCsv());
-    })
+    }),
   );
   card.appendChild(linha('Importar backup (JSON)', 'substitui os dados', importar));
 
@@ -171,10 +175,9 @@ async function exportar(promessa) {
     const resultado = await backup.entregar(arquivo);
     if (resultado === 'cancelado') return;
 
-    const onde =
-      resultado === 'baixado'
-        ? `${arquivo.nome} salvo nos seus downloads.`
-        : `${arquivo.nome} entregue ao menu de compartilhar.`;
+    const onde = resultado === 'baixado'
+      ? `${arquivo.nome} salvo nos seus downloads.`
+      : `${arquivo.nome} entregue ao menu de compartilhar.`;
 
     if (!arquivo.resumo) {
       await avisar('Exportado', onde);
@@ -186,10 +189,13 @@ async function exportar(promessa) {
       `${onde} Dentro dele: ${arquivo.resumo}.` +
         (arquivo.vazio
           ? ' Ou seja: este arquivo não guarda treino nenhum que você tenha feito.'
-          : '')
+          : ''),
     );
   } catch (erro) {
-    await avisar('Não consegui exportar', String(erro && erro.message ? erro.message : erro));
+    await avisar(
+      'Não consegui exportar',
+      String(erro && erro.message ? erro.message : erro),
+    );
   }
 }
 
@@ -202,7 +208,10 @@ async function importar() {
   try {
     conteudo = await backup.lerArquivo(arquivo);
   } catch {
-    await avisar('Arquivo inválido', 'Não consegui ler o JSON. O arquivo pode estar corrompido.');
+    await avisar(
+      'Arquivo inválido',
+      'Não consegui ler o JSON. O arquivo pode estar corrompido.',
+    );
     return;
   }
 
@@ -222,19 +231,24 @@ async function importar() {
 
   const ok = await confirmar(
     'Restaurar este backup?',
-    `Backup de ${conteudo.data ?? 'data desconhecida'}: ${backup.descreverBackup(conteudo)}. ` +
+    `Backup de ${conteudo.data ?? 'data desconhecida'}: ${
+      backup.descreverBackup(conteudo)
+    }. ` +
       (perdas.length
         ? `VOCÊ VAI PERDER o que este app tem a mais — ${perdas.join('; ')}. `
         : '') +
       'Os dados do app são substituídos pelos do arquivo, e não dá para desfazer. Se quiser guardar o que existe hoje, cancele e exporte antes.',
-    'Restaurar'
+    'Restaurar',
   );
   if (!ok) return;
 
   try {
     await backup.restaurar(conteudo);
   } catch (erro) {
-    await avisar('Não consegui restaurar', String(erro && erro.message ? erro.message : erro));
+    await avisar(
+      'Não consegui restaurar',
+      String(erro && erro.message ? erro.message : erro),
+    );
     return;
   }
 
@@ -247,7 +261,7 @@ async function importar() {
       'Restaurei, mas não consegui conferir',
       'Os dados foram gravados, mas a releitura do banco falhou: ' +
         String(erro && erro.message ? erro.message : erro) +
-        '. Feche e abra o app para ver como ficou.'
+        '. Feche e abra o app para ver como ficou.',
     );
     await recomecar();
     return;
@@ -258,7 +272,7 @@ async function importar() {
       'O backup não entrou inteiro',
       'O banco aceitou a gravação mas, relendo, falta coisa — ' +
         divergencias.join('; ') +
-        '. Nada foi perdido do arquivo: tente importar de novo, com o app aberto na frente.'
+        '. Nada foi perdido do arquivo: tente importar de novo, com o app aberto na frente.',
     );
   } else {
     const total = Object.values(validacao.resumo).reduce((soma, n) => soma + n, 0);
@@ -308,15 +322,19 @@ function cardRotacao(config) {
             rotulo: 'Primeiro dia da semana',
             tipo: 'select',
             valor: String(config.inicioSemana),
-            opcoes: NOMES_DIA_SEMANA.map((nome, i) => ({ valor: String(i), rotulo: nome })),
-            dica: 'Usado para decidir se um dia está numa "semana nova", e para o contador de séries semanais.',
+            opcoes: NOMES_DIA_SEMANA.map((nome, i) => ({
+              valor: String(i),
+              rotulo: nome,
+            })),
+            dica:
+              'Usado para decidir se um dia está numa "semana nova", e para o contador de séries semanais.',
           },
         ]);
         if (!dados) return;
         await salvarConfig('inicioSemana', Number(dados.dia));
         await recarregar();
-      }
-    )
+      },
+    ),
   );
 
   card.appendChild(
@@ -330,18 +348,19 @@ function cardRotacao(config) {
             rotulo: 'X (dias de calendário)',
             tipo: 'number',
             valor: config.diasParaReiniciarRotacao,
-            dica: 'Com X = 2: treinou no domingo, na segunda a rotação continua de onde parou; treinou no sábado, na segunda ela reinicia.',
+            dica:
+              'Com X = 2: treinou no domingo, na segunda a rotação continua de onde parou; treinou no sábado, na segunda ela reinicia.',
           },
         ]);
         if (!dados) return;
         const x = paraNumero(dados.x);
         await salvarConfig(
           'diasParaReiniciarRotacao',
-          x !== null && x >= 0 ? Math.round(x) : CONFIG_PADRAO.diasParaReiniciarRotacao
+          x !== null && x >= 0 ? Math.round(x) : CONFIG_PADRAO.diasParaReiniciarRotacao,
         );
         await recarregar();
-      }
-    )
+      },
+    ),
   );
 
   return card;
@@ -360,4 +379,3 @@ function linha(rotulo, valor, aoTocar) {
   btn.onclick = aoTocar;
   return btn;
 }
-

@@ -3,15 +3,20 @@
  * Tudo é salvo a cada alteração.
  */
 
-import { hojeIso, formatarLongo, descreverDistancia } from '../utils/date.js';
-import { paraNumero, num } from '../utils/format.js';
+import { descreverDistancia, formatarLongo, hojeIso } from '../utils/date.js';
+import { num, paraNumero } from '../utils/format.js';
 import { ROTULO_CARGA } from '../utils/constantes.js';
-import { mapaExercicios, listarExercicios } from '../services/exercicio-service.js';
+import { listarExercicios, mapaExercicios } from '../services/exercicio-service.js';
 import { listarTreinosAgrupados, nomeDoItem } from '../services/treino-service.js';
 import * as sessoes from '../services/sessao-service.js';
 import { sugestaoPara } from '../services/rotacao-service.js';
 import { diaDaProximaSugestao } from '../domain/rotacao.js';
-import { confirmar, escolher, escolherComBusca, formulario } from '../components/dialogo.js';
+import {
+  confirmar,
+  escolher,
+  escolherComBusca,
+  formulario,
+} from '../components/dialogo.js';
 import { blocoVazio } from '../components/ui.js';
 import { abrir, voltarUmaTela } from '../navegacao.js';
 
@@ -127,10 +132,9 @@ function cardDoQueJaFoiHoje(deHoje) {
   const cab = document.createElement('div');
   cab.className = 'card-cabecalho';
   const h3 = document.createElement('h3');
-  h3.textContent =
-    deHoje.length === 1
-      ? 'Você já treinou hoje'
-      : `Você já fez ${deHoje.length} treinos hoje`;
+  h3.textContent = deHoje.length === 1
+    ? 'Você já treinou hoje'
+    : `Você já fez ${deHoje.length} treinos hoje`;
   cab.appendChild(h3);
   card.appendChild(cab);
 
@@ -141,8 +145,9 @@ function cardDoQueJaFoiHoje(deHoje) {
     botao.textContent = 'Treino ' + s.treinoNome;
     const etiqueta = document.createElement('span');
     etiqueta.className = 'texto-fraco pequeno empurra-direita';
-    etiqueta.textContent =
-      s.status === sessoes.STATUS.FINALIZADA ? 'finalizado' : 'em andamento';
+    etiqueta.textContent = s.status === sessoes.STATUS.FINALIZADA
+      ? 'finalizado'
+      : 'em andamento';
     botao.appendChild(etiqueta);
     botao.onclick = () => abrir('treino', { sessaoId: s.id });
     card.appendChild(botao);
@@ -194,7 +199,6 @@ function cardDeSugestao(sugestao, exercicios, paraAmanha) {
 
   return card;
 }
-
 
 /** Atalhos para editar treinos e ver o histórico. */
 function atalhosDeGestao() {
@@ -256,7 +260,7 @@ function cardDeTreino(treino, exercicios) {
     const dados = await formulario(
       'Registrar treino ' + treino.nome,
       [{ nome: 'data', rotulo: 'Data da sessão', tipo: 'date', valor: hojeIso() }],
-      'Registrar'
+      'Registrar',
     );
     if (dados && dados.data) comecar(treino.id, dados.data);
   };
@@ -282,9 +286,7 @@ function desenharSessao() {
   raiz.appendChild(cabecalhoDaSessao(sessao));
 
   const itens = sessao.itens.slice().sort((a, b) => a.ordem - b.ordem);
-  itens.forEach((item, i) =>
-    raiz.appendChild(cardDeItem(item, i + 1, itens.length))
-  );
+  itens.forEach((item, i) => raiz.appendChild(cardDeItem(item, i + 1, itens.length)));
 
   raiz.appendChild(rodapeDaSessao(sessao));
 }
@@ -378,7 +380,7 @@ function botaoMover(item, direcao, ativo) {
   btn.textContent = direcao === -1 ? '↑' : '↓';
   btn.setAttribute(
     'aria-label',
-    direcao === -1 ? 'Subir exercício' : 'Descer exercício'
+    direcao === -1 ? 'Subir exercício' : 'Descer exercício',
   );
   btn.disabled = !ativo;
   btn.onclick = async () => {
@@ -410,7 +412,7 @@ function pilulasDeAlternativa(item) {
         estado.sessao,
         item.itemId,
         id,
-        seriesDe(item)
+        seriesDe(item),
       );
       await desenhar();
     };
@@ -431,8 +433,7 @@ function linhaUltimaVez(ultima) {
     .filter((s) => !s.aquecimento)
     .map((s) => (num(s.carga, 2) || '—') + '×' + (s.reps === null ? '—' : s.reps))
     .join('   ');
-  p.textContent =
-    'Última vez (' +
+  p.textContent = 'Última vez (' +
     descreverDistancia(ultima.sessao.data) +
     posicaoNaquelaVez(ultima) +
     '): ' +
@@ -507,8 +508,9 @@ function campoNumerico(valor, unidade, aoMudar) {
   const input = document.createElement('input');
   input.type = 'text';
   input.inputMode = 'decimal';
-  input.value =
-    valor === null || valor === undefined ? '' : String(valor).replace('.', ',');
+  input.value = valor === null || valor === undefined
+    ? ''
+    : String(valor).replace('.', ',');
   input.placeholder = '—';
   let timer = null;
   const salvar = () => aoMudar(paraNumero(input.value));
@@ -567,7 +569,7 @@ async function menuDoItem(item) {
   if (acao === 'remover') {
     const ok = await confirmar(
       'Remover exercício?',
-      'As séries registradas para ele serão apagadas. O modelo do treino não muda.'
+      'As séries registradas para ele serão apagadas. O modelo do treino não muda.',
     );
     if (!ok) return;
     estado.sessao = await sessoes.removerItem(estado.sessao, item.itemId, seriesDe(item));
@@ -585,7 +587,7 @@ async function substituir(item) {
     todos
       .filter((e) => e.id === item.exercicioId || !jaNaSessao.has(e.id))
       .filter((e) => e.id !== item.exercicioId)
-      .map((e) => ({ valor: e.id, rotulo: e.nome }))
+      .map((e) => ({ valor: e.id, rotulo: e.nome })),
   );
   if (!id) return;
 
@@ -594,11 +596,13 @@ async function substituir(item) {
 
   if (series.length) {
     const escolha = await escolher(
-      `Já há ${series.length} série${series.length > 1 ? 's' : ''} registrada${series.length > 1 ? 's' : ''} aqui`,
+      `Já há ${series.length} série${series.length > 1 ? 's' : ''} registrada${
+        series.length > 1 ? 's' : ''
+      } aqui`,
       [
         { valor: 'mover', rotulo: 'Aproveitar as séries no exercício novo' },
         { valor: 'apagar', rotulo: 'Apagar as séries e começar do zero' },
-      ]
+      ],
     );
     if (!escolha) return;
     oQueFazer = escolha;
@@ -609,7 +613,7 @@ async function substituir(item) {
     item.itemId,
     id,
     series,
-    oQueFazer
+    oQueFazer,
   );
   await desenhar();
 }
@@ -651,7 +655,7 @@ function rodapeDaSessao(sessao) {
       'Adicionar exercício',
       todos
         .filter((e) => !jaNaSessao.has(e.id))
-        .map((e) => ({ valor: e.id, rotulo: e.nome }))
+        .map((e) => ({ valor: e.id, rotulo: e.nome })),
     );
     if (!id) return;
     estado.sessao = await sessoes.adicionarExercicio(estado.sessao, id);
@@ -693,7 +697,7 @@ function rodapeDaSessao(sessao) {
   apagar.onclick = async () => {
     const ok = await confirmar(
       'Excluir sessão?',
-      'Todas as séries registradas nesta sessão serão apagadas.'
+      'Todas as séries registradas nesta sessão serão apagadas.',
     );
     if (!ok) return;
     await sessoes.apagarSessao(estado.sessao.id);
@@ -715,7 +719,6 @@ async function sair() {
   estado.sessaoId = null;
   await desenhar();
 }
-
 
 /* --- Aviso do backup --- */
 

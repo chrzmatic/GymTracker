@@ -9,7 +9,7 @@
  * Arquivo novo no projeto precisa entrar em `ARQUIVOS` (tests/arquivos.test.js confere).
  */
 
-const VERSAO = '1.0.16';
+const VERSAO = '1.0.17';
 const CACHE = `gymtracker-${VERSAO}`;
 
 /** Arquivos para abrir sem rede. */
@@ -118,9 +118,9 @@ self.addEventListener('install', (evento) => {
           } catch (erro) {
             console.warn('[sw] não consegui guardar', arquivo, erro);
           }
-        })
+        }),
       );
-    })()
+    })(),
   );
 });
 
@@ -129,10 +129,12 @@ self.addEventListener('activate', (evento) => {
     (async () => {
       const nomes = await caches.keys();
       await Promise.all(
-        nomes.filter((n) => n.startsWith('gymtracker-') && n !== CACHE).map((n) => caches.delete(n))
+        nomes.filter((n) => n.startsWith('gymtracker-') && n !== CACHE).map((n) =>
+          caches.delete(n)
+        ),
       );
       await self.clients.claim();
-    })()
+    })(),
   );
 });
 
@@ -164,7 +166,7 @@ self.addEventListener('fetch', (evento) => {
         }
         throw erro;
       }
-    })()
+    })(),
   );
 });
 

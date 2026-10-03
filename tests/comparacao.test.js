@@ -58,7 +58,7 @@ test('mesmo exercício nas duas sessões é comparado', () => {
     [item('i1', 'ex-supino', 0)],
     [serie('i1', 'ex-supino', 60, 10), serie('i1', 'ex-supino', 60, 8)],
     [item('i1', 'ex-supino', 0)],
-    [serie('i1', 'ex-supino', 65, 10), serie('i1', 'ex-supino', 65, 8)]
+    [serie('i1', 'ex-supino', 65, 10), serie('i1', 'ex-supino', 65, 8)],
   );
 
   const supino = achar(r, 'Supino');
@@ -75,11 +75,11 @@ test('a tabela traz as seis métricas da especificação', () => {
     [item('i1', 'ex-supino', 0)],
     [serie('i1', 'ex-supino', 60, 10)],
     [item('i1', 'ex-supino', 0)],
-    [serie('i1', 'ex-supino', 60, 10)]
+    [serie('i1', 'ex-supino', 60, 10)],
   );
   assert.deepEqual(
     achar(r, 'Supino').metricas.map((m) => m.rotulo),
-    ['Carga máxima', 'Carga média', 'Volume', 'Reps totais', 'Séries', '1RM estimado']
+    ['Carga máxima', 'Carga média', 'Volume', 'Reps totais', 'Séries', '1RM estimado'],
   );
 });
 
@@ -88,7 +88,7 @@ test('aquecimento fica fora da comparação', () => {
     [item('i1', 'ex-supino', 0)],
     [serie('i1', 'ex-supino', 20, 20, true), serie('i1', 'ex-supino', 60, 10)],
     [item('i1', 'ex-supino', 0)],
-    [serie('i1', 'ex-supino', 60, 10)]
+    [serie('i1', 'ex-supino', 60, 10)],
   );
   const supino = achar(r, 'Supino');
   assert.equal(metrica(supino, 'Séries').antes, 1);
@@ -100,7 +100,7 @@ test('a posição do exercício em cada sessão aparece na comparação', () => 
     [item('i1', 'ex-supino', 0), item('i2', 'ex-remada', 1)],
     [serie('i1', 'ex-supino', 60, 10), serie('i2', 'ex-remada', 40, 10)],
     [item('i2', 'ex-remada', 0), item('i1', 'ex-supino', 1)],
-    [serie('i2', 'ex-remada', 40, 10), serie('i1', 'ex-supino', 60, 10)]
+    [serie('i2', 'ex-remada', 40, 10), serie('i1', 'ex-supino', 60, 10)],
   );
   const supino = achar(r, 'Supino');
   assert.equal(supino.ordemA, 1, 'era o primeiro');
@@ -114,7 +114,7 @@ test('exercício só na sessão nova é "adicionado"', () => {
     [item('i1', 'ex-supino', 0)],
     [serie('i1', 'ex-supino', 60, 10)],
     [item('i1', 'ex-supino', 0), item('i2', 'ex-remada', 1)],
-    [serie('i1', 'ex-supino', 60, 10), serie('i2', 'ex-remada', 40, 12)]
+    [serie('i1', 'ex-supino', 60, 10), serie('i2', 'ex-remada', 40, 12)],
   );
   assert.equal(achar(r, 'Remada').estado, ESTADO.ADICIONADO);
   assert.equal(achar(r, 'Remada').b.series, 1);
@@ -125,7 +125,7 @@ test('exercício só na sessão antiga é "removido"', () => {
     [item('i1', 'ex-supino', 0), item('i2', 'ex-remada', 1)],
     [serie('i1', 'ex-supino', 60, 10), serie('i2', 'ex-remada', 40, 12)],
     [item('i1', 'ex-supino', 0)],
-    [serie('i1', 'ex-supino', 60, 10)]
+    [serie('i1', 'ex-supino', 60, 10)],
   );
   assert.equal(achar(r, 'Remada').estado, ESTADO.REMOVIDO);
 });
@@ -135,7 +135,7 @@ test('opcional sem série aparece como "pulado", não como removido', () => {
     [item('i1', 'ex-supino', 0), item('i2', 'ex-pantu', 1, true)],
     [serie('i1', 'ex-supino', 60, 10), serie('i2', 'ex-pantu', 30, 15)],
     [item('i1', 'ex-supino', 0), item('i2', 'ex-pantu', 1, true)],
-    [serie('i1', 'ex-supino', 60, 10)]
+    [serie('i1', 'ex-supino', 60, 10)],
   );
   const pantu = achar(r, 'Panturrilha');
   assert.equal(pantu.estado, ESTADO.PULADO);
@@ -149,7 +149,7 @@ test('exercício não-opcional sem série é comparado com zero, não "pulado"',
     [item('i1', 'ex-supino', 0), item('i2', 'ex-remada', 1)],
     [serie('i1', 'ex-supino', 60, 10), serie('i2', 'ex-remada', 40, 12)],
     [item('i1', 'ex-supino', 0), item('i2', 'ex-remada', 1)],
-    [serie('i1', 'ex-supino', 60, 10)]
+    [serie('i1', 'ex-supino', 60, 10)],
   );
   const remada = achar(r, 'Remada');
   assert.equal(remada.estado, ESTADO.COMPARADO);
@@ -164,7 +164,7 @@ test('alternativas diferentes não viram removido + adicionado', () => {
     [item('i1', 'ex-voador', 0)],
     [serie('i1', 'ex-voador', 20, 15)],
     [item('i1', 'ex-face', 0)],
-    [serie('i1', 'ex-face', 25, 15)]
+    [serie('i1', 'ex-face', 25, 15)],
   );
 
   assert.equal(r.itens.length, 1, 'um item só, não dois');
@@ -182,7 +182,7 @@ test('mesma alternativa nas duas sessões compara normalmente', () => {
     [item('i1', 'ex-voador', 0)],
     [serie('i1', 'ex-voador', 20, 15)],
     [item('i1', 'ex-voador', 0)],
-    [serie('i1', 'ex-voador', 25, 15)]
+    [serie('i1', 'ex-voador', 25, 15)],
   );
   assert.equal(r.itens[0].estado, ESTADO.COMPARADO);
   assert.equal(metrica(r.itens[0], 'Carga máxima').direcao, 'melhora');
@@ -194,7 +194,7 @@ test('exercício avulso pareia pelo exercício quando o itemId não bate', () =>
     [item('avulso-1', 'ex-remada', 0)],
     [serie('avulso-1', 'ex-remada', 40, 10)],
     [item('avulso-2', 'ex-remada', 0)],
-    [serie('avulso-2', 'ex-remada', 45, 10)]
+    [serie('avulso-2', 'ex-remada', 45, 10)],
   );
   assert.equal(r.itens.length, 1);
   assert.equal(r.itens[0].estado, ESTADO.COMPARADO);
@@ -210,7 +210,7 @@ test('assistido compara pela carga efetiva: menos assistência é melhora', () =
     [item('i1', 'ex-assist', 0)],
     [serie('i1', 'ex-assist', 20, 8)],
     80,
-    80
+    80,
   );
   const assist = achar(r, 'Barra assistida');
   assert.equal(metrica(assist, 'Carga máxima').antes, 50, '80 - 30');
@@ -225,7 +225,7 @@ test('peso corporal soma a anilha ao peso do dia', () => {
     [item('i1', 'ex-barra', 0)],
     [serie('i1', 'ex-barra', 10, 8)],
     80,
-    79
+    79,
   );
   const barra = achar(r, 'Barra fixa');
   assert.equal(metrica(barra, 'Carga máxima').antes, 80);
@@ -239,12 +239,12 @@ test('sem peso corporal, compara só reps, séries e o kg registrado', () => {
     [item('i1', 'ex-assist', 0)],
     [serie('i1', 'ex-assist', 20, 8)],
     null,
-    null
+    null,
   );
   const assist = achar(r, 'Barra assistida');
   assert.deepEqual(
     assist.metricas.map((m) => m.rotulo),
-    ['Séries', 'Reps totais', 'Assistência']
+    ['Séries', 'Reps totais', 'Assistência'],
   );
   const a = metrica(assist, 'Assistência');
   assert.equal(a.antes, 30);
@@ -260,7 +260,7 @@ test('sem peso corporal, peso corporal compara a carga adicional, onde mais é m
     [item('i1', 'ex-barra', 0)],
     [serie('i1', 'ex-barra', 10, 8)],
     null,
-    null
+    null,
   );
   const barra = achar(r, 'Barra fixa');
   const adicional = metrica(barra, 'Carga adicional');
@@ -276,11 +276,11 @@ test('peso corporal em só uma das sessões ainda cai no modo sem peso', () => {
     [item('i1', 'ex-assist', 0)],
     [serie('i1', 'ex-assist', 20, 8)],
     null,
-    80
+    80,
   );
   assert.deepEqual(
     achar(r, 'Barra assistida').metricas.map((m) => m.rotulo),
-    ['Séries', 'Reps totais', 'Assistência']
+    ['Séries', 'Reps totais', 'Assistência'],
   );
 });
 
@@ -291,7 +291,7 @@ test('o total soma todos os exercícios das duas sessões', () => {
     [item('i1', 'ex-supino', 0), item('i2', 'ex-remada', 1)],
     [serie('i1', 'ex-supino', 60, 10), serie('i2', 'ex-remada', 40, 10)],
     [item('i1', 'ex-supino', 0), item('i2', 'ex-remada', 1)],
-    [serie('i1', 'ex-supino', 65, 10), serie('i2', 'ex-remada', 45, 10)]
+    [serie('i1', 'ex-supino', 65, 10), serie('i2', 'ex-remada', 45, 10)],
   );
 
   const volume = r.total.metricas.find((m) => m.rotulo === 'Volume');
@@ -309,7 +309,7 @@ test('o total inclui exercícios que só existem numa das sessões', () => {
     [item('i1', 'ex-supino', 0)],
     [serie('i1', 'ex-supino', 60, 10)],
     [item('i1', 'ex-supino', 0), item('i2', 'ex-remada', 1)],
-    [serie('i1', 'ex-supino', 60, 10), serie('i2', 'ex-remada', 40, 10)]
+    [serie('i1', 'ex-supino', 60, 10), serie('i2', 'ex-remada', 40, 10)],
   );
   const volume = r.total.metricas.find((m) => m.rotulo === 'Volume');
   assert.equal(volume.antes, 600);
@@ -341,7 +341,7 @@ test('substituir mantém a vaga: um item só, marcado como diferente', () => {
     [item('i1', 'ex-supino', 0)],
     [serie('i1', 'ex-supino', 60, 10)],
     [{ ...item('i1', 'ex-pantu', 0), substituido: true }],
-    [serie('i1', 'ex-pantu', 30, 15)]
+    [serie('i1', 'ex-pantu', 30, 15)],
   );
 
   assert.equal(r.itens.length, 1, 'não vira um removido e um adicionado');
@@ -356,7 +356,7 @@ test('um grupo de alternativas se identifica como grupo', () => {
     [{ ...item('i1', 'ex-voador', 0), alternativas: ['ex-voador', 'ex-face'] }],
     [serie('i1', 'ex-voador', 20, 15)],
     [{ ...item('i1', 'ex-face', 0), alternativas: ['ex-voador', 'ex-face'] }],
-    [serie('i1', 'ex-face', 25, 15)]
+    [serie('i1', 'ex-face', 25, 15)],
   );
   assert.equal(r.itens[0].eraGrupo, true, 'a tela escreve "alternativa diferente"');
 });
@@ -367,14 +367,14 @@ test('remover e adicionar continua sendo removido + adicionado', () => {
     [item('i1', 'ex-supino', 0)],
     [serie('i1', 'ex-supino', 60, 10)],
     [item('i-novo', 'ex-pantu', 0)],
-    [serie('i-novo', 'ex-pantu', 30, 15)]
+    [serie('i-novo', 'ex-pantu', 30, 15)],
   );
   assert.deepEqual(
     r.itens.map((i) => [i.nome, i.estado]),
     [
       ['Supino', ESTADO.REMOVIDO],
       ['Panturrilha', ESTADO.ADICIONADO],
-    ]
+    ],
   );
 });
 
@@ -385,7 +385,7 @@ test('a comparação separa as três causas de dado faltando', () => {
     [item('i1', 'ex-supino', 0), item('i2', 'ex-assist', 1)],
     [serie('i1', 'ex-supino', null, 10), serie('i2', 'ex-assist', 30, 8)],
     [item('i1', 'ex-supino', 0), item('i2', 'ex-assist', 1)],
-    [serie('i1', 'ex-supino', 60, null), serie('i2', 'ex-assist', 20, 8)]
+    [serie('i1', 'ex-supino', 60, null), serie('i2', 'ex-assist', 20, 8)],
   );
 
   assert.equal(r.faltando.carga, 1, 'uma série sem kg, na sessão antiga');
@@ -399,7 +399,7 @@ test('sem nada faltando, não há aviso', () => {
     [item('i1', 'ex-supino', 0)],
     [serie('i1', 'ex-supino', 60, 10)],
     [item('i1', 'ex-supino', 0)],
-    [serie('i1', 'ex-supino', 65, 10)]
+    [serie('i1', 'ex-supino', 65, 10)],
   );
   assert.deepEqual(r.faltando, { pesoCorporal: 0, carga: 0, reps: 0 });
   assert.equal(r.semPesoCorporal, false);
@@ -410,7 +410,7 @@ test('reps em branco não fazem o volume despencar na comparação', () => {
     [item('i1', 'ex-supino', 0)],
     [serie('i1', 'ex-supino', 60, 10), serie('i1', 'ex-supino', 60, 10)],
     [item('i1', 'ex-supino', 0)],
-    [serie('i1', 'ex-supino', 60, 10), serie('i1', 'ex-supino', 60, null)]
+    [serie('i1', 'ex-supino', 60, 10), serie('i1', 'ex-supino', 60, null)],
   );
   const volume = metrica(achar(r, 'Supino'), 'Volume');
   assert.equal(volume.antes, 1200);

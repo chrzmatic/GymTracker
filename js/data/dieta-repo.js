@@ -3,12 +3,12 @@
  * O plano guarda só os IDs das refeições, porque uma refeição pode estar nos dois planos.
  */
 import {
-  lerTudo,
-  ler,
+  apagar as apagarDoBanco,
   contar,
   gravar as gravarNoBanco,
-  apagar as apagarDoBanco,
   gravarVarios as gravarVariosNoBanco,
+  ler,
+  lerTudo,
 } from './db.js';
 import { dadosMudaram } from '../sync/gatilho.js';
 

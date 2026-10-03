@@ -2,7 +2,7 @@
  * Modelos de treino (A, B, C, extras).
  * A sessão guarda uma cópia do modelo, então editar o modelo não muda sessões antigas.
  */
-import { lerTudo, ler, gravar, apagar, gravarVarios, contar } from './db.js';
+import { apagar, contar, gravar, gravarVarios, ler, lerTudo } from './db.js';
 
 const STORE = 'treinos';
 

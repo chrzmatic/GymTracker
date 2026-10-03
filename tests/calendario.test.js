@@ -4,12 +4,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  montarMes,
-  rotulosDaSemana,
+  acoesDoDia,
   agruparPorData,
   mesVizinho,
+  montarMes,
   resumoDoMes,
-  acoesDoDia,
+  rotulosDaSemana,
 } from '../js/domain/calendario.js';
 
 /** Datas da grade, numa lista. */
@@ -103,10 +103,38 @@ test('mesVizinho atravessa a virada do ano nos dois sentidos', () => {
 /* --- sessões no calendário --- */
 
 const sessoes = [
-  { id: 's1', data: '2025-09-01', treinoId: 'tr-a', treinoNome: 'A', cor: '#00f', criadaEm: 1 },
-  { id: 's2', data: '2025-09-03', treinoId: 'tr-b', treinoNome: 'B', cor: '#0f0', criadaEm: 2 },
-  { id: 's3', data: '2025-09-03', treinoId: 'tr-a', treinoNome: 'A', cor: '#00f', criadaEm: 3 },
-  { id: 's4', data: '2025-09-08', treinoId: 'tr-a', treinoNome: 'A', cor: '#00f', criadaEm: 4 },
+  {
+    id: 's1',
+    data: '2025-09-01',
+    treinoId: 'tr-a',
+    treinoNome: 'A',
+    cor: '#00f',
+    criadaEm: 1,
+  },
+  {
+    id: 's2',
+    data: '2025-09-03',
+    treinoId: 'tr-b',
+    treinoNome: 'B',
+    cor: '#0f0',
+    criadaEm: 2,
+  },
+  {
+    id: 's3',
+    data: '2025-09-03',
+    treinoId: 'tr-a',
+    treinoNome: 'A',
+    cor: '#00f',
+    criadaEm: 3,
+  },
+  {
+    id: 's4',
+    data: '2025-09-08',
+    treinoId: 'tr-a',
+    treinoNome: 'A',
+    cor: '#00f',
+    criadaEm: 4,
+  },
 ];
 
 test('agruparPorData junta as sessões do mesmo dia, na ordem de criação', () => {
@@ -155,7 +183,7 @@ test('hoje se comporta igual aos dias passados, com ou sem treino', () => {
   assert.equal(
     acoesDoDia(hoje, umaSessao, hoje).podeRegistrar,
     true,
-    'era esta a inconsistência: com treino hoje, não dava para registrar outro'
+    'era esta a inconsistência: com treino hoje, não dava para registrar outro',
   );
 });
 

@@ -13,7 +13,8 @@
     "lineWidth": 90,
     "singleQuote": true,
     "exclude": [
-      "lib"
+      "lib",
+      "assets"
     ]
   },
   "lint": {

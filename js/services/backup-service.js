@@ -6,13 +6,13 @@
  * sem ele, faz download comum.
  */
 
-import { listarStores, lerTudo, contar, transacao, VERSAO_DB } from '../data/db.js';
+import { contar, lerTudo, listarStores, transacao, VERSAO_DB } from '../data/db.js';
 import { hojeIso } from '../utils/date.js';
 import { mapaExercicios } from '../data/exercicios-repo.js';
 import { listarSessoes } from '../data/sessoes-repo.js';
 import { listarTodasSeries } from '../data/series-repo.js';
 import { listarPesos } from '../data/peso-corporal-repo.js';
-import { csvDeTreinos, csvDePeso, nomeDeArquivo } from '../domain/csv.js';
+import { csvDePeso, csvDeTreinos, nomeDeArquivo } from '../domain/csv.js';
 
 /** Marca do formato, conferida ao importar. */
 export const FORMATO = 'gymtracker-backup';
@@ -47,7 +47,7 @@ export function descreverBackup(backup) {
   const pesos = quantos(backup, 'pesoCorporal');
   const total = Object.values(backup.dados ?? {}).reduce(
     (soma, itens) => soma + (Array.isArray(itens) ? itens.length : 0),
-    0
+    0,
   );
 
   const partes = [
@@ -192,7 +192,8 @@ export function validarBackup(backup) {
   if (backup.versaoDb > VERSAO_DB) {
     return {
       ok: false,
-      erro: `O backup é da versão ${backup.versaoDb} do banco e este app está na ${VERSAO_DB}. Atualize o app antes de restaurar.`,
+      erro:
+        `O backup é da versão ${backup.versaoDb} do banco e este app está na ${VERSAO_DB}. Atualize o app antes de restaurar.`,
     };
   }
 

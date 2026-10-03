@@ -7,8 +7,13 @@ import * as treinos from '../services/treino-service.js';
 import { listarExercicios } from '../services/exercicio-service.js';
 import { seriesPlanejadasDoTreino } from '../domain/treino.js';
 import { paraNumero } from '../utils/format.js';
-import { confirmar, escolher, escolherComBusca, formulario } from '../components/dialogo.js';
-import { definirTitulo, abrir, voltarUmaTela } from '../navegacao.js';
+import {
+  confirmar,
+  escolher,
+  escolherComBusca,
+  formulario,
+} from '../components/dialogo.js';
+import { abrir, definirTitulo, voltarUmaTela } from '../navegacao.js';
 
 const estado = {
   treinoId: null,
@@ -157,10 +162,9 @@ function linhaDePlanejamento(item) {
 
   const reps = document.createElement('button');
   reps.className = 'btn btn-pequeno';
-  reps.textContent =
-    item.repsPlanejadas === null || item.repsPlanejadas === undefined
-      ? 'reps: livre'
-      : `${item.repsPlanejadas} reps`;
+  reps.textContent = item.repsPlanejadas === null || item.repsPlanejadas === undefined
+    ? 'reps: livre'
+    : `${item.repsPlanejadas} reps`;
   reps.onclick = () => editarPlanejamento(item);
 
   div.append(series, reps);
@@ -181,7 +185,8 @@ async function editarPlanejamento(item) {
       rotulo: 'Reps planejadas',
       tipo: 'number',
       valor: item.repsPlanejadas ?? '',
-      dica: 'Deixe em branco para não sugerir reps. Só vale na primeira vez do exercício; depois o app usa o seu histórico.',
+      dica:
+        'Deixe em branco para não sugerir reps. Só vale na primeira vez do exercício; depois o app usa o seu histórico.',
     },
     {
       nome: 'opcional',
@@ -212,13 +217,13 @@ async function menuDoItem(item) {
       { valor: 'nome-grupo', rotulo: 'Renomear o grupo' },
       { valor: 'add-alt', rotulo: 'Adicionar alternativa' },
       { valor: 'tirar-alt', rotulo: 'Remover uma alternativa' },
-      { valor: 'desfazer', rotulo: 'Desfazer o grupo' }
+      { valor: 'desfazer', rotulo: 'Desfazer o grupo' },
     );
   } else {
     opcoes.push(
       { valor: 'trocar', rotulo: 'Trocar por outro exercício' },
       { valor: 'virar-grupo', rotulo: 'Transformar em grupo de alternativas' },
-      { valor: 'editar-ex', rotulo: 'Editar o exercício em si' }
+      { valor: 'editar-ex', rotulo: 'Editar o exercício em si' },
     );
   }
   opcoes.push({ valor: 'remover', rotulo: 'Remover do treino' });
@@ -235,7 +240,9 @@ async function menuDoItem(item) {
   if (acao === 'trocar') {
     const id = await escolherExercicio('Trocar por', [item.exercicioId]);
     if (!id) return;
-    estado.treino = await treinos.alterarItem(estado.treino, item.id, { exercicioId: id });
+    estado.treino = await treinos.alterarItem(estado.treino, item.id, {
+      exercicioId: id,
+    });
     return desenhar();
   }
 
@@ -247,7 +254,7 @@ async function menuDoItem(item) {
       estado.treino,
       item.id,
       id,
-      `${nome} ou ${outro}`
+      `${nome} ou ${outro}`,
     );
     return desenhar();
   }
@@ -281,7 +288,7 @@ async function menuDoItem(item) {
       item.alternativas.map((a) => ({
         valor: a,
         rotulo: estado.exercicios.get(a)?.nome ?? a,
-      }))
+      })),
     );
     if (!id) return;
     estado.treino = await treinos.tirarAlternativa(estado.treino, item.id, id);
@@ -289,11 +296,12 @@ async function menuDoItem(item) {
   }
 
   if (acao === 'desfazer') {
-    const padrao = estado.exercicios.get(item.exercicioPadraoId)?.nome ?? 'a alternativa padrão';
+    const padrao = estado.exercicios.get(item.exercicioPadraoId)?.nome ??
+      'a alternativa padrão';
     const ok = await confirmar(
       'Desfazer o grupo?',
       `O item passa a ser só ${padrao}. As sessões já registradas não mudam.`,
-      'Desfazer'
+      'Desfazer',
     );
     if (!ok) return;
     estado.treino = await treinos.desfazerGrupoDeAlternativas(estado.treino, item.id);
@@ -304,7 +312,7 @@ async function menuDoItem(item) {
     const ok = await confirmar(
       'Remover do treino?',
       `${nome} sai deste treino. O exercício continua cadastrado e o histórico não muda.`,
-      'Remover'
+      'Remover',
     );
     if (!ok) return;
     estado.treino = await treinos.removerItem(estado.treino, item.id);
@@ -346,7 +354,8 @@ function botaoAdicionar() {
   const novo = document.createElement('button');
   novo.className = 'btn btn-bloco mt-2';
   novo.textContent = 'Criar um exercício novo';
-  novo.onclick = () => abrir('exercicio-editor', { novo: true, treinoId: estado.treinoId });
+  novo.onclick = () =>
+    abrir('exercicio-editor', { novo: true, treinoId: estado.treinoId });
   div.appendChild(novo);
 
   return div;

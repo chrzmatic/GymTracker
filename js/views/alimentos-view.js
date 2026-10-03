@@ -1,11 +1,16 @@
 /** Alimentos: lista com busca, cadastro (aceita kJ) e tela de cada alimento. */
 
 import * as dieta from '../services/dieta-service.js';
-import { UNIDADES, UNIDADES_ENERGIA, INFO_NUTRIENTES, energiaEmKcal } from '../domain/nutricao.js';
+import {
+  energiaEmKcal,
+  INFO_NUTRIENTES,
+  UNIDADES,
+  UNIDADES_ENERGIA,
+} from '../domain/nutricao.js';
 import { num, paraNumero } from '../utils/format.js';
 import { confirmar, formulario } from '../components/dialogo.js';
 import { blocoVazio } from '../components/ui.js';
-import { abrir, definirTitulo, voltarUmaTela, recarregar } from '../navegacao.js';
+import { abrir, definirTitulo, recarregar, voltarUmaTela } from '../navegacao.js';
 import { OPCOES_UNIDADE } from './dieta-comum.js';
 
 /** Lista de alimentos, com busca. */
@@ -24,12 +29,13 @@ export async function montarAlimentos(raiz) {
   container.classList.add('mt-3');
   raiz.appendChild(container);
 
-  const semAcento = (t) =>
-    t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const semAcento = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
   const desenhar = () => {
     const filtro = semAcento(busca.value.trim());
-    const visiveis = filtro ? lista.filter((a) => semAcento(a.nome).includes(filtro)) : lista;
+    const visiveis = filtro
+      ? lista.filter((a) => semAcento(a.nome).includes(filtro))
+      : lista;
     container.innerHTML = '';
 
     if (!visiveis.length) {
@@ -93,8 +99,7 @@ function cardDeAlimento(alimento) {
 
   const p = document.createElement('p');
   p.className = 'texto-fraco pequeno m-0';
-  p.textContent =
-    `${num(alimento.quantidadeRef, 2)} ${alimento.unidade} · ` +
+  p.textContent = `${num(alimento.quantidadeRef, 2)} ${alimento.unidade} · ` +
     `${num(alimento.kcal, 0)} kcal · P ${num(alimento.proteina, 1)} · ` +
     `G ${num(alimento.gordura, 1)} · C ${num(alimento.carbo, 1)}`;
   card.appendChild(p);
@@ -114,7 +119,8 @@ async function formularioDeAlimento(alimento) {
         rotulo: 'Quantidade de referência',
         tipo: 'number',
         valor: alimento?.quantidadeRef ?? 100,
-        dica: 'Os valores abaixo são para esta quantidade. Qualquer outra o app calcula por regra de três.',
+        dica:
+          'Os valores abaixo são para esta quantidade. Qualquer outra o app calcula por regra de três.',
       },
       {
         nome: 'unidade',
@@ -134,17 +140,38 @@ async function formularioDeAlimento(alimento) {
           { valor: UNIDADES_ENERGIA.KJ, rotulo: 'kJ (converte para kcal ao salvar)' },
         ],
       },
-      { nome: 'proteina', rotulo: 'Proteína (g)', tipo: 'number', valor: alimento?.proteina ?? '' },
-      { nome: 'gordura', rotulo: 'Gordura (g)', tipo: 'number', valor: alimento?.gordura ?? '' },
-      { nome: 'carbo', rotulo: 'Carboidrato (g)', tipo: 'number', valor: alimento?.carbo ?? '' },
+      {
+        nome: 'proteina',
+        rotulo: 'Proteína (g)',
+        tipo: 'number',
+        valor: alimento?.proteina ?? '',
+      },
+      {
+        nome: 'gordura',
+        rotulo: 'Gordura (g)',
+        tipo: 'number',
+        valor: alimento?.gordura ?? '',
+      },
+      {
+        nome: 'carbo',
+        rotulo: 'Carboidrato (g)',
+        tipo: 'number',
+        valor: alimento?.carbo ?? '',
+      },
       {
         nome: 'fibra',
         rotulo: 'Fibra (g)',
         tipo: 'number',
         valor: alimento?.fibra ?? '',
-        dica: 'Em branco conta como zero. Kcal e macros em branco marcam o item como incompleto; a fibra não.',
+        dica:
+          'Em branco conta como zero. Kcal e macros em branco marcam o item como incompleto; a fibra não.',
       },
-      { nome: 'fonte', rotulo: 'Fonte', valor: alimento?.fonte ?? '', placeholder: 'Rótulo, TACO, USDA…' },
+      {
+        nome: 'fonte',
+        rotulo: 'Fonte',
+        valor: alimento?.fonte ?? '',
+        placeholder: 'Rótulo, TACO, USDA…',
+      },
       {
         nome: 'generico',
         rotulo: 'Valor genérico (não é do rótulo)',
@@ -152,7 +179,7 @@ async function formularioDeAlimento(alimento) {
         valor: alimento?.generico ?? false,
       },
     ],
-    alimento ? 'Salvar' : 'Criar'
+    alimento ? 'Salvar' : 'Criar',
   );
   if (!dados || !dados.nome.trim()) return null;
 
@@ -201,7 +228,9 @@ export async function montarEditorDeAlimento(raiz, params) {
     nome.textContent = rotulo;
     const v = document.createElement('span');
     v.className = 'metrica-valor';
-    v.textContent = valor === null || valor === undefined ? '— em branco' : `${num(valor, casas)} ${unidade}`;
+    v.textContent = valor === null || valor === undefined
+      ? '— em branco'
+      : `${num(valor, casas)} ${unidade}`;
     if (valor === null || valor === undefined) v.classList.add('texto-fraco');
     linha.append(nome, v, document.createElement('span'), document.createElement('span'));
     card.appendChild(linha);
@@ -210,7 +239,8 @@ export async function montarEditorDeAlimento(raiz, params) {
   if (alimento.fonte) {
     const fonte = document.createElement('p');
     fonte.className = 'texto-fraco pequeno m-0 mt-2';
-    fonte.textContent = 'Fonte: ' + alimento.fonte + (alimento.generico ? ' (valor genérico)' : '');
+    fonte.textContent = 'Fonte: ' + alimento.fonte +
+      (alimento.generico ? ' (valor genérico)' : '');
     card.appendChild(fonte);
   }
   if (alimento.observacao) {
@@ -247,11 +277,13 @@ export async function montarEditorDeAlimento(raiz, params) {
     const uso = await dieta.ondeAlimentoEUsado(alimento.id);
     const partes = [];
     if (uso.pratos.length) partes.push(`Está nos pratos: ${uso.pratos.join(', ')}.`);
-    if (uso.refeicoes.length) partes.push(`Está nas refeições: ${uso.refeicoes.join(', ')}.`);
+    if (uso.refeicoes.length) {
+      partes.push(`Está nas refeições: ${uso.refeicoes.join(', ')}.`);
+    }
     partes.push(
       partes.length
         ? 'Ele será removido desses lugares, o que muda os valores calculados.'
-        : 'Ele não está em nenhum prato nem refeição.'
+        : 'Ele não está em nenhum prato nem refeição.',
     );
 
     const ok = await confirmar('Excluir ' + alimento.nome + '?', partes.join(' '));

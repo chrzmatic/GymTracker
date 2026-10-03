@@ -6,10 +6,10 @@ import assert from 'node:assert/strict';
 import {
   caminhoDoDiario,
   dataDoDiario,
-  diariosParaApagar,
-  passouDoIntervalo,
   devoEnviar,
+  diariosParaApagar,
   ordenarParaRestaurar,
+  passouDoIntervalo,
 } from '../js/sync/rotacao-backups.js';
 
 /** Entrada como o `files/list_folder` do Dropbox devolve. */
@@ -126,7 +126,10 @@ test('uma alteração espera 5 minutos desde o último backup', () => {
 
 test('o primeiro backup não espera nada', () => {
   const agora = Date.parse('2026-09-22T10:00:00Z');
-  assert.equal(devoEnviar({ motivo: 'alteracao', ultimoEm: null }, agora, 5 * 60 * 1000), true);
+  assert.equal(
+    devoEnviar({ motivo: 'alteracao', ultimoEm: null }, agora, 5 * 60 * 1000),
+    true,
+  );
 });
 
 test('uma reforma inteira do treino vira um backup só, não vinte', () => {
@@ -161,6 +164,6 @@ test('a lista de restauração põe o mais recente em cima, depois os dias', () 
   assert.equal(lista[0].rotulo, 'Backup mais recente');
   assert.deepEqual(
     lista.slice(1).map((e) => e.rotulo),
-    ['2026-09-22', '2026-09-21', '2026-09-20']
+    ['2026-09-22', '2026-09-21', '2026-09-20'],
   );
 });

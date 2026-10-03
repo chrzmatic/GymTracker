@@ -6,35 +6,35 @@
 import { novoId } from '../utils/id.js';
 import { hojeIso } from '../utils/date.js';
 import {
-  STATUS,
-  listarSessoes,
-  listarSessoesDaData,
   buscarSessao,
   buscarSessaoEmAndamento,
-  salvarSessao,
+  listarSessoes,
+  listarSessoesDaData,
   removerSessao,
+  salvarSessao,
+  STATUS,
 } from '../data/sessoes-repo.js';
 import {
   listarSeriesDaSessao,
   listarTodasSeries,
-  salvarSerie,
   removerSerie,
   removerSeriesDaSessao,
+  salvarSerie,
 } from '../data/series-repo.js';
 import { buscarTreino } from '../data/treinos-repo.js';
 import { mapaExercicios } from '../data/exercicios-repo.js';
 import { dadosMudaram } from '../sync/gatilho.js';
 import {
-  montarSessao,
-  montarSerie,
-  ultimaVezDoExercicio,
-  valoresIniciaisDaSerie,
+  alternarAquecimento,
   itemDaSessao,
-  renumerar,
+  montarSerie,
+  montarSessao,
+  moverItem as moverItemNaLista,
   ordenarSeries,
   proximoNumero,
-  alternarAquecimento,
-  moverItem as moverItemNaLista,
+  renumerar,
+  ultimaVezDoExercicio,
+  valoresIniciaisDaSerie,
 } from '../domain/sessao.js';
 
 /**
@@ -126,7 +126,7 @@ export async function ultimasVezes(sessao, exercicioIds) {
     exercicioIds.map((id) => [
       id,
       ultimaVezDoExercicio(todasSessoes, todasSeries, id, sessao.data, sessao.id),
-    ])
+    ]),
   );
 }
 
@@ -143,7 +143,7 @@ export async function adicionarSerie(sessao, item, seriesDoItem, aquecimento = f
     item,
     seriesDoItem,
     anterior,
-    aquecimento
+    aquecimento,
   );
   const serie = montarSerie({
     id: novoId('ser'),
@@ -178,13 +178,11 @@ export async function apagarSerie(serieId, seriesDoItem) {
 
 /** Troca a alternativa do grupo e leva as séries junto. */
 export async function trocarAlternativa(sessao, itemId, exercicioId, seriesDoItem) {
-  const itens = sessao.itens.map((i) =>
-    i.itemId === itemId ? { ...i, exercicioId } : i
-  );
+  const itens = sessao.itens.map((i) => i.itemId === itemId ? { ...i, exercicioId } : i);
   const atualizada = { ...sessao, itens };
   await salvarSessao(atualizada);
   await Promise.all(
-    seriesDoItem.map((s) => salvarSerie({ ...s, exercicioId }))
+    seriesDoItem.map((s) => salvarSerie({ ...s, exercicioId })),
   );
   return atualizada;
 }
@@ -203,19 +201,19 @@ export async function substituirExercicio(
   itemId,
   exercicioId,
   seriesDoItem,
-  oQueFazerComAsSeries = 'mover'
+  oQueFazerComAsSeries = 'mover',
 ) {
   const itens = sessao.itens.map((i) =>
     i.itemId === itemId
       ? {
-          ...i,
-          exercicioId,
-          // Recebeu um exercício de fora: deixa de ser grupo.
-          tipo: 'exercicio',
-          nome: null,
-          alternativas: null,
-          substituido: true,
-        }
+        ...i,
+        exercicioId,
+        // Recebeu um exercício de fora: deixa de ser grupo.
+        tipo: 'exercicio',
+        nome: null,
+        alternativas: null,
+        substituido: true,
+      }
       : i
   );
   const atualizada = { ...sessao, itens };
@@ -241,7 +239,7 @@ export async function adicionarExercicio(sessao, exercicioId) {
       repsPlanejadas: null,
       opcional: false,
     },
-    sessao.itens.length
+    sessao.itens.length,
   );
   item.doModelo = false;
   const atualizada = { ...sessao, itens: [...sessao.itens, item] };
@@ -280,10 +278,12 @@ async function sincronizarOrdemDasSeries(sessao) {
   const ordemPorItem = new Map(sessao.itens.map((i) => [i.itemId, i.ordem]));
   const series = await listarSeriesDaSessao(sessao.id);
   const desatualizadas = series.filter(
-    (s) => ordemPorItem.has(s.itemId) && s.ordemItem !== ordemPorItem.get(s.itemId)
+    (s) => ordemPorItem.has(s.itemId) && s.ordemItem !== ordemPorItem.get(s.itemId),
   );
   await Promise.all(
-    desatualizadas.map((s) => salvarSerie({ ...s, ordemItem: ordemPorItem.get(s.itemId) }))
+    desatualizadas.map((s) =>
+      salvarSerie({ ...s, ordemItem: ordemPorItem.get(s.itemId) })
+    ),
   );
 }
 

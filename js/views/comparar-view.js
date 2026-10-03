@@ -6,8 +6,8 @@
 
 import * as comparacao from '../services/comparacao-service.js';
 import { ESTADO } from '../domain/comparacao.js';
-import { formatarLongo, descreverDistancia } from '../utils/date.js';
-import { num, comSinal, percentual } from '../utils/format.js';
+import { descreverDistancia, formatarLongo } from '../utils/date.js';
+import { comSinal, num, percentual } from '../utils/format.js';
 import { escolher } from '../components/dialogo.js';
 import { blocoVazio } from '../components/ui.js';
 
@@ -43,7 +43,7 @@ async function desenhar() {
 
   if (!estado.idA || !estado.idB) {
     raiz.replaceChildren(
-      blocoVazio('Registre pelo menos duas sessões do mesmo treino para comparar.')
+      blocoVazio('Registre pelo menos duas sessões do mesmo treino para comparar.'),
     );
     raiz.appendChild(botoesDeEscolha());
     return;
@@ -88,7 +88,7 @@ function cabecalho(r) {
   linha.append(
     ladoDaSessao(r.sessaoA, 'antes', 'idA'),
     seta(),
-    ladoDaSessao(r.sessaoB, 'depois', 'idB')
+    ladoDaSessao(r.sessaoB, 'depois', 'idB'),
   );
   return linha;
 }
@@ -180,7 +180,7 @@ async function escolherSessao(lado) {
 
   const id = await escolher(
     lado === 'idA' ? 'Trocar a sessão "antes"' : 'Trocar a sessão "depois"',
-    opcoes
+    opcoes,
   );
   if (!id || id === estado[lado]) return;
   estado[lado] = id;
@@ -310,10 +310,8 @@ function linhaDeMetrica(m) {
 
   const dif = document.createElement('span');
   dif.className = 'metrica-dif ' + m.direcao;
-  dif.textContent =
-    m.absoluta === null
-      ? '—'
-      : comSinal(m.absoluta, 1) + (m.percentual === null ? '' : ` (${percentual(m.percentual)})`);
+  dif.textContent = m.absoluta === null ? '—' : comSinal(m.absoluta, 1) +
+    (m.percentual === null ? '' : ` (${percentual(m.percentual)})`);
   linha.appendChild(dif);
 
   return linha;
@@ -341,24 +339,26 @@ function avisos(r) {
   if (faltando.pesoCorporal) {
     faixas.push(
       faixa(
-        `${series(faltando.pesoCorporal)} de peso corporal sem o seu peso registrado. Registre em ⚙︎ → Peso corporal.`
-      )
+        `${
+          series(faltando.pesoCorporal)
+        } de peso corporal sem o seu peso registrado. Registre em ⚙︎ → Peso corporal.`,
+      ),
     );
   }
 
   if (faltando.carga) {
     faixas.push(
       faixa(
-        `${series(faltando.carga)} sem kg anotado, fora do volume e do 1RM.`
-      )
+        `${series(faltando.carga)} sem kg anotado, fora do volume e do 1RM.`,
+      ),
     );
   }
 
   if (faltando.reps) {
     faixas.push(
       faixa(
-        `${series(faltando.reps)} sem reps anotadas, fora do volume e do 1RM.`
-      )
+        `${series(faltando.reps)} sem reps anotadas, fora do volume e do 1RM.`,
+      ),
     );
   }
 

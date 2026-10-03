@@ -7,17 +7,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  paraIso,
   deIso,
-  diffEmDias,
-  somarDias,
+  descreverDistancia,
   diaDaSemana,
+  diasNoMes,
+  diffEmDias,
+  formatarLongo,
   inicioDaSemana,
   mesmaSemana,
+  paraIso,
   semanaPosterior,
-  descreverDistancia,
-  formatarLongo,
-  diasNoMes,
+  somarDias,
 } from '../js/utils/date.js';
 
 test('paraIso usa a data local, não a UTC', () => {

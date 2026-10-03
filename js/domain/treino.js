@@ -41,7 +41,9 @@ export function moverTreino(treinos, treinoId, direcao) {
   if (!alvo) return null;
 
   const mesmoGrupo = (t) => Boolean(t.naRotacao) === Boolean(alvo.naRotacao);
-  const grupo = treinos.filter(mesmoGrupo).sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+  const grupo = treinos.filter(mesmoGrupo).sort((a, b) =>
+    (a.ordem ?? 0) - (b.ordem ?? 0)
+  );
   const movido = moverNoArray(grupo, grupo.indexOf(alvo), direcao);
   if (!movido) return null;
 
@@ -193,10 +195,18 @@ export function usosDoExercicio(treinos, exercicioId) {
     treino.itens.forEach((item) => {
       if (item.tipo === 'alternativas') {
         if ((item.alternativas ?? []).includes(exercicioId)) {
-          usos.push({ treinoId: treino.id, treinoNome: treino.nome, comoAlternativa: true });
+          usos.push({
+            treinoId: treino.id,
+            treinoNome: treino.nome,
+            comoAlternativa: true,
+          });
         }
       } else if (item.exercicioId === exercicioId) {
-        usos.push({ treinoId: treino.id, treinoNome: treino.nome, comoAlternativa: false });
+        usos.push({
+          treinoId: treino.id,
+          treinoNome: treino.nome,
+          comoAlternativa: false,
+        });
       }
     });
   });
@@ -228,7 +238,9 @@ export function tirarExercicioDosTreinos(treinos, exercicioId) {
     let mudou = false;
     const itens = [];
     treino.itens.forEach((item) => {
-      if (item.tipo === 'alternativas' && (item.alternativas ?? []).includes(exercicioId)) {
+      if (
+        item.tipo === 'alternativas' && (item.alternativas ?? []).includes(exercicioId)
+      ) {
         mudou = true;
         const restante = removerAlternativa(item, exercicioId);
         if (restante.exercicioId !== exercicioId) itens.push(restante);

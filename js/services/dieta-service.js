@@ -8,8 +8,8 @@ import {
   calcularPlano,
   calcularPrato,
   calcularRefeicao,
-  tirarDasRefeicoes,
   TIPO_ITEM,
+  tirarDasRefeicoes,
 } from '../domain/nutricao.js';
 
 /**
@@ -17,7 +17,10 @@ import {
  * @returns {Promise<{alimentos: Map, pratos: Map}>}
  */
 export async function carregarIndice() {
-  const [alimentos, pratos] = await Promise.all([repo.mapaAlimentos(), repo.mapaPratos()]);
+  const [alimentos, pratos] = await Promise.all([
+    repo.mapaAlimentos(),
+    repo.mapaPratos(),
+  ]);
   return { alimentos, pratos };
 }
 
@@ -88,7 +91,10 @@ export async function criarRefeicaoNoPlano(planoId, nome) {
     itens: [],
   };
   await repo.salvarRefeicao(refeicao);
-  await repo.salvarPlano({ ...plano, refeicoes: [...(plano.refeicoes ?? []), refeicao.id] });
+  await repo.salvarPlano({
+    ...plano,
+    refeicoes: [...(plano.refeicoes ?? []), refeicao.id],
+  });
   return refeicao;
 }
 
@@ -96,7 +102,10 @@ export async function criarRefeicaoNoPlano(planoId, nome) {
 export async function adicionarRefeicaoAoPlano(planoId, refeicaoId) {
   const plano = await repo.buscarPlano(planoId);
   if (!plano || (plano.refeicoes ?? []).includes(refeicaoId)) return;
-  await repo.salvarPlano({ ...plano, refeicoes: [...(plano.refeicoes ?? []), refeicaoId] });
+  await repo.salvarPlano({
+    ...plano,
+    refeicoes: [...(plano.refeicoes ?? []), refeicaoId],
+  });
 }
 
 /**
@@ -104,7 +113,10 @@ export async function adicionarRefeicaoAoPlano(planoId, refeicaoId) {
  * @returns {Promise<{apagada: boolean}>}
  */
 export async function removerRefeicaoDoPlano(planoId, refeicaoId) {
-  const [plano, planos] = await Promise.all([repo.buscarPlano(planoId), repo.listarPlanos()]);
+  const [plano, planos] = await Promise.all([
+    repo.buscarPlano(planoId),
+    repo.listarPlanos(),
+  ]);
   if (!plano) return { apagada: false };
 
   await repo.salvarPlano({
@@ -113,7 +125,7 @@ export async function removerRefeicaoDoPlano(planoId, refeicaoId) {
   });
 
   const aindaUsada = planos.some(
-    (p) => p.id !== planoId && (p.refeicoes ?? []).includes(refeicaoId)
+    (p) => p.id !== planoId && (p.refeicoes ?? []).includes(refeicaoId),
   );
   if (!aindaUsada) {
     await repo.removerRefeicao(refeicaoId);
@@ -210,7 +222,10 @@ export async function salvarAlimento(alimento) {
  * @returns {Promise<{pratos: string[], refeicoes: string[]}>}
  */
 export async function ondeAlimentoEUsado(alimentoId) {
-  const [pratos, refeicoes] = await Promise.all([repo.listarPratos(), repo.listarRefeicoes()]);
+  const [pratos, refeicoes] = await Promise.all([
+    repo.listarPratos(),
+    repo.listarRefeicoes(),
+  ]);
 
   const nosPratos = pratos
     .filter((p) => (p.ingredientes ?? []).some((i) => i.alimentoId === alimentoId))
@@ -232,7 +247,10 @@ export async function ondeAlimentoEUsado(alimentoId) {
 
 /** Exclui o alimento e tira dos pratos e refeições. */
 export async function excluirAlimento(alimentoId) {
-  const [pratos, refeicoes] = await Promise.all([repo.listarPratos(), repo.listarRefeicoes()]);
+  const [pratos, refeicoes] = await Promise.all([
+    repo.listarPratos(),
+    repo.listarRefeicoes(),
+  ]);
 
   const pratosMudados = pratos
     .filter((p) => (p.ingredientes ?? []).some((i) => i.alimentoId === alimentoId))
@@ -242,7 +260,10 @@ export async function excluirAlimento(alimentoId) {
     }));
   if (pratosMudados.length) await repo.salvarPratos(pratosMudados);
 
-  const refeicoesMudadas = tirarDasRefeicoes(refeicoes, (x) => x.alimentoId === alimentoId);
+  const refeicoesMudadas = tirarDasRefeicoes(
+    refeicoes,
+    (x) => x.alimentoId === alimentoId,
+  );
   if (refeicoesMudadas.length) await repo.salvarRefeicoes(refeicoesMudadas);
 
   await repo.removerAlimento(alimentoId);
@@ -266,7 +287,10 @@ export async function criarPrato(nome) {
 
 /** Prato com os valores calculados. */
 export async function calcularPratoPorId(pratoId) {
-  const [prato, indice] = await Promise.all([repo.buscarPrato(pratoId), carregarIndice()]);
+  const [prato, indice] = await Promise.all([
+    repo.buscarPrato(pratoId),
+    carregarIndice(),
+  ]);
   if (!prato) return null;
   return { prato, ...calcularPrato(prato, indice.alimentos) };
 }
@@ -340,9 +364,10 @@ export function alterarQuantidadeDaOpcao(refeicaoId, itemId, opcaoId, quantidade
   return mexerNoItem(refeicaoId, itemId, (item) => ({
     ...item,
     opcoes: (item.opcoes ?? []).map((o) =>
-      o.id !== opcaoId
-        ? o
-        : { ...o, ...(o.tipo === TIPO_ITEM.PRATO ? { porcoes: quantidade } : { quantidade }) }
+      o.id !== opcaoId ? o : {
+        ...o,
+        ...(o.tipo === TIPO_ITEM.PRATO ? { porcoes: quantidade } : { quantidade }),
+      }
     ),
   }));
 }
@@ -370,7 +395,10 @@ export async function alterarQuantidade(refeicaoId, itemId, quantidade) {
   if (!refeicao) return;
   const itens = refeicao.itens.map((i) =>
     i.id === itemId
-      ? { ...i, ...(i.tipo === TIPO_ITEM.PRATO ? { porcoes: quantidade } : { quantidade }) }
+      ? {
+        ...i,
+        ...(i.tipo === TIPO_ITEM.PRATO ? { porcoes: quantidade } : { quantidade }),
+      }
       : i
   );
   await repo.salvarRefeicao({ ...refeicao, itens });
@@ -397,7 +425,10 @@ export async function adicionarItem(refeicaoId, item) {
 
 /** Refeição com os valores calculados. */
 export async function calcularRefeicaoPorId(refeicaoId) {
-  const [refeicao, indice] = await Promise.all([repo.buscarRefeicao(refeicaoId), carregarIndice()]);
+  const [refeicao, indice] = await Promise.all([
+    repo.buscarRefeicao(refeicaoId),
+    carregarIndice(),
+  ]);
   if (!refeicao) return null;
   return { refeicao, calculo: calcularRefeicao(refeicao, indice) };
 }
@@ -405,7 +436,9 @@ export async function calcularRefeicaoPorId(refeicaoId) {
 /** Nomes dos planos que usam a refeição. */
 export async function planosComRefeicao(refeicaoId) {
   const planos = await repo.listarPlanos();
-  return planos.filter((p) => (p.refeicoes ?? []).includes(refeicaoId)).map((p) => p.nome);
+  return planos.filter((p) => (p.refeicoes ?? []).includes(refeicaoId)).map((p) =>
+    p.nome
+  );
 }
 
 /**

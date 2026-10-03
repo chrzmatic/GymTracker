@@ -25,6 +25,6 @@ export async function escolherAlimento(titulo) {
       valor: a.id,
       rotulo: a.nome,
       detalhe: `${num(a.kcal, 0)} kcal/${num(a.quantidadeRef, 0)}${a.unidade}`,
-    }))
+    })),
   );
 }

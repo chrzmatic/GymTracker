@@ -429,7 +429,7 @@ try {
   // Espera a carga inicial e a primeira tela.
   for (let i = 0; i < 60; i += 1) {
     const pronto = await cdp.avaliar(
-      `(async () => { try { const t = await import('/js/data/treinos-repo.js'); return (await t.listarTreinos()).length > 0 && !document.getElementById('conteudo').textContent.includes('Carregando'); } catch { return false; } })()`
+      `(async () => { try { const t = await import('/js/data/treinos-repo.js'); return (await t.listarTreinos()).length > 0 && !document.getElementById('conteudo').textContent.includes('Carregando'); } catch { return false; } })()`,
     );
     if (pronto) break;
     await new Promise((r) => setTimeout(r, 250));

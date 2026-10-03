@@ -1,11 +1,13 @@
 /** Músculos (usados nas séries semanais). */
-import { lerTudo, ler, gravar, apagar, gravarVarios, contar } from './db.js';
+import { apagar, contar, gravar, gravarVarios, ler, lerTudo } from './db.js';
 
 const STORE = 'musculos';
 
 export async function listarMusculos() {
   const itens = await lerTudo(STORE);
-  return itens.sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0) || a.nome.localeCompare(b.nome, 'pt-BR'));
+  return itens.sort((a, b) =>
+    (a.ordem ?? 0) - (b.ordem ?? 0) || a.nome.localeCompare(b.nome, 'pt-BR')
+  );
 }
 
 export function buscarMusculo(id) {

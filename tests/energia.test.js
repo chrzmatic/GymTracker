@@ -4,11 +4,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  KJ_POR_KCAL,
-  UNIDADES_ENERGIA,
-  kjParaKcal,
-  energiaEmKcal,
   calcularAlimento,
+  energiaEmKcal,
+  KJ_POR_KCAL,
+  kjParaKcal,
+  UNIDADES_ENERGIA,
 } from '../js/domain/nutricao.js';
 
 test('a constante é a da caloria termoquímica: 1 kcal = 4,184 kJ', () => {

@@ -1,5 +1,5 @@
 /** Séries registradas. Cada série é de uma sessão e de um exercício. */
-import { lerTudo, gravar, apagar, lerPorIndice, transacao } from './db.js';
+import { apagar, gravar, lerPorIndice, lerTudo, transacao } from './db.js';
 
 const STORE = 'series';
 

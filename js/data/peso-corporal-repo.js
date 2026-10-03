@@ -1,5 +1,5 @@
 /** Peso corporal registrado. */
-import { lerTudo, ler, gravar, apagar } from './db.js';
+import { apagar, gravar, ler, lerTudo } from './db.js';
 
 const STORE = 'pesoCorporal';
 

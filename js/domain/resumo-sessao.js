@@ -56,7 +56,7 @@ export function resumirSessao({ sessao, series, exercicios }) {
     let aquecimentos = 0;
     let valendo = 0;
     const linhas = seriesDoItem.map((s) => {
-      const rotulo = s.aquecimento ? `aq ${(aquecimentos += 1)}` : String((valendo += 1));
+      const rotulo = s.aquecimento ? `aq ${(aquecimentos += 1)}` : String(valendo += 1);
       return {
         id: s.id,
         rotulo,
@@ -83,7 +83,7 @@ export function resumirSessao({ sessao, series, exercicios }) {
       nomeDe(item.exercicioId, item.nome),
       item.exercicioId,
       ordenadas.filter((s) => s.itemId === item.itemId),
-      { itemId: item.itemId, opcional: Boolean(item.opcional) }
+      { itemId: item.itemId, opcional: Boolean(item.opcional) },
     )
   );
 
@@ -95,7 +95,7 @@ export function resumirSessao({ sessao, series, exercicios }) {
   });
   porExercicio.forEach((doExercicio, exercicioId) =>
     lista.push(
-      montarExercicio(nomeDe(exercicioId), exercicioId, doExercicio, { itemId: null })
+      montarExercicio(nomeDe(exercicioId), exercicioId, doExercicio, { itemId: null }),
     )
   );
 
@@ -146,7 +146,7 @@ export function textoParaCopiar(resumo) {
     if (e.opcional) marcas.push('opcional');
     if (!e.feito) marcas.push('não feito');
     linhas.push(
-      `${e.posicao}. ${e.nome}${marcas.length ? ` (${marcas.join(', ')})` : ''}`
+      `${e.posicao}. ${e.nome}${marcas.length ? ` (${marcas.join(', ')})` : ''}`,
     );
     e.series.forEach((s) => {
       const nota = s.anotacao ? ` (${s.anotacao})` : '';

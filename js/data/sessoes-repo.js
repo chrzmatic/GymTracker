@@ -1,5 +1,5 @@
 /** Sessões de treino. A data é local, AAAA-MM-DD. */
-import { lerTudo, ler, gravar, apagar, lerPorIndice } from './db.js';
+import { apagar, gravar, ler, lerPorIndice, lerTudo } from './db.js';
 import { STATUS } from '../utils/constantes.js';
 
 const STORE = 'sessoes';
@@ -10,7 +10,7 @@ export { STATUS };
 export async function listarSessoes() {
   const itens = await lerTudo(STORE);
   return itens.sort(
-    (a, b) => b.data.localeCompare(a.data) || (b.criadaEm ?? 0) - (a.criadaEm ?? 0)
+    (a, b) => b.data.localeCompare(a.data) || (b.criadaEm ?? 0) - (a.criadaEm ?? 0),
   );
 }
 

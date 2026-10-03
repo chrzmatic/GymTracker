@@ -29,7 +29,8 @@ const TELAS = {
   },
   'exercicio-editor': {
     titulo: 'Editar exercício',
-    carregar: () => import('./views/exercicios-view.js').then((m) => m.montarEditorDeExercicio),
+    carregar: () =>
+      import('./views/exercicios-view.js').then((m) => m.montarEditorDeExercicio),
   },
   musculos: {
     titulo: 'Músculos',
@@ -97,11 +98,13 @@ const TELAS = {
   },
   'plano-editor': {
     titulo: 'Editar plano',
-    carregar: () => import('./views/refeicoes-view.js').then((m) => m.montarEditorDePlano),
+    carregar: () =>
+      import('./views/refeicoes-view.js').then((m) => m.montarEditorDePlano),
   },
   nutricional: {
     titulo: 'Informação nutricional',
-    carregar: () => import('./views/nutricional-view.js').then((m) => m.montarNutricional),
+    carregar: () =>
+      import('./views/nutricional-view.js').then((m) => m.montarNutricional),
   },
 };
 
@@ -126,7 +129,7 @@ function salvarEstado() {
   try {
     localStorage.setItem(
       CHAVE_ESTADO,
-      JSON.stringify({ aba: abaAtual, pilhas: Object.fromEntries(pilhas) })
+      JSON.stringify({ aba: abaAtual, pilhas: Object.fromEntries(pilhas) }),
     );
   } catch {
     /* localStorage bloqueado (modo privado): não é crítico. */
@@ -153,7 +156,7 @@ function lerEstado() {
     Object.entries(estado.pilhas ?? {}).forEach(([aba, itens]) => {
       if (!Array.isArray(itens) || !itens.length) return;
       const limpa = itens.filter(
-        (e) => e && typeof e === 'object' && typeof e.tela === 'string' && TELAS[e.tela]
+        (e) => e && typeof e === 'object' && typeof e.tela === 'string' && TELAS[e.tela],
       );
       // A raiz tem que ser a própria aba.
       if (!limpa.length || limpa[0].tela !== aba) return;
@@ -163,7 +166,7 @@ function lerEstado() {
           tela: e.tela,
           params: e.params && typeof e.params === 'object' ? e.params : {},
           rolagem: Number.isFinite(e.rolagem) ? e.rolagem : 0,
-        }))
+        })),
       );
     });
 
@@ -211,7 +214,7 @@ export function iniciarNavegacao(callbackAba) {
         salvarEstado();
       }, 300);
     },
-    { passive: true }
+    { passive: true },
   );
 
   // `pagehide` é o último evento garantido no Safari; `visibilitychange`
