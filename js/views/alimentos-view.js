@@ -137,7 +137,7 @@ async function formularioDeAlimento(alimento) {
         valor: UNIDADES_ENERGIA.KCAL,
         opcoes: [
           { valor: UNIDADES_ENERGIA.KCAL, rotulo: 'kcal' },
-          { valor: UNIDADES_ENERGIA.KJ, rotulo: 'kJ (converte para kcal ao salvar)' },
+          { valor: UNIDADES_ENERGIA.KJ, rotulo: 'kJ' },
         ],
       },
       {
