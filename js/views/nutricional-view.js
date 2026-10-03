@@ -46,21 +46,19 @@ export async function montarNutricional(raiz, params) {
   card.className = 'card card-sugestao';
 
   const quantidade = document.createElement('h2');
-  quantidade.style.margin = '0 0 2px';
+  quantidade.classList.add('m-0', 'mb-1');
   quantidade.textContent = calculo.descricao ?? '—';
   card.appendChild(quantidade);
 
   const kcal = document.createElement('p');
-  kcal.className = 'texto-fraco pequeno';
-  kcal.style.margin = '0 0 10px';
+  kcal.className = 'texto-fraco pequeno m-0 mb-3';
   kcal.textContent = 'nesta refeição';
   card.appendChild(kcal);
 
   card.appendChild(tabelaDeNutrientes(calculo.valores));
 
   const mudar = document.createElement('button');
-  mudar.className = 'btn btn-bloco';
-  mudar.style.marginTop = '10px';
+  mudar.className = 'btn btn-bloco mt-3';
   mudar.textContent = 'Mudar a quantidade';
   mudar.onclick = async () => {
     const atual = ehPrato ? (alvo.porcoes ?? 1) : alvo.quantidade;
@@ -103,7 +101,7 @@ export async function montarNutricional(raiz, params) {
   referencia.className = 'card';
 
   const titulo = document.createElement('h3');
-  titulo.style.margin = '0 0 8px';
+  titulo.classList.add('m-0', 'mb-2');
   titulo.textContent = ehPrato
     ? 'O prato inteiro (1 porção)'
     : `Por ${num(fonte.quantidadeRef, 2)} ${fonte.unidade}`;
@@ -114,14 +112,13 @@ export async function montarNutricional(raiz, params) {
     referencia.appendChild(tabelaDeNutrientes(doPrato.valores));
 
     const h4 = document.createElement('h3');
-    h4.style.margin = '14px 0 6px';
+    h4.classList.add('m-0', 'mt-4', 'mb-2');
     h4.textContent = 'Ingredientes';
     referencia.appendChild(h4);
 
     doPrato.ingredientes.forEach((ing) => {
       const linha = document.createElement('div');
-      linha.className = 'item-dieta-linha';
-      linha.style.padding = '6px 0';
+      linha.className = 'item-dieta-linha py-2';
 
       const nome = document.createElement('span');
       nome.className = 'item-dieta-nome';
@@ -148,15 +145,14 @@ export async function montarNutricional(raiz, params) {
 
     if (fonte.fonte) {
       referencia.appendChild(
-        textoFraco('Fonte: ' + fonte.fonte + (fonte.generico ? ' (valor genérico)' : ''), '10px 0 0')
+        textoFraco('Fonte: ' + fonte.fonte + (fonte.generico ? ' (valor genérico)' : ''), 'm-0', 'mt-3')
       );
     }
-    if (fonte.observacao) referencia.appendChild(textoFraco(fonte.observacao, '2px 0 0'));
+    if (fonte.observacao) referencia.appendChild(textoFraco(fonte.observacao, 'm-0', 'mt-1'));
   }
 
   const editar = document.createElement('button');
-  editar.className = 'btn btn-bloco';
-  editar.style.marginTop = '10px';
+  editar.className = 'btn btn-bloco mt-3';
   editar.textContent = ehPrato ? 'Editar este prato' : 'Editar este alimento no índice';
   editar.onclick = () =>
     ehPrato

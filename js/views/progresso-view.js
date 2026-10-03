@@ -111,8 +111,7 @@ async function desenharGrafico() {
   const dados = await progresso.progressaoDoExercicio(estado.exercicioId, estado.periodo);
 
   const seletor = document.createElement('button');
-  seletor.className = 'btn btn-bloco';
-  seletor.style.marginTop = '12px';
+  seletor.className = 'btn btn-bloco mt-3';
   seletor.textContent = dados.nome + '  ▾';
   seletor.onclick = async () => {
     const id = await escolherComBusca(
@@ -132,13 +131,11 @@ async function desenharGrafico() {
   raiz.appendChild(filtros());
 
   const card = document.createElement('div');
-  card.className = 'card';
-  card.style.marginTop = '12px';
+  card.className = 'card mt-3';
 
   if (dados.pontos.length < 2) {
     const aviso = document.createElement('p');
-    aviso.className = 'texto-fraco pequeno';
-    aviso.style.margin = '0';
+    aviso.className = 'texto-fraco pequeno m-0';
     aviso.textContent =
       dados.total < 2
         ? 'Este exercício só tem uma sessão registrada. O gráfico aparece a partir da segunda.'
@@ -149,7 +146,7 @@ async function desenharGrafico() {
   }
 
   const canvas = document.createElement('canvas');
-  canvas.style.maxHeight = '260px';
+  canvas.classList.add('grafico');
   card.appendChild(canvas);
   raiz.appendChild(card);
 
@@ -162,7 +159,7 @@ async function desenharGrafico() {
 /** Pílulas de período e de métrica. */
 function filtros() {
   const div = document.createElement('div');
-  div.style.marginTop = '10px';
+  div.classList.add('mt-3');
 
   const linhaPeriodo = document.createElement('div');
   linhaPeriodo.className = 'pilulas';
@@ -270,7 +267,7 @@ function cardDeVariacao(dados) {
 
   const h3 = document.createElement('h3');
   h3.textContent = 'No período';
-  h3.style.margin = '0 0 8px';
+  h3.classList.add('m-0', 'mb-2');
   card.appendChild(h3);
 
   METRICAS.forEach((m) => {
@@ -315,7 +312,7 @@ function tabelaDePontos(dados) {
 
   const h3 = document.createElement('h3');
   h3.textContent = `${dados.pontos.length} sessões no período`;
-  h3.style.margin = '0 0 8px';
+  h3.classList.add('m-0', 'mb-2');
   card.appendChild(h3);
 
   dados.pontos
@@ -363,8 +360,7 @@ async function desenharMusculos() {
   card.className = 'card';
 
   const explica = document.createElement('p');
-  explica.className = 'texto-fraco pequeno';
-  explica.style.margin = '0 0 10px';
+  explica.className = 'texto-fraco pequeno m-0 mb-3';
   explica.textContent =
     `Planejado = um ciclo completo da rotação (${dados.treinosPorCiclo} treinos), com os opcionais. ` +
     `Realizado = o que você registrou nesta semana (${dados.treinosNaSemana} ${dados.treinosNaSemana === 1 ? 'treino' : 'treinos'}), sem aquecimento.`;
@@ -420,7 +416,7 @@ async function desenharMusculos() {
 /** Navega entre as semanas com treino. */
 async function seletorDeSemana(dados) {
   const div = document.createElement('div');
-  div.style.marginTop = '12px';
+  div.classList.add('mt-3');
 
   const botao = document.createElement('button');
   botao.className = 'btn btn-bloco';
@@ -463,8 +459,7 @@ async function desenharSemanas() {
   }
 
   const card = document.createElement('div');
-  card.className = 'card';
-  card.style.marginTop = '12px';
+  card.className = 'card mt-3';
 
   const cabecalho = document.createElement('div');
   cabecalho.className = 'metrica metrica-cabecalho';

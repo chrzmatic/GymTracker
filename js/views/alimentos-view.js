@@ -21,7 +21,7 @@ export async function montarAlimentos(raiz) {
   raiz.appendChild(busca);
 
   const container = document.createElement('div');
-  container.style.marginTop = '12px';
+  container.classList.add('mt-3');
   raiz.appendChild(container);
 
   const semAcento = (t) =>
@@ -46,8 +46,7 @@ export async function montarAlimentos(raiz) {
   desenhar();
 
   const novo = document.createElement('button');
-  novo.className = 'btn btn-primario btn-bloco';
-  novo.style.marginTop = '12px';
+  novo.className = 'btn btn-primario btn-bloco mt-3';
   novo.textContent = '+ novo alimento';
   novo.onclick = async () => {
     const dados = await formularioDeAlimento();
@@ -93,8 +92,7 @@ function cardDeAlimento(alimento) {
   card.appendChild(cab);
 
   const p = document.createElement('p');
-  p.className = 'texto-fraco pequeno';
-  p.style.margin = '0';
+  p.className = 'texto-fraco pequeno m-0';
   p.textContent =
     `${num(alimento.quantidadeRef, 2)} ${alimento.unidade} · ` +
     `${num(alimento.kcal, 0)} kcal · P ${num(alimento.proteina, 1)} · ` +
@@ -191,7 +189,7 @@ export async function montarEditorDeAlimento(raiz, params) {
 
   const h3 = document.createElement('h3');
   h3.textContent = `Por ${num(alimento.quantidadeRef, 2)} ${alimento.unidade}`;
-  h3.style.margin = '0 0 8px';
+  h3.classList.add('m-0', 'mb-2');
   card.appendChild(h3);
 
   INFO_NUTRIENTES.forEach(({ id, rotulo, unidade, casas }) => {
@@ -211,22 +209,19 @@ export async function montarEditorDeAlimento(raiz, params) {
 
   if (alimento.fonte) {
     const fonte = document.createElement('p');
-    fonte.className = 'texto-fraco pequeno';
-    fonte.style.margin = '8px 0 0';
+    fonte.className = 'texto-fraco pequeno m-0 mt-2';
     fonte.textContent = 'Fonte: ' + alimento.fonte + (alimento.generico ? ' (valor genérico)' : '');
     card.appendChild(fonte);
   }
   if (alimento.observacao) {
     const obs = document.createElement('p');
-    obs.className = 'texto-fraco pequeno';
-    obs.style.margin = '2px 0 0';
+    obs.className = 'texto-fraco pequeno m-0 mt-1';
     obs.textContent = alimento.observacao;
     card.appendChild(obs);
   }
 
   const editar = document.createElement('button');
-  editar.className = 'btn btn-bloco';
-  editar.style.marginTop = '10px';
+  editar.className = 'btn btn-bloco mt-3';
   editar.textContent = 'Editar valores';
   editar.onclick = async () => {
     const dados = await formularioDeAlimento(alimento);
@@ -246,8 +241,7 @@ export async function montarEditorDeAlimento(raiz, params) {
   }
 
   const excluir = document.createElement('button');
-  excluir.className = 'btn btn-perigo btn-bloco';
-  excluir.style.marginTop = '8px';
+  excluir.className = 'btn btn-perigo btn-bloco mt-2';
   excluir.textContent = 'Excluir alimento';
   excluir.onclick = async () => {
     const uso = await dieta.ondeAlimentoEUsado(alimento.id);

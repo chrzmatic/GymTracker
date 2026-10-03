@@ -24,7 +24,7 @@ export async function montarHistorico(raiz) {
       mesAtual = chave;
       const h = document.createElement('h2');
       h.textContent = `${NOMES_MES[mes - 1]} de ${ano}`;
-      h.style.margin = '18px 0 8px';
+      h.classList.add('titulo-secao');
       raiz.appendChild(h);
     }
     raiz.appendChild(cardDaSessao(registro));
@@ -46,7 +46,7 @@ function cardDaSessao({ sessao, series, aquecimentos, exercicios }) {
     const marca = document.createElement('span');
     marca.className = 'marca-treino';
     marca.style.background = sessao.cor;
-    marca.style.marginTop = '7px';
+    marca.classList.add('marca-alinhada');
     cab.appendChild(marca);
   }
 
@@ -79,8 +79,7 @@ function cardDaSessao({ sessao, series, aquecimentos, exercicios }) {
   card.appendChild(cab);
 
   const detalhe = document.createElement('p');
-  detalhe.className = 'texto-fraco pequeno';
-  detalhe.style.margin = '0';
+  detalhe.className = 'texto-fraco pequeno m-0';
   const partes = [
     formatarCurto(sessao.data),
     descreverDistancia(sessao.data),
@@ -93,9 +92,8 @@ function cardDaSessao({ sessao, series, aquecimentos, exercicios }) {
 
   if (sessao.anotacao) {
     const nota = document.createElement('p');
-    nota.className = 'texto-fraco pequeno';
-    nota.style.margin = '6px 0 0';
-    nota.style.fontStyle = 'italic';
+    nota.className = 'texto-fraco pequeno m-0 mt-2';
+    nota.classList.add('texto-italico');
     nota.textContent = sessao.anotacao;
     card.appendChild(nota);
   }

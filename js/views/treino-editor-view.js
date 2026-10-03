@@ -330,7 +330,7 @@ async function escolherExercicio(titulo, excluir = []) {
 /** Botão de adicionar exercício. */
 function botaoAdicionar() {
   const div = document.createElement('div');
-  div.style.marginTop = '12px';
+  div.classList.add('mt-3');
 
   const add = document.createElement('button');
   add.className = 'btn btn-primario btn-bloco';
@@ -344,8 +344,7 @@ function botaoAdicionar() {
   div.appendChild(add);
 
   const novo = document.createElement('button');
-  novo.className = 'btn btn-bloco';
-  novo.style.marginTop = '8px';
+  novo.className = 'btn btn-bloco mt-2';
   novo.textContent = 'Criar um exercício novo';
   novo.onclick = () => abrir('exercicio-editor', { novo: true, treinoId: estado.treinoId });
   div.appendChild(novo);

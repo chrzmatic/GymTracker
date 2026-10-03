@@ -31,7 +31,7 @@ export async function montarExercicios(raiz) {
   raiz.appendChild(busca);
 
   const container = document.createElement('div');
-  container.style.marginTop = '12px';
+  container.classList.add('mt-3');
   raiz.appendChild(container);
 
   const semAcento = (t) =>
@@ -57,8 +57,7 @@ export async function montarExercicios(raiz) {
   desenharLista();
 
   const novo = document.createElement('button');
-  novo.className = 'btn btn-primario btn-bloco';
-  novo.style.marginTop = '12px';
+  novo.className = 'btn btn-primario btn-bloco mt-3';
   novo.textContent = '+ novo exercício';
   novo.onclick = () => abrir('exercicio-editor', { novo: true });
   raiz.appendChild(novo);
@@ -83,8 +82,7 @@ function cardDeExercicio(ex, nomeMusculo) {
   card.appendChild(cab);
 
   const p = document.createElement('p');
-  p.className = 'texto-fraco pequeno';
-  p.style.margin = '0';
+  p.className = 'texto-fraco pequeno m-0';
   p.textContent = descreverMusculos(ex, nomeMusculo);
   card.appendChild(p);
 
@@ -253,8 +251,7 @@ function cardMusculos(ex) {
   lista.forEach((m) => card.appendChild(linhaDeMusculo(ex, m, nomes)));
 
   const add = document.createElement('button');
-  add.className = 'btn btn-bloco';
-  add.style.marginTop = '10px';
+  add.className = 'btn btn-bloco mt-3';
   add.textContent = '+ músculo';
   add.onclick = () => adicionarMusculo(ex);
   card.appendChild(add);
@@ -364,8 +361,7 @@ async function adicionarMusculo(ex) {
 /** Excluir, avisando onde o exercício é usado. */
 function botaoExcluir(ex) {
   const btn = document.createElement('button');
-  btn.className = 'btn btn-perigo btn-bloco';
-  btn.style.marginTop = '8px';
+  btn.className = 'btn btn-perigo btn-bloco mt-2';
   btn.textContent = 'Excluir exercício';
   btn.onclick = async () => {
     const uso = await exercicios.ondeEUsado(ex.id);

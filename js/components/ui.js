@@ -16,12 +16,12 @@ export function blocoVazio(texto) {
 /**
  * Parágrafo de texto secundário.
  * @param {string} texto
- * @param {string} [margem] valor de style.margin
+ * @param {...string} classes classes extras (ex.: 'm-0', 'mt-2')
  */
-export function textoFraco(texto, margem) {
+export function textoFraco(texto, ...classes) {
   const p = document.createElement('p');
   p.className = 'texto-fraco pequeno';
   p.textContent = texto;
-  if (margem !== undefined) p.style.margin = margem;
+  p.classList.add(...classes);
   return p;
 }

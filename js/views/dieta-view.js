@@ -68,8 +68,7 @@ function cabecalho(plano, automatico) {
   card.appendChild(cab);
 
   const porque = document.createElement('p');
-  porque.className = 'texto-fraco pequeno';
-  porque.style.margin = '0 0 10px';
+  porque.className = 'texto-fraco pequeno m-0 mb-3';
   porque.textContent = formatarLongo(estado.data);
   card.appendChild(porque);
 
@@ -115,7 +114,7 @@ function cardDeTotais(dia) {
 
   const h2 = document.createElement('h2');
   h2.textContent = num(dia.total.kcal, 0) + ' kcal';
-  h2.style.margin = '0 0 2px';
+  h2.classList.add('m-0', 'mb-1');
   card.appendChild(h2);
 
   const cabecalhoTabela = document.createElement('div');
@@ -164,8 +163,7 @@ function cardDeTotais(dia) {
   });
 
   const metas = document.createElement('button');
-  metas.className = 'btn btn-bloco';
-  metas.style.marginTop = '10px';
+  metas.className = 'btn btn-bloco mt-3';
   metas.textContent = 'Editar metas deste plano';
   metas.onclick = () => editarMetas(dia);
   card.appendChild(metas);
@@ -320,9 +318,8 @@ function linhaDeItem(refeicao, item) {
 
   if (item.erro) {
     const erro = document.createElement('p');
-    erro.className = 'pequeno';
-    erro.style.color = 'var(--piora)';
-    erro.style.margin = '2px 0 0';
+    erro.className = 'pequeno texto-erro';
+    erro.classList.add('m-0', 'mt-1');
     erro.textContent = item.erro;
     div.appendChild(erro);
   }
@@ -366,9 +363,7 @@ function pilulaDeOpcao(opcao, refeicao, item) {
 
 function faixaDeErros(erros) {
   const div = document.createElement('div');
-  div.className = 'faixa-aviso';
-  div.style.borderColor = 'var(--piora)';
-  div.style.color = 'var(--piora)';
+  div.className = 'faixa-aviso faixa-erro';
   div.textContent =
     erros.length === 1
       ? `${erros[0].refeicao}: ${erros[0].erro}`
@@ -386,8 +381,7 @@ function faixaIncompleta() {
 
 function atalhos() {
   const div = document.createElement('div');
-  div.className = 'linha-botoes';
-  div.style.marginTop = '20px';
+  div.className = 'linha-botoes mt-5';
 
   const alimentos = document.createElement('button');
   alimentos.className = 'btn';

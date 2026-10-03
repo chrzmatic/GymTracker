@@ -59,13 +59,11 @@ export function escolher(titulo, opcoes) {
     opcoes.forEach((op) => {
       const li = document.createElement('li');
       const btn = document.createElement('button');
-      btn.className = 'btn btn-bloco';
-      btn.style.justifyContent = 'flex-start';
+      btn.className = 'btn btn-bloco btn-esquerda';
       btn.textContent = op.rotulo;
       if (op.detalhe) {
         const span = document.createElement('span');
-        span.className = 'texto-fraco pequeno';
-        span.style.marginLeft = 'auto';
+        span.className = 'texto-fraco pequeno empurra-direita';
         span.textContent = op.detalhe;
         btn.appendChild(span);
       }
@@ -116,13 +114,11 @@ export function escolherComBusca(titulo, opcoes, textoVazio = 'Nada encontrado.'
       visiveis.forEach((op) => {
         const li = document.createElement('li');
         const btn = document.createElement('button');
-        btn.className = 'btn btn-bloco';
-        btn.style.justifyContent = 'flex-start';
+        btn.className = 'btn btn-bloco btn-esquerda';
         btn.textContent = op.rotulo;
         if (op.detalhe) {
           const span = document.createElement('span');
-          span.className = 'texto-fraco pequeno';
-          span.style.marginLeft = 'auto';
+          span.className = 'texto-fraco pequeno empurra-direita';
           span.textContent = op.detalhe;
           btn.appendChild(span);
         }
@@ -248,8 +244,7 @@ function montarCampo(c) {
 /** Texto explicativo abaixo de um campo. */
 function dicaDoCampo(texto) {
   const p = document.createElement('p');
-  p.className = 'texto-fraco pequeno';
-  p.style.margin = '4px 0 0';
+  p.className = 'texto-fraco pequeno m-0 mt-1';
   p.textContent = texto;
   return p;
 }

@@ -109,7 +109,7 @@ async function desenharEscolhaDeTreino() {
     if (!treinos.length) return;
     const h = document.createElement('h2');
     h.textContent = titulo;
-    h.style.margin = '16px 0 8px';
+    h.classList.add('titulo-secao');
     raiz.appendChild(h);
     treinos.forEach((t) => raiz.appendChild(cardDeTreino(t, exercicios)));
   };
@@ -136,13 +136,11 @@ function cardDoQueJaFoiHoje(deHoje) {
 
   deHoje.forEach((s) => {
     const botao = document.createElement('button');
-    botao.className = 'btn btn-bloco';
-    botao.style.marginTop = '6px';
-    botao.style.justifyContent = 'flex-start';
+    botao.className = 'btn btn-bloco mt-2';
+    botao.classList.add('btn-esquerda');
     botao.textContent = 'Treino ' + s.treinoNome;
     const etiqueta = document.createElement('span');
-    etiqueta.className = 'texto-fraco pequeno';
-    etiqueta.style.marginLeft = 'auto';
+    etiqueta.className = 'texto-fraco pequeno empurra-direita';
     etiqueta.textContent =
       s.status === sessoes.STATUS.FINALIZADA ? 'finalizado' : 'em andamento';
     botao.appendChild(etiqueta);
@@ -170,18 +168,16 @@ function cardDeSugestao(sugestao, exercicios, paraAmanha) {
 
   const h2 = document.createElement('h2');
   h2.textContent = 'Treino ' + sugestao.treino.nome;
-  h2.style.margin = '8px 0 4px';
+  h2.classList.add('m-0', 'mt-2', 'mb-1');
   card.appendChild(h2);
 
   const porque = document.createElement('p');
-  porque.className = 'texto-fraco pequeno';
-  porque.style.margin = '0 0 8px';
+  porque.className = 'texto-fraco pequeno m-0 mb-2';
   porque.textContent = sugestao.explicacao;
   card.appendChild(porque);
 
   const lista = document.createElement('p');
-  lista.className = 'texto-fraco pequeno';
-  lista.style.margin = '0 0 10px';
+  lista.className = 'texto-fraco pequeno m-0 mb-3';
   lista.textContent = sugestao.treino.itens
     .map((i) => nomeDoItem(i, exercicios))
     .join(' · ');
@@ -203,8 +199,7 @@ function cardDeSugestao(sugestao, exercicios, paraAmanha) {
 /** Atalhos para editar treinos e ver o histórico. */
 function atalhosDeGestao() {
   const div = document.createElement('div');
-  div.className = 'linha-botoes';
-  div.style.marginTop = '20px';
+  div.className = 'linha-botoes mt-5';
 
   const editar = document.createElement('button');
   editar.className = 'btn';
@@ -231,7 +226,7 @@ function cardDeTreino(treino, exercicios) {
     const marca = document.createElement('span');
     marca.className = 'marca-treino';
     marca.style.background = treino.cor;
-    marca.style.marginTop = '7px';
+    marca.classList.add('marca-alinhada');
     cab.appendChild(marca);
   }
   const h3 = document.createElement('h3');
@@ -247,8 +242,7 @@ function cardDeTreino(treino, exercicios) {
   card.appendChild(lista);
 
   const botoes = document.createElement('div');
-  botoes.className = 'linha-botoes';
-  botoes.style.marginTop = '10px';
+  botoes.className = 'linha-botoes mt-3';
 
   const iniciar = document.createElement('button');
   iniciar.className = 'btn btn-primario';
@@ -256,8 +250,7 @@ function cardDeTreino(treino, exercicios) {
   iniciar.onclick = () => comecar(treino.id, hojeIso());
 
   const outraData = document.createElement('button');
-  outraData.className = 'btn btn-pequeno';
-  outraData.style.flex = '0 0 auto';
+  outraData.className = 'btn btn-pequeno nao-estica';
   outraData.textContent = 'Outra data';
   outraData.onclick = async () => {
     const dados = await formulario(
@@ -316,8 +309,7 @@ function cabecalhoDaSessao(sessao) {
   card.appendChild(cab);
 
   const data = document.createElement('p');
-  data.className = 'texto-fraco pequeno';
-  data.style.margin = '0';
+  data.className = 'texto-fraco pequeno m-0';
   data.textContent = formatarLongo(sessao.data) + ' · ' + descreverDistancia(sessao.data);
   card.appendChild(data);
 
@@ -538,8 +530,7 @@ function campoNumerico(valor, unidade, aoMudar) {
 /** Botões "+ série" e "+ aquecimento". */
 function botoesDeSerie(item, seriesDoItem) {
   const div = document.createElement('div');
-  div.className = 'linha-botoes';
-  div.style.marginTop = '10px';
+  div.className = 'linha-botoes mt-3';
 
   const feitas = seriesDoItem.filter((s) => !s.aquecimento).length;
   const restantes = item.seriesPlanejadas - feitas;
@@ -697,8 +688,7 @@ function rodapeDaSessao(sessao) {
   card.appendChild(botoes);
 
   const apagar = document.createElement('button');
-  apagar.className = 'btn btn-perigo btn-bloco';
-  apagar.style.marginTop = '8px';
+  apagar.className = 'btn btn-perigo btn-bloco mt-2';
   apagar.textContent = 'Excluir sessão';
   apagar.onclick = async () => {
     const ok = await confirmar(

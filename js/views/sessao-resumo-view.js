@@ -37,8 +37,7 @@ export async function montarResumoDaSessao(raiz, params = {}) {
   card.className = 'card resumo-sessao';
   if (!resumo.exercicios.length) {
     const vazio = document.createElement('p');
-    vazio.className = 'texto-fraco';
-    vazio.style.margin = '0';
+    vazio.className = 'texto-fraco m-0';
     vazio.textContent = 'Nenhum exercício nesta sessão.';
     card.appendChild(vazio);
   }
@@ -69,7 +68,7 @@ function cabecalho(resumo) {
     linha.appendChild(marca);
   }
   const h2 = document.createElement('h2');
-  h2.style.margin = '0';
+  h2.classList.add('m-0');
   h2.textContent = 'Treino ' + resumo.treinoNome;
   linha.appendChild(h2);
   if (!resumo.finalizada) {
@@ -81,14 +80,12 @@ function cabecalho(resumo) {
   div.appendChild(linha);
 
   const data = document.createElement('p');
-  data.className = 'texto-fraco pequeno';
-  data.style.margin = '2px 0 0';
+  data.className = 'texto-fraco pequeno m-0 mt-1';
   data.textContent = `${formatarLongo(resumo.data)} · ${descreverDistancia(resumo.data)}`;
   div.appendChild(data);
 
   const totais = document.createElement('p');
-  totais.className = 'texto-fraco pequeno';
-  totais.style.margin = '0';
+  totais.className = 'texto-fraco pequeno m-0';
   totais.textContent = textoDosTotais(resumo.totais);
   div.appendChild(totais);
 
@@ -116,8 +113,7 @@ function blocoDoExercicio(e) {
 
   if (!e.feito) {
     const nada = document.createElement('p');
-    nada.className = 'texto-fraco pequeno';
-    nada.style.margin = '2px 0 0';
+    nada.className = 'texto-fraco pequeno m-0 mt-1';
     nada.textContent = 'não feito';
     bloco.appendChild(nada);
     return bloco;

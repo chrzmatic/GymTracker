@@ -29,7 +29,7 @@ export async function montarTreinos(raiz) {
 function secao(raiz, titulo, lista, naRotacao) {
   const h = document.createElement('h2');
   h.textContent = titulo;
-  h.style.margin = '18px 0 8px';
+  h.classList.add('titulo-secao');
   raiz.appendChild(h);
 
   if (!lista.length) {
@@ -58,7 +58,7 @@ function cardDeTreino(treino, posicao, total) {
   const marca = document.createElement('span');
   marca.className = 'marca-treino';
   marca.style.background = treino.cor || 'var(--borda)';
-  marca.style.marginTop = '7px';
+  marca.classList.add('marca-alinhada');
   cab.appendChild(marca);
 
   const h3 = document.createElement('h3');
@@ -81,8 +81,7 @@ function cardDeTreino(treino, posicao, total) {
 
   const series = seriesPlanejadasDoTreino(treino);
   const resumo = document.createElement('p');
-  resumo.className = 'texto-fraco pequeno';
-  resumo.style.margin = '0 0 6px';
+  resumo.className = 'texto-fraco pequeno m-0 mb-2';
   resumo.textContent = treino.itens.length
     ? `${treino.itens.length} exercícios · ${series.obrigatorias} séries` +
       (series.opcionais ? ` (+${series.opcionais} opcionais)` : '')
@@ -91,8 +90,7 @@ function cardDeTreino(treino, posicao, total) {
 
   if (treino.itens.length) {
     const lista = document.createElement('p');
-    lista.className = 'texto-fraco pequeno';
-    lista.style.margin = '0';
+    lista.className = 'texto-fraco pequeno m-0';
     lista.textContent = treino.itens
       .map((i) => treinos.nomeDoItem(i, exercicios))
       .join(' · ');
@@ -161,7 +159,7 @@ async function menuDoTreino(treino) {
 /** Criar treino e ir para exercícios e músculos. */
 function botoesDoRodape() {
   const div = document.createElement('div');
-  div.style.marginTop = '20px';
+  div.classList.add('mt-5');
 
   const novo = document.createElement('button');
   novo.className = 'btn btn-primario btn-bloco';
@@ -188,8 +186,7 @@ function botoesDoRodape() {
   div.appendChild(novo);
 
   const linha = document.createElement('div');
-  linha.className = 'linha-botoes';
-  linha.style.marginTop = '8px';
+  linha.className = 'linha-botoes mt-2';
 
   const ex = document.createElement('button');
   ex.className = 'btn';

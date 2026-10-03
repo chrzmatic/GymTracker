@@ -9,7 +9,7 @@
  * Arquivo novo no projeto precisa entrar em `ARQUIVOS` (tests/arquivos.test.js confere).
  */
 
-const VERSAO = '1.0.14';
+const VERSAO = '1.0.15';
 const CACHE = `gymtracker-${VERSAO}`;
 
 /** Arquivos para abrir sem rede. */

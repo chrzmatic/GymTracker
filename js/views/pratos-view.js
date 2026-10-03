@@ -36,16 +36,14 @@ export async function montarPratos(raiz) {
     card.appendChild(cab);
 
     const p = document.createElement('p');
-    p.className = 'texto-fraco pequeno';
-    p.style.margin = '0';
+    p.className = 'texto-fraco pequeno m-0';
     p.textContent =
       `${num(r.valores.kcal, 0)} kcal · P ${num(r.valores.proteina, 1)} g · ` +
       `G ${num(r.valores.gordura, 1)} g · C ${num(r.valores.carbo, 1)} g`;
     card.appendChild(p);
 
     const ing = document.createElement('p');
-    ing.className = 'texto-fraco pequeno';
-    ing.style.margin = '4px 0 0';
+    ing.className = 'texto-fraco pequeno m-0 mt-1';
     ing.textContent = r.ingredientes.map((i) => i.nome).join(' + ') || 'Sem ingredientes';
     card.appendChild(ing);
 
@@ -54,8 +52,7 @@ export async function montarPratos(raiz) {
   });
 
   const novo = document.createElement('button');
-  novo.className = 'btn btn-primario btn-bloco';
-  novo.style.marginTop = '12px';
+  novo.className = 'btn btn-primario btn-bloco mt-3';
   novo.textContent = '+ novo prato';
   novo.onclick = async () => {
     const dados = await formulario('Novo prato', [{ nome: 'nome', rotulo: 'Nome' }], 'Criar');
@@ -85,11 +82,10 @@ export async function montarEditorDePrato(raiz, params) {
   totais.className = 'card card-sugestao';
   const h2 = document.createElement('h2');
   h2.textContent = num(r.valores.kcal, 0) + ' kcal';
-  h2.style.margin = '0 0 2px';
+  h2.classList.add('m-0', 'mb-1');
   totais.appendChild(h2);
   const macros = document.createElement('p');
-  macros.className = 'texto-fraco pequeno';
-  macros.style.margin = '0';
+  macros.className = 'texto-fraco pequeno m-0';
   macros.textContent =
     `P ${num(r.valores.proteina, 1)} g · G ${num(r.valores.gordura, 1)} g · ` +
     `C ${num(r.valores.carbo, 1)} g · Fibra ${num(r.valores.fibra, 1)} g`;
@@ -100,7 +96,7 @@ export async function montarEditorDePrato(raiz, params) {
   card.className = 'card';
   const h3 = document.createElement('h3');
   h3.textContent = 'Ingredientes';
-  h3.style.margin = '0 0 8px';
+  h3.classList.add('m-0', 'mb-2');
   card.appendChild(h3);
 
   if (!r.ingredientes.length) {
@@ -126,8 +122,7 @@ export async function montarEditorDePrato(raiz, params) {
         : `${num(ing.quantidade, 2)} ${ing.unidade}`;
     if (ing.quantidade === null || ing.quantidade === undefined) {
       quantidade.setAttribute('aria-pressed', 'false');
-      quantidade.style.borderColor = 'var(--aviso)';
-      quantidade.style.color = 'var(--aviso)';
+      quantidade.classList.add('pilula-aviso');
     }
     quantidade.onclick = async () => {
       const dados = await formulario(ing.nome, [
@@ -169,8 +164,7 @@ export async function montarEditorDePrato(raiz, params) {
   });
 
   const add = document.createElement('button');
-  add.className = 'btn btn-bloco';
-  add.style.marginTop = '10px';
+  add.className = 'btn btn-bloco mt-3';
   add.textContent = '+ ingrediente';
   add.onclick = async () => {
     const alimentoId = await escolherAlimento('Adicionar ingrediente');
@@ -190,8 +184,7 @@ export async function montarEditorDePrato(raiz, params) {
   raiz.appendChild(card);
 
   const excluir = document.createElement('button');
-  excluir.className = 'btn btn-perigo btn-bloco';
-  excluir.style.marginTop = '8px';
+  excluir.className = 'btn btn-perigo btn-bloco mt-2';
   excluir.textContent = 'Excluir prato';
   excluir.onclick = async () => {
     const onde = await dieta.ondePratoEUsado(prato.id);

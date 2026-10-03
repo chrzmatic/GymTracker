@@ -246,19 +246,17 @@ async function registrarNoDia(dia, titulo) {
 
 function resumo() {
   const div = document.createElement('div');
-  div.className = 'card';
-  div.style.marginTop = '16px';
+  div.className = 'card mt-4';
 
   const h3 = document.createElement('h3');
   h3.textContent =
     dados.resumo.total === 1 ? '1 treino no mês' : `${dados.resumo.total} treinos no mês`;
-  h3.style.margin = '0 0 8px';
+  h3.classList.add('m-0', 'mb-2');
   div.appendChild(h3);
 
   if (!dados.resumo.total) {
     const p = document.createElement('p');
-    p.className = 'texto-fraco pequeno';
-    p.style.margin = '0';
+    p.className = 'texto-fraco pequeno m-0';
     p.textContent = 'Toque num dia para registrar um treino nele.';
     div.appendChild(p);
     return div;

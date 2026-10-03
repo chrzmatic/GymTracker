@@ -42,17 +42,15 @@ export async function montarPeso(raiz) {
 /** Peso atual e variação desde o primeiro registro. */
 function cardResumo(resumo) {
   const card = document.createElement('div');
-  card.className = 'card';
-  card.style.marginTop = '12px';
+  card.className = 'card mt-3';
 
   const atual = document.createElement('h2');
   atual.textContent = num(resumo.ultimo.kg, 1) + ' kg';
-  atual.style.margin = '0';
+  atual.classList.add('m-0');
   card.appendChild(atual);
 
   const detalhe = document.createElement('p');
-  detalhe.className = 'texto-fraco pequeno';
-  detalhe.style.margin = '2px 0 0';
+  detalhe.className = 'texto-fraco pequeno m-0 mt-1';
   const partes = [descreverDistancia(resumo.ultimo.data)];
   if (resumo.primeiro.id !== resumo.ultimo.id) {
     partes.push(
@@ -79,14 +77,12 @@ function linhaDePeso(registro, anterior) {
   div.appendChild(data);
 
   const kg = document.createElement('span');
-  kg.style.fontVariantNumeric = 'tabular-nums';
+  kg.classList.add('numeros-alinhados');
   kg.textContent = num(registro.kg, 1) + ' kg';
   div.appendChild(kg);
 
   const variacao = document.createElement('span');
-  variacao.className = 'texto-fraco pequeno';
-  variacao.style.minWidth = '48px';
-  variacao.style.textAlign = 'right';
+  variacao.className = 'texto-fraco pequeno peso-variacao';
   variacao.textContent = anterior ? comSinal(registro.kg - anterior.kg, 1) : '';
   div.appendChild(variacao);
 

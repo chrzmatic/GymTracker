@@ -72,7 +72,7 @@ function cardRecomecar() {
 
   const h3 = document.createElement('h3');
   h3.textContent = 'Recomeçar';
-  h3.style.margin = '0 0 4px';
+  h3.classList.add('m-0', 'mb-1');
   card.appendChild(h3);
 
   card.appendChild(
@@ -104,8 +104,7 @@ function cardRecomecar() {
   );
 
   const apagar = document.createElement('button');
-  apagar.className = 'btn btn-perigo btn-bloco';
-  apagar.style.marginTop = '10px';
+  apagar.className = 'btn btn-perigo btn-bloco mt-3';
   apagar.textContent = 'Apagar tudo e começar do zero';
   apagar.onclick = async () => {
     const ok = await confirmar(
@@ -139,7 +138,7 @@ function cardBackup() {
 
   const h3 = document.createElement('h3');
   h3.textContent = 'Backup';
-  h3.style.margin = '0 0 4px';
+  h3.classList.add('m-0', 'mb-1');
   card.appendChild(h3);
 
   card.appendChild(
@@ -276,7 +275,7 @@ function cardPeso() {
 
   const h3 = document.createElement('h3');
   h3.textContent = 'Peso corporal';
-  h3.style.margin = '0 0 4px';
+  h3.classList.add('m-0', 'mb-1');
   card.appendChild(h3);
 
   const botao = document.createElement('button');
@@ -295,7 +294,7 @@ function cardRotacao(config) {
 
   const h3 = document.createElement('h3');
   h3.textContent = 'Rotação';
-  h3.style.margin = '0 0 4px';
+  h3.classList.add('m-0', 'mb-1');
   card.appendChild(h3);
 
   card.appendChild(

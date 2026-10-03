@@ -72,7 +72,7 @@ async function desenhar() {
   if (outros.length) {
     const h = document.createElement('h2');
     h.textContent = 'Diferenças entre as sessões';
-    h.style.margin = '18px 0 8px';
+    h.classList.add('titulo-secao');
     raiz.appendChild(h);
     outros.forEach((i) => raiz.appendChild(cardDeExercicio(i)));
   }
@@ -144,8 +144,7 @@ function seta() {
 /** Botões de escolha, só quando ainda não há comparação. */
 function botoesDeEscolha() {
   const div = document.createElement('div');
-  div.className = 'linha-botoes';
-  div.style.marginTop = '16px';
+  div.className = 'linha-botoes mt-4';
 
   const trocarA = document.createElement('button');
   trocarA.className = 'btn';
@@ -196,7 +195,7 @@ function cardDeTotal(r) {
 
   const h3 = document.createElement('h3');
   h3.textContent = 'Total da sessão';
-  h3.style.margin = '0 0 8px';
+  h3.classList.add('m-0', 'mb-2');
   card.appendChild(h3);
 
   r.total.metricas.forEach((m) => card.appendChild(linhaDeMetrica(m)));
@@ -221,8 +220,7 @@ function cardDeExercicio(item) {
 
   if (item.estado === ESTADO.DIFERENTE) {
     const nota = document.createElement('p');
-    nota.className = 'texto-fraco pequeno';
-    nota.style.margin = '0';
+    nota.className = 'texto-fraco pequeno m-0';
     nota.textContent = item.eraGrupo
       ? `Alternativas diferentes: ${item.nomeA} antes, ${item.nomeB} depois. Sem comparação direta.`
       : `Você fez ${item.nomeB} no lugar de ${item.nomeA}, na mesma vaga do treino. São exercícios diferentes, então não há comparação direta.`;
@@ -233,8 +231,7 @@ function cardDeExercicio(item) {
 
   if (item.estado === ESTADO.PULADO) {
     const nota = document.createElement('p');
-    nota.className = 'texto-fraco pequeno';
-    nota.style.margin = '0';
+    nota.className = 'texto-fraco pequeno m-0';
     nota.textContent = item.a.series
       ? 'Pulado na sessão mais nova.'
       : 'Pulado na sessão mais antiga.';
@@ -279,8 +276,7 @@ function resumoSimples(item) {
 
   const lado = (m, rotulo) => {
     const p = document.createElement('p');
-    p.className = 'texto-fraco pequeno';
-    p.style.margin = '4px 0 0';
+    p.className = 'texto-fraco pequeno m-0 mt-1';
     p.textContent = m.series
       ? `${rotulo}: ${m.series} séries, ${m.reps} reps` +
         (m.volume !== null ? `, volume ${num(m.volume, 0)} kg` : '')

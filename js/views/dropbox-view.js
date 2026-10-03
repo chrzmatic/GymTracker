@@ -41,13 +41,12 @@ function card(titulo, detalhe) {
 
   const h3 = document.createElement('h3');
   h3.textContent = titulo;
-  h3.style.margin = '0';
+  h3.classList.add('m-0');
   el.appendChild(h3);
 
   if (detalhe) {
     const p = document.createElement('p');
-    p.className = 'texto-fraco pequeno';
-    p.style.margin = '2px 0 0';
+    p.className = 'texto-fraco pequeno m-0 mt-1';
     p.textContent = detalhe;
     el.appendChild(p);
   }
@@ -59,7 +58,7 @@ function card(titulo, detalhe) {
 function botao(rotulo, aoTocar, primario = false) {
   const b = document.createElement('button');
   b.className = 'btn btn-bloco' + (primario ? ' btn-primario' : '');
-  b.style.marginTop = '10px';
+  b.classList.add('mt-3');
   b.textContent = rotulo;
   b.onclick = aoTocar;
   return b;
@@ -68,8 +67,7 @@ function botao(rotulo, aoTocar, primario = false) {
 /** Linha de ações secundárias, separadas por ponto. */
 function acoesSecundarias(itens) {
   const linha = document.createElement('p');
-  linha.className = 'pequeno';
-  linha.style.margin = '12px 0 0';
+  linha.className = 'pequeno m-0 mt-3';
 
   itens.forEach((item, i) => {
     if (i) linha.appendChild(document.createTextNode(' · '));
@@ -124,9 +122,8 @@ function cardConectado(estado) {
 
   if (estado.ultimoErro) {
     const erro = document.createElement('p');
-    erro.className = 'pequeno';
-    erro.style.margin = '6px 0 0';
-    erro.style.color = 'var(--piora)';
+    erro.className = 'pequeno m-0 mt-2';
+    erro.classList.add('texto-erro');
     erro.textContent = estado.ultimoErro;
     el.appendChild(erro);
   }

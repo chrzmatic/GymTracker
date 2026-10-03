@@ -29,7 +29,7 @@ export async function montarEditorDePlano(raiz, params) {
   const totais = document.createElement('div');
   totais.className = 'card card-sugestao';
   const h2 = document.createElement('h2');
-  h2.style.margin = '0 0 2px';
+  h2.classList.add('m-0', 'mb-1');
   h2.textContent = `${num(dia.total.kcal, 0)} kcal`;
   totais.appendChild(h2);
   totais.appendChild(
@@ -37,13 +37,12 @@ export async function montarEditorDePlano(raiz, params) {
       dia.metas.kcal
         ? `Meta: ${num(dia.metas.kcal, 0)} kcal`
         : 'Sem meta de calorias definida.',
-      '0'
+      'm-0'
     )
   );
 
   const renomear = document.createElement('button');
-  renomear.className = 'btn btn-bloco';
-  renomear.style.marginTop = '10px';
+  renomear.className = 'btn btn-bloco mt-3';
   renomear.textContent = 'Renomear o plano';
   renomear.onclick = async () => {
     const dados = await formulario('Renomear plano', [
@@ -65,8 +64,7 @@ export async function montarEditorDePlano(raiz, params) {
   );
 
   const adicionar = document.createElement('button');
-  adicionar.className = 'btn btn-primario btn-bloco';
-  adicionar.style.marginTop = '12px';
+  adicionar.className = 'btn btn-primario btn-bloco mt-3';
   adicionar.textContent = '+ refeição';
   adicionar.onclick = () => adicionarRefeicao(plano);
   raiz.appendChild(adicionar);
@@ -110,8 +108,7 @@ function cardDeRefeicaoNoPlano(plano, r, indice, total) {
   card.appendChild(cab);
 
   const resumo = document.createElement('p');
-  resumo.className = 'texto-fraco pequeno';
-  resumo.style.margin = '0';
+  resumo.className = 'texto-fraco pequeno m-0';
   const kcal = `${num(r.total.kcal, 0)} kcal`;
   resumo.textContent =
     `${r.itens.length} ${r.itens.length === 1 ? 'item' : 'itens'} · ${kcal} · ` +
@@ -259,11 +256,10 @@ export async function montarEditorDeRefeicao(raiz, params) {
   totais.className = 'card card-sugestao';
   const h2 = document.createElement('h2');
   h2.textContent = `${num(calculo.total.kcal, 0)} kcal`;
-  h2.style.margin = '0 0 2px';
+  h2.classList.add('m-0', 'mb-1');
   totais.appendChild(h2);
   const macros = document.createElement('p');
-  macros.className = 'texto-fraco pequeno';
-  macros.style.margin = '0';
+  macros.className = 'texto-fraco pequeno m-0';
   macros.textContent =
     `P ${num(calculo.total.proteina, 1)} g · ` +
     `G ${num(calculo.total.gordura, 1)} g · C ${num(calculo.total.carbo, 1)} g`;
@@ -273,8 +269,7 @@ export async function montarEditorDeRefeicao(raiz, params) {
   calculo.itens.forEach((item) => raiz.appendChild(cardDeItemEditavel(refeicao, item)));
 
   const add = document.createElement('button');
-  add.className = 'btn btn-primario btn-bloco';
-  add.style.marginTop = '12px';
+  add.className = 'btn btn-primario btn-bloco mt-3';
   add.textContent = '+ item';
   add.onclick = () => adicionarItem(refeicao);
   raiz.appendChild(add);
@@ -338,15 +333,15 @@ function cardDeItemEditavel(refeicao, item) {
     card.appendChild(
       textoFraco(
         'Uma linha por opção. A marcada é a padrão; toque nela para trocar, ou no ⋯ para mudar a quantidade e remover.',
-        '0 0 8px'
+        'm-0',
+        'mb-2'
       )
     );
 
     item.opcoes.forEach((o) => card.appendChild(linhaDeOpcao(refeicao, item, o)));
 
     const add = document.createElement('button');
-    add.className = 'btn btn-bloco';
-    add.style.marginTop = '10px';
+    add.className = 'btn btn-bloco mt-3';
     add.textContent = '+ opção';
     add.onclick = () => adicionarOpcao(refeicao, item);
     card.appendChild(add);
@@ -378,8 +373,7 @@ function cardDeItemEditavel(refeicao, item) {
   linha.appendChild(quantidade);
 
   const kcal = document.createElement('span');
-  kcal.className = 'texto-fraco pequeno';
-  kcal.style.alignSelf = 'center';
+  kcal.className = 'texto-fraco pequeno alinha-centro';
   kcal.textContent = `${num(item.valores.kcal, 0)} kcal · P ${num(item.valores.proteina, 1)} g`;
   linha.appendChild(kcal);
 
@@ -387,9 +381,8 @@ function cardDeItemEditavel(refeicao, item) {
 
   if (item.erro) {
     const erro = document.createElement('p');
-    erro.className = 'pequeno';
-    erro.style.color = 'var(--piora)';
-    erro.style.margin = '6px 0 0';
+    erro.className = 'pequeno texto-erro';
+    erro.classList.add('m-0', 'mt-2');
     erro.textContent = item.erro;
     card.appendChild(erro);
   }
