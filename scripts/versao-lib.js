@@ -1,10 +1,10 @@
 /**
  * Regras da versão do app (puras, para testar).
- * Formato MAJOR.MINOR.BUILD: MAJOR.MINOR do package.json, BUILD = número do commit.
+ * Formato MAJOR.MINOR.BUILD: MAJOR.MINOR do deno.json, BUILD = número do commit.
  */
 
 /**
- * Versão a partir do package.json e do número do commit.
+ * Versão a partir do `version` do deno.json e do número do commit.
  * @param {string} versaoDoPacote ex.: '1.0.0'
  * @param {number} build
  * @returns {string} ex.: '1.0.10'

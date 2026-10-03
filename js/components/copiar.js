@@ -11,7 +11,7 @@
  */
 export async function copiarTexto(texto) {
   try {
-    if (navigator.clipboard && window.isSecureContext) {
+    if (navigator.clipboard && globalThis.isSecureContext) {
       await navigator.clipboard.writeText(texto);
       return true;
     }

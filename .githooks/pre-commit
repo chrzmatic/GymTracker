@@ -2,12 +2,12 @@
 # Atualiza a versão do app com o número deste commit.
 # Ativar uma vez por clone: git config core.hooksPath .githooks
 
-if command -v node >/dev/null 2>&1; then
-  node scripts/versao.mjs --proximo || exit 1
-elif command -v deno >/dev/null 2>&1; then
+if command -v deno >/dev/null 2>&1; then
   deno run -A scripts/versao.mjs --proximo || exit 1
+elif command -v node >/dev/null 2>&1; then
+  node scripts/versao.mjs --proximo || exit 1
 else
-  echo "pre-commit: sem node nem deno, versão não atualizada" >&2
+  echo "pre-commit: sem deno nem node, versão não atualizada" >&2
   exit 0
 fi
 

@@ -90,6 +90,7 @@ export function acharNavegador() {
       Deno.statSync(caminho);
       return caminho;
     } catch {
+      /* tenta o próximo */
     }
   }
   throw new Error('Não achei o Edge nem o Chrome instalados.');

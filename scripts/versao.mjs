@@ -1,10 +1,10 @@
 /**
  * Gera js/versao.js e atualiza a versão no service worker.
  *
- *   node scripts/versao.mjs             versão do último commit
- *   node scripts/versao.mjs --proximo   versão do commit sendo feito (usado no hook)
+ *   deno task versao              versão do último commit
+ *   deno task versao --proximo    versão do commit sendo feito (usado no hook)
  *
- * Também roda com Deno: `deno run -A scripts/versao.mjs --proximo`.
+ * Também roda com Node: `node scripts/versao.mjs --proximo`.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -28,8 +28,8 @@ try {
 }
 
 const build = commits + (proximo ? 1 : 0);
-const pacote = JSON.parse(readFileSync(raiz + 'package.json', 'utf8'));
-const versao = montarVersao(pacote.version, build);
+const config = JSON.parse(readFileSync(raiz + 'deno.json', 'utf8'));
+const versao = montarVersao(config.version, build);
 const hoje = new Date();
 const data = [
   hoje.getFullYear(),

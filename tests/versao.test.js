@@ -13,17 +13,17 @@ import { VERSAO, BUILD, DATA_DA_VERSAO } from '../js/versao.js';
 
 const ler = (caminho) => readFileSync(new URL('../' + caminho, import.meta.url), 'utf8');
 
-test('MAJOR.MINOR vêm do package.json e o terceiro número é o commit', () => {
+test('MAJOR.MINOR vêm do deno.json e o terceiro número é o commit', () => {
   assert.equal(montarVersao('1.0.0', 10), '1.0.10');
   assert.equal(
     montarVersao('1.2.7', 154),
     '1.2.154',
-    'o patch do package.json é ignorado'
+    'o patch do deno.json é ignorado'
   );
   assert.equal(montarVersao('2.0.0', 0), '2.0.0');
 });
 
-test('package.json sem versão vira 0.0.N em vez de quebrar', () => {
+test('deno.json sem versão vira 0.0.N em vez de quebrar', () => {
   assert.equal(montarVersao(undefined, 3), '0.0.3');
   assert.equal(montarVersao('', 3), '0.0.3');
   assert.equal(montarVersao('x.y', 3), '0.0.3');
@@ -61,8 +61,8 @@ test('service worker sem a linha da VERSAO dá erro em vez de passar calado', ()
   assert.throws(() => atualizarServiceWorker('const CACHE = 1;', '1.0.1'), /VERSAO/);
 });
 
-test('js/versao.js atual é coerente com o package.json', () => {
-  const pacote = JSON.parse(ler('package.json'));
+test('js/versao.js atual é coerente com o deno.json', () => {
+  const pacote = JSON.parse(ler('deno.json'));
   assert.equal(VERSAO, montarVersao(pacote.version, BUILD));
   assert.match(DATA_DA_VERSAO, /^\d{4}-\d{2}-\d{2}$/);
 });

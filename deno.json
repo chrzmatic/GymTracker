@@ -1,12 +1,29 @@
 {
+  "version": "1.0.0",
   "tasks": {
+    "servir": "deno run -A --node-modules-dir=false jsr:@std/http/file-server --port 8080",
     "test": "deno test --allow-read tests/",
     "test:navegador": "deno run -A tests/navegador/sessao-integracao.js && deno run -A tests/navegador/edicao-integracao.js && deno run -A tests/navegador/rotacao-integracao.js && deno run -A tests/navegador/comparacao-integracao.js && deno run -A tests/navegador/progresso-backup-integracao.js && deno run -A tests/navegador/dieta-integracao.js && deno run -A tests/navegador/migracao-integracao.js && deno run -A tests/navegador/dropbox-integracao.js && deno run -A tests/navegador/backup-extremo-integracao.js && deno run -A tests/navegador/resumo-integracao.js",
-    "servir": "deno run -A --node-modules-dir=false jsr:@std/http/file-server --port 8080"
+    "lint": "deno lint",
+    "fmt": "deno fmt",
+    "versao": "deno run -A scripts/versao.mjs"
   },
-  "fmt": { "useTabs": false, "lineWidth": 90, "singleQuote": true },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 90,
+    "singleQuote": true,
+    "exclude": [
+      "lib"
+    ]
+  },
   "lint": {
-    "exclude": ["lib"],
-    "rules": { "exclude": ["no-window"] }
+    "exclude": [
+      "lib"
+    ],
+    "rules": {
+      "exclude": [
+        "no-window"
+      ]
+    }
   }
 }
