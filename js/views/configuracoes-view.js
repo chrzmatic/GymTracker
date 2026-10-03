@@ -1,6 +1,6 @@
 /** Tela de configurações. */
 
-import { lerTodasConfigs, salvarConfig, CONFIG_PADRAO } from '../data/config-repo.js';
+import { lerTodasConfigs, salvarConfig, CONFIG_PADRAO } from '../services/config-service.js';
 import { NOMES_DIA_SEMANA, formatarDataHora, formatarLongo } from '../utils/date.js';
 import {
   lerEstado as lerEstadoDropbox,

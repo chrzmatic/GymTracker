@@ -2,7 +2,7 @@
 
 import * as treinos from '../services/treino-service.js';
 import { seriesPlanejadasDoTreino } from '../domain/treino.js';
-import { mapaExercicios } from '../data/exercicios-repo.js';
+import { mapaExercicios } from '../services/exercicio-service.js';
 import { confirmar, escolher, formulario } from '../components/dialogo.js';
 import { abrir, recarregar } from '../navegacao.js';
 

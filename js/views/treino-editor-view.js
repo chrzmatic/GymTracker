@@ -4,7 +4,7 @@
  */
 
 import * as treinos from '../services/treino-service.js';
-import { listarExercicios } from '../data/exercicios-repo.js';
+import { listarExercicios } from '../services/exercicio-service.js';
 import { seriesPlanejadasDoTreino } from '../domain/treino.js';
 import { paraNumero } from '../utils/format.js';
 import { confirmar, escolher, escolherComBusca, formulario } from '../components/dialogo.js';

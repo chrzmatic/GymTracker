@@ -53,6 +53,12 @@ test('toda tela registrada na navegação aponta para uma função exportada que
   });
 });
 
+test('as telas não leem o banco direto: passam pelos serviços', () => {
+  const telas = arquivosDoApp('js/views/');
+  const diretas = telas.filter((a) => /from '\.\.\/data\//.test(ler(a)));
+  assert.deepEqual(diretas, []);
+});
+
 test('a tela de resumo da sessão está registrada', () => {
   assert.match(ler('js/navegacao.js'), /'sessao-resumo':/);
 });

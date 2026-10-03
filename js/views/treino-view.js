@@ -5,7 +5,8 @@
 
 import { hojeIso, formatarLongo, descreverDistancia } from '../utils/date.js';
 import { paraNumero, num } from '../utils/format.js';
-import { ROTULO_CARGA, mapaExercicios, listarExercicios } from '../data/exercicios-repo.js';
+import { ROTULO_CARGA } from '../utils/constantes.js';
+import { mapaExercicios, listarExercicios } from '../services/exercicio-service.js';
 import { listarTreinosAgrupados, nomeDoItem } from '../services/treino-service.js';
 import * as sessoes from '../services/sessao-service.js';
 import { sugestaoPara } from '../services/rotacao-service.js';
