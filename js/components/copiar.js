@@ -5,6 +5,8 @@
  * `execCommand('copy')`, que funciona em mais navegadores.
  */
 
+import { formulario } from './dialogo.js';
+
 /**
  * Copia o texto. Chamar dentro do toque do usuário.
  * @returns {Promise<boolean>} true se copiou
@@ -19,6 +21,21 @@ export async function copiarTexto(texto) {
     /* cai no plano B */
   }
   return copiarComTextarea(texto);
+}
+
+/**
+ * Copia o texto; se não der, mostra ele para copiar na mão.
+ * Chamar dentro do toque do usuário.
+ * @returns {Promise<boolean>} true se copiou
+ */
+export async function copiarOuMostrar(texto) {
+  if (await copiarTexto(texto)) return true;
+  await formulario(
+    'Não consegui copiar',
+    [{ nome: 'texto', rotulo: 'Selecione e copie', tipo: 'textarea', valor: texto }],
+    'Fechar',
+  );
+  return false;
 }
 
 /** Plano B: copia por um <textarea> fora da tela. */

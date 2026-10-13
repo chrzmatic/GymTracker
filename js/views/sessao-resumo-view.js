@@ -10,8 +10,7 @@ import {
   textoParaCopiar,
 } from '../domain/resumo-sessao.js';
 import { descreverDistancia, formatarLongo } from '../utils/date.js';
-import { copiarTexto } from '../components/copiar.js';
-import { formulario } from '../components/dialogo.js';
+import { copiarOuMostrar } from '../components/copiar.js';
 import { abrir, definirTitulo, voltarUmaTela } from '../navegacao.js';
 
 /**
@@ -142,17 +141,7 @@ function botoes(resumo) {
   copiar.dataset.acao = 'copiar';
   copiar.textContent = 'Copiar texto';
   copiar.onclick = async () => {
-    const texto = textoParaCopiar(resumo);
-    const ok = await copiarTexto(texto);
-    if (!ok) {
-      // Não conseguiu copiar: mostra o texto para copiar na mão.
-      await formulario(
-        'Não consegui copiar',
-        [{ nome: 'texto', rotulo: 'Selecione e copie', tipo: 'textarea', valor: texto }],
-        'Fechar',
-      );
-      return;
-    }
+    if (!(await copiarOuMostrar(textoParaCopiar(resumo)))) return;
     copiar.textContent = 'Copiado ✓';
     setTimeout(() => {
       copiar.textContent = 'Copiar texto';

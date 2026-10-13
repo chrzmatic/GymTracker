@@ -5,7 +5,9 @@ import assert from 'node:assert/strict';
 
 import {
   resumirSessao,
+  SEPARADOR_DE_SESSOES,
   textoDaSerie,
+  textoDeVariasSessoes,
   textoDosTotais,
   textoParaCopiar,
 } from '../js/domain/resumo-sessao.js';
@@ -324,4 +326,65 @@ test('totais no singular e no plural', () => {
     textoDosTotais({ exercicios: 0, series: 0, reps: 0 }),
     '0 exercícios · 0 séries · 0 reps',
   );
+});
+
+/* --- Várias sessões juntas --- */
+
+/** Sessão carregada com data própria; as séries são as mesmas do exemplo. */
+const carregadaEm = (id, data, extra = {}) => ({
+  sessao: { ...sessao, id, data, ...extra },
+  series,
+  exercicios,
+});
+
+const titulos = (texto) => texto.split('\n').filter((l) => l.startsWith('Treino '));
+
+test('várias sessões: da mais antiga para a mais nova, não importa a ordem escolhida', () => {
+  // Escolhidas na ordem 09/10, 07/10, 11/10.
+  const texto = textoDeVariasSessoes([
+    carregadaEm('s9', '2026-10-09'),
+    carregadaEm('s7', '2026-10-07'),
+    carregadaEm('s11', '2026-10-11'),
+  ]);
+  assert.deepEqual(titulos(texto), [
+    'Treino A · 07/10/2026',
+    'Treino A · 09/10/2026',
+    'Treino A · 11/10/2026',
+  ]);
+});
+
+test('várias sessões: cada bloco é igual ao texto de uma sessão sozinha', () => {
+  const a = carregadaEm('s1', '2026-10-07');
+  const b = carregadaEm('s2', '2026-10-09', { treinoNome: 'B', anotacao: '' });
+  assert.equal(
+    textoDeVariasSessoes([b, a]),
+    [
+      textoParaCopiar(resumirSessao(a)),
+      SEPARADOR_DE_SESSOES,
+      textoParaCopiar(resumirSessao(b)),
+    ].join('\n\n'),
+  );
+});
+
+test('várias sessões: no mesmo dia, a criada antes vem primeiro', () => {
+  const texto = textoDeVariasSessoes([
+    carregadaEm('tarde', '2026-10-09', { treinoNome: 'B', criadaEm: 200 }),
+    carregadaEm('manha', '2026-10-09', { treinoNome: 'A', criadaEm: 100 }),
+  ]);
+  assert.deepEqual(titulos(texto), [
+    'Treino A · 09/10/2026',
+    'Treino B · 09/10/2026',
+  ]);
+});
+
+test('várias sessões: uma só sai igual ao texto dela; nenhuma sai vazio', () => {
+  const a = carregadaEm('s1', '2026-10-07');
+  assert.equal(textoDeVariasSessoes([a]), textoParaCopiar(resumirSessao(a)));
+  assert.equal(textoDeVariasSessoes([]), '');
+});
+
+test('várias sessões: não reordena a lista recebida', () => {
+  const lista = [carregadaEm('s9', '2026-10-09'), carregadaEm('s7', '2026-10-07')];
+  textoDeVariasSessoes(lista);
+  assert.deepEqual(lista.map((c) => c.sessao.id), ['s9', 's7']);
 });

@@ -163,3 +163,22 @@ export function textoParaCopiar(resumo) {
   linhas.push(textoDosTotais(resumo.totais));
   return linhas.join('\n');
 }
+
+/** Linha entre uma sessão e outra no texto de várias. */
+export const SEPARADOR_DE_SESSOES = '----------';
+
+/**
+ * Texto de várias sessões juntas, da mais antiga para a mais nova,
+ * não importa a ordem em que foram escolhidas. No mesmo dia, vale a criada antes.
+ * @param {{sessao: Object, series: Object[], exercicios: Map<string, Object>}[]} carregadas
+ */
+export function textoDeVariasSessoes(carregadas) {
+  return carregadas
+    .slice()
+    .sort((a, b) =>
+      a.sessao.data.localeCompare(b.sessao.data) ||
+      (a.sessao.criadaEm ?? 0) - (b.sessao.criadaEm ?? 0)
+    )
+    .map((c) => textoParaCopiar(resumirSessao(c)))
+    .join(`\n\n${SEPARADOR_DE_SESSOES}\n\n`);
+}

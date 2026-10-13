@@ -1043,6 +1043,52 @@ a.btn {
   color: var(--texto-fraco);
 }
 
+/* Histórico: escolher várias sessões para copiar. */
+.card.selecionada {
+  border-color: var(--acento);
+  background: var(--bg-campo);
+}
+
+.selecionando .btn-menu-sessao {
+  color: var(--acento);
+}
+
+.card.selecionada .btn-menu-sessao {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: #fff;
+}
+
+/* Fica logo acima da barra de abas. */
+.barra-selecao {
+  position: fixed;
+  left: 14px;
+  right: 14px;
+  bottom: calc(var(--altura-abas) + var(--safe-bottom) + 8px);
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--bg-elevado);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+}
+
+.barra-selecao .btn:disabled {
+  opacity: 0.5;
+}
+
+.barra-selecao-total {
+  flex: 1;
+  padding-left: 4px;
+}
+
+/* Espaço no fim da lista para a barra não cobrir o último card. */
+.selecionando {
+  padding-bottom: 72px;
+}
+
 .versao-app {
   text-align: center;
   margin: 24px 0 4px;

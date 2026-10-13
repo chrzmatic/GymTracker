@@ -45,8 +45,11 @@ export function confirmar(titulo, mensagem = '', textoConfirmar = 'Excluir') {
 
 /**
  * Lista de opções. Devolve o valor escolhido, ou null se cancelar.
+ *
+ * `aoTocar` roda ainda dentro do toque, antes de fechar. Serve para o que o
+ * Safari só deixa fazer no toque, como copiar.
  * @param {string} titulo
- * @param {{valor: *, rotulo: string, detalhe?: string}[]} opcoes
+ * @param {{valor: *, rotulo: string, detalhe?: string, aoTocar?: Function}[]} opcoes
  */
 export function escolher(titulo, opcoes) {
   return abrir((dlg, fechar) => {
@@ -67,7 +70,10 @@ export function escolher(titulo, opcoes) {
         span.textContent = op.detalhe;
         btn.appendChild(span);
       }
-      btn.onclick = () => fechar(op.valor);
+      btn.onclick = () => {
+        op.aoTocar?.();
+        fechar(op.valor);
+      };
       li.appendChild(btn);
       ul.appendChild(li);
     });
