@@ -1,7 +1,7 @@
 /** Plano (as refeições, em ordem) e refeição (itens, grupos de opções e quantidades). */
 
 import * as dieta from '../services/dieta-service.js';
-import { TIPO_ITEM } from '../domain/nutricao.js';
+import { TIPO_ITEM, unidadeMuda } from '../domain/nutricao.js';
 import { num, paraNumero } from '../utils/format.js';
 import {
   avisar,
@@ -275,7 +275,9 @@ export async function montarEditorDeRefeicao(raiz, params) {
   totais.appendChild(macros);
   raiz.appendChild(totais);
 
-  calculo.itens.forEach((item) => raiz.appendChild(cardDeItemEditavel(refeicao, item)));
+  calculo.itens.forEach((item, i) =>
+    raiz.appendChild(cardDeItemEditavel(refeicao, item, i, calculo.itens.length))
+  );
 
   const add = document.createElement('button');
   add.className = 'btn btn-primario btn-bloco mt-3';
@@ -284,8 +286,14 @@ export async function montarEditorDeRefeicao(raiz, params) {
   raiz.appendChild(add);
 }
 
-/** Card de um item editável. */
-function cardDeItemEditavel(refeicao, item) {
+/**
+ * Card de um item editável.
+ * @param {Object} refeicao
+ * @param {Object} item item calculado
+ * @param {number} indice posição
+ * @param {number} total quantos itens a refeição tem
+ */
+function cardDeItemEditavel(refeicao, item, indice, total) {
   const card = document.createElement('div');
   card.className = 'card';
 
@@ -303,45 +311,21 @@ function cardDeItemEditavel(refeicao, item) {
     cab.appendChild(etq);
   }
 
-  if (item.tipo === TIPO_ITEM.GRUPO) {
-    const renomear = document.createElement('button');
-    renomear.className = 'btn btn-icone';
-    renomear.textContent = '✎';
-    renomear.setAttribute('aria-label', 'Renomear grupo');
-    renomear.onclick = async () => {
-      const dados = await formulario('Renomear grupo', [
-        { nome: 'nome', rotulo: 'Nome do grupo', valor: item.nome },
-      ]);
-      if (!dados || !dados.nome.trim()) return;
-      await dieta.renomearGrupo(refeicao.id, item.itemId, dados.nome);
-      await recarregar();
-    };
-    cab.appendChild(renomear);
-  }
+  cab.appendChild(setaDeItem(refeicao, item, -1, indice > 0));
+  cab.appendChild(setaDeItem(refeicao, item, 1, indice < total - 1));
 
-  const remover = document.createElement('button');
-  remover.className = 'btn btn-icone';
-  remover.textContent = '×';
-  remover.setAttribute('aria-label', 'Remover item');
-  remover.onclick = async () => {
-    const ok = await confirmar(
-      'Remover ' + item.nome + '?',
-      item.tipo === TIPO_ITEM.GRUPO
-        ? 'O grupo inteiro sai desta refeição, com todas as opções dele.'
-        : 'Sai desta refeição.',
-      'Remover',
-    );
-    if (!ok) return;
-    await dieta.removerItem(refeicao.id, item.itemId);
-    await recarregar();
-  };
-  cab.appendChild(remover);
+  const menu = document.createElement('button');
+  menu.className = 'btn btn-icone';
+  menu.textContent = '⋯';
+  menu.setAttribute('aria-label', 'Opções do item');
+  menu.onclick = () => menuDoItem(refeicao, item);
+  cab.appendChild(menu);
   card.appendChild(cab);
 
   if (item.tipo === TIPO_ITEM.GRUPO) {
     card.appendChild(
       textoFraco(
-        'Uma linha por opção. A marcada é a padrão; toque nela para trocar, ou no ⋯ para mudar a quantidade e remover.',
+        'Uma linha por opção. A marcada é a padrão; toque nela para trocar, ou no ⋯ para mudar a quantidade, substituir e remover.',
         'm-0',
         'mb-2',
       ),
@@ -401,6 +385,128 @@ function cardDeItemEditavel(refeicao, item) {
   return card;
 }
 
+/** Seta para subir ou descer o item. */
+function setaDeItem(refeicao, item, direcao, ativo) {
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-icone btn-mover';
+  btn.textContent = direcao === -1 ? '↑' : '↓';
+  btn.setAttribute('aria-label', direcao === -1 ? 'Subir item' : 'Descer item');
+  btn.disabled = !ativo;
+  btn.onclick = async () => {
+    await dieta.moverItem(refeicao.id, item.itemId, direcao);
+    await recarregar();
+  };
+  return btn;
+}
+
+/** "Substituir por outro alimento" ou "... prato". */
+function rotuloDeSubstituir(itemOuOpcao) {
+  return itemOuOpcao.tipo === TIPO_ITEM.PRATO
+    ? 'Substituir por outro prato'
+    : 'Substituir por outro alimento';
+}
+
+/** Menu de um item: substituir, renomear o grupo e remover. */
+async function menuDoItem(refeicao, item) {
+  const ehGrupo = item.tipo === TIPO_ITEM.GRUPO;
+  const opcoes = [];
+  if (!ehGrupo && !item.livre) {
+    opcoes.push({
+      valor: 'substituir',
+      rotulo: rotuloDeSubstituir(item),
+      detalhe: item.descricao,
+    });
+  }
+  if (ehGrupo) opcoes.push({ valor: 'renomear', rotulo: 'Renomear grupo' });
+  opcoes.push({ valor: 'remover', rotulo: ehGrupo ? 'Remover o grupo' : 'Remover' });
+
+  const acao = await escolher(item.nome, opcoes);
+
+  if (acao === 'substituir') {
+    if (await substituir(refeicao.id, item.itemId, null, item.nome)) await recarregar();
+    return;
+  }
+
+  if (acao === 'renomear') {
+    const dados = await formulario('Renomear grupo', [
+      { nome: 'nome', rotulo: 'Nome do grupo', valor: item.nome },
+    ]);
+    if (!dados || !dados.nome.trim()) return;
+    await dieta.renomearGrupo(refeicao.id, item.itemId, dados.nome);
+    await recarregar();
+    return;
+  }
+
+  if (acao === 'remover') {
+    const ok = await confirmar(
+      'Remover ' + item.nome + '?',
+      ehGrupo
+        ? 'O grupo inteiro sai desta refeição, com todas as opções dele.'
+        : 'Sai desta refeição.',
+      'Remover',
+    );
+    if (!ok) return;
+    await dieta.removerItem(refeicao.id, item.itemId);
+    await recarregar();
+  }
+}
+
+/**
+ * Troca o alimento (ou prato) de um item ou opção, mantendo a quantidade.
+ * Se a unidade muda (g para ml, por exemplo), pede a quantidade, já com a antiga.
+ * @param {string|null} opcaoId null para item simples
+ * @returns {Promise<boolean>} true se trocou
+ */
+async function substituir(refeicaoId, itemId, opcaoId, nomeAtual) {
+  const achado = await dieta.buscarItem(refeicaoId, itemId, opcaoId);
+  const alvo = opcaoId ? achado?.opcao : achado?.item;
+  if (!alvo) return false;
+
+  if (alvo.tipo === TIPO_ITEM.PRATO) {
+    const pratos = (await dieta.listarPratos()).filter((p) => p.id !== alvo.pratoId);
+    if (!pratos.length) {
+      await avisar('Nenhum outro prato', 'Crie outro prato composto na tela Pratos.');
+      return false;
+    }
+    const pratoId = await escolherComBusca(
+      'Substituir ' + nomeAtual,
+      pratos.map((p) => ({ valor: p.id, rotulo: p.nome })),
+    );
+    if (!pratoId) return false;
+    await dieta.substituirItem(refeicaoId, itemId, opcaoId, { pratoId });
+    return true;
+  }
+
+  const alimentoId = await escolherAlimento('Substituir ' + nomeAtual);
+  if (!alimentoId || alimentoId === alvo.alimentoId) return false;
+  const [antigo, novo] = await Promise.all([
+    dieta.buscarAlimento(alvo.alimentoId),
+    dieta.buscarAlimento(alimentoId),
+  ]);
+  if (!novo) return false;
+
+  const troca = { alimentoId };
+  if (unidadeMuda(alvo, antigo, novo)) {
+    const deAntes = alvo.unidade ?? antigo?.unidade;
+    const dados = await formulario(novo.nome, [
+      {
+        nome: 'q',
+        rotulo: `Quantidade (${novo.unidade})`,
+        tipo: 'number',
+        valor: alvo.quantidade ?? '',
+        dica: deAntes
+          ? `${nomeAtual} estava em ${deAntes}; ${novo.nome} é medido em ${novo.unidade}.`
+          : undefined,
+      },
+    ]);
+    if (!dados) return false;
+    troca.quantidade = paraNumero(dados.q);
+  }
+
+  await dieta.substituirItem(refeicaoId, itemId, opcaoId, troca);
+  return true;
+}
+
 /**
  * Linha de uma opção do grupo.
  * @param {Object} refeicao
@@ -448,6 +554,11 @@ function linhaDeOpcao(refeicao, item, opcao) {
   menu.onclick = async () => {
     const acao = await escolher(opcao.nome, [
       { valor: 'quantidade', rotulo: 'Mudar a quantidade', detalhe: opcao.descricao },
+      {
+        valor: 'substituir',
+        rotulo: rotuloDeSubstituir(opcao),
+        detalhe: opcao.descricao,
+      },
       { valor: 'padrao', rotulo: 'Tornar a opção padrão' },
       { valor: 'remover', rotulo: 'Remover do grupo' },
     ]);
@@ -464,6 +575,13 @@ function linhaDeOpcao(refeicao, item, opcao) {
         paraNumero(dados.q),
       );
       return recarregar();
+    }
+
+    if (acao === 'substituir') {
+      if (await substituir(refeicao.id, item.itemId, opcao.opcaoId, opcao.nome)) {
+        await recarregar();
+      }
+      return;
     }
 
     if (acao === 'padrao') {

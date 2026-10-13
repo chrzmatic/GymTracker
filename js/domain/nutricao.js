@@ -250,6 +250,7 @@ export function calcularItem(item, indice) {
     const opcoes = (item.opcoes ?? []).map((o) => ({
       ...calcularOpcao(o, indice),
       opcaoId: o.id,
+      tipo: o.tipo,
       padrao: o.id === item.padraoId,
     }));
 
@@ -401,6 +402,49 @@ export function tirarDasRefeicoes(refeicoes, usa) {
       return mudou ? { ...r, itens } : null;
     })
     .filter(Boolean);
+}
+
+/**
+ * Itens da refeição com um deles uma posição acima (-1) ou abaixo (1).
+ * @returns {Object[]|null} null se não der para mover
+ */
+export function moverItemDaRefeicao(itens, itemId, direcao) {
+  const lista = (itens ?? []).slice();
+  const de = lista.findIndex((i) => i.id === itemId);
+  const para = de + direcao;
+  if (de < 0 || para < 0 || para >= lista.length) return null;
+  [lista[de], lista[para]] = [lista[para], lista[de]];
+  return lista;
+}
+
+/**
+ * Troca o alimento (ou o prato) de um item ou opção de grupo.
+ * Mantém o id, o tipo e a quantidade; `quantidade` só muda se for passada.
+ * A unidade guardada no item sai: a quantidade vale na unidade do alimento novo.
+ * @param {Object} alvo item simples ou opção de grupo
+ * @param {{alimentoId?: string, pratoId?: string, quantidade?: number|null}} troca
+ */
+export function substituirAlimento(alvo, troca) {
+  if (alvo.tipo === TIPO_ITEM.PRATO) {
+    if (!troca.pratoId) return alvo;
+    return { ...alvo, pratoId: troca.pratoId };
+  }
+  if (!troca.alimentoId) return alvo;
+  const { unidade: _unidade, ...resto } = alvo;
+  return {
+    ...resto,
+    alimentoId: troca.alimentoId,
+    quantidade: troca.quantidade === undefined ? alvo.quantidade : troca.quantidade,
+  };
+}
+
+/**
+ * true se a quantidade do item não serve para o alimento novo
+ * (g para ml, por exemplo). Sem o alimento antigo, não dá para saber: true.
+ */
+export function unidadeMuda(alvo, antigo, novo) {
+  const atual = alvo.unidade ?? antigo?.unidade;
+  return !atual || atual !== novo.unidade;
 }
 
 /** Metas do plano. Meta ausente é null, não zero. */

@@ -8,6 +8,8 @@ import {
   calcularPlano,
   calcularPrato,
   calcularRefeicao,
+  moverItemDaRefeicao,
+  substituirAlimento,
   TIPO_ITEM,
   tirarDasRefeicoes,
 } from '../domain/nutricao.js';
@@ -411,6 +413,33 @@ export async function removerItem(refeicaoId, itemId) {
     ...refeicao,
     itens: refeicao.itens.filter((i) => i.id !== itemId),
   });
+}
+
+/** Sobe (-1) ou desce (1) o item na refeição. */
+export async function moverItem(refeicaoId, itemId, direcao) {
+  const refeicao = await repo.buscarRefeicao(refeicaoId);
+  if (!refeicao) return false;
+  const itens = moverItemDaRefeicao(refeicao.itens, itemId, direcao);
+  if (!itens) return false;
+  await repo.salvarRefeicao({ ...refeicao, itens });
+  return true;
+}
+
+/**
+ * Troca o alimento (ou prato) de um item, ou de uma opção do grupo se vier
+ * `opcaoId`. A quantidade fica a mesma, a não ser que venha outra em `troca`.
+ * @param {{alimentoId?: string, pratoId?: string, quantidade?: number|null}} troca
+ */
+export function substituirItem(refeicaoId, itemId, opcaoId, troca) {
+  return mexerNoItem(refeicaoId, itemId, (item) =>
+    opcaoId
+      ? {
+        ...item,
+        opcoes: (item.opcoes ?? []).map((o) =>
+          o.id === opcaoId ? substituirAlimento(o, troca) : o
+        ),
+      }
+      : substituirAlimento(item, troca));
 }
 
 /** Acrescenta um item (o id é gerado aqui). */

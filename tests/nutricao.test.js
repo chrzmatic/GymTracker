@@ -14,10 +14,13 @@ import {
   escalar,
   INFO_NUTRIENTES,
   metasDoPlano,
+  moverItemDaRefeicao,
   NUTRIENTES,
   somar,
+  substituirAlimento,
   TIPO_ITEM,
   tirarDasRefeicoes,
+  unidadeMuda,
   valoresDeReferencia,
   zeros,
 } from '../js/domain/nutricao.js';
@@ -746,4 +749,87 @@ test('a lista de nutrientes da tela tem os mesmos ids e ordem dos cálculos', ()
   INFO_NUTRIENTES.forEach((n) => {
     assert.ok(n.rotulo && n.unidade && Number.isInteger(n.casas), n.id);
   });
+});
+
+/* --- Ordem e troca de itens da refeição --- */
+
+const ITENS = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+const ids = (lista) => lista.map((i) => i.id);
+
+test('mover item: sobe e desce uma posição, sem alterar a lista original', () => {
+  assert.deepEqual(ids(moverItemDaRefeicao(ITENS, 'b', -1)), ['b', 'a', 'c']);
+  assert.deepEqual(ids(moverItemDaRefeicao(ITENS, 'b', 1)), ['a', 'c', 'b']);
+  assert.deepEqual(ids(ITENS), ['a', 'b', 'c']);
+});
+
+test('mover item: o primeiro não sobe, o último não desce, id inexistente não move', () => {
+  assert.equal(moverItemDaRefeicao(ITENS, 'a', -1), null);
+  assert.equal(moverItemDaRefeicao(ITENS, 'c', 1), null);
+  assert.equal(moverItemDaRefeicao(ITENS, 'x', 1), null);
+  assert.equal(moverItemDaRefeicao(undefined, 'a', 1), null);
+});
+
+test('substituir alimento: troca o alimento e mantém id, tipo e quantidade', () => {
+  const item = { id: 'i1', tipo: 'alimento', alimentoId: 'alim-aveia', quantidade: 20 };
+  assert.deepEqual(substituirAlimento(item, { alimentoId: 'alim-granola' }), {
+    id: 'i1',
+    tipo: 'alimento',
+    alimentoId: 'alim-granola',
+    quantidade: 20,
+  });
+  assert.equal(item.alimentoId, 'alim-aveia', 'o original não muda');
+});
+
+test('substituir alimento: quantidade nova só quando passada; a unidade antiga sai', () => {
+  const item = {
+    id: 'i1',
+    tipo: 'alimento',
+    alimentoId: 'alim-aveia',
+    quantidade: 20,
+    unidade: 'g',
+  };
+  const trocado = substituirAlimento(item, { alimentoId: 'alim-leite', quantidade: 300 });
+  assert.equal(trocado.quantidade, 300);
+  assert.equal('unidade' in trocado, false);
+  assert.equal(
+    substituirAlimento(item, { alimentoId: 'x', quantidade: null }).quantidade,
+    null,
+  );
+});
+
+test('substituir: prato troca por prato e mantém as porções; opção de grupo também', () => {
+  const prato = { id: 'i2', tipo: 'prato', pratoId: 'p1', porcoes: 2 };
+  assert.deepEqual(substituirAlimento(prato, { pratoId: 'p2' }), {
+    ...prato,
+    pratoId: 'p2',
+  });
+  const opcao = { id: 'o1', tipo: 'alimento', alimentoId: 'alim-arroz', quantidade: 150 };
+  assert.deepEqual(substituirAlimento(opcao, { alimentoId: 'alim-batata' }), {
+    ...opcao,
+    alimentoId: 'alim-batata',
+  });
+});
+
+test('substituir sem o id do tipo certo não muda nada', () => {
+  const prato = { id: 'i2', tipo: 'prato', pratoId: 'p1', porcoes: 2 };
+  const item = { id: 'i1', tipo: 'alimento', alimentoId: 'alim-aveia', quantidade: 20 };
+  assert.equal(substituirAlimento(prato, { alimentoId: 'alim-aveia' }), prato);
+  assert.equal(substituirAlimento(item, { pratoId: 'p1' }), item);
+});
+
+test('unidade muda: g para g não, g para ml sim, sem o alimento antigo sim', () => {
+  const item = { alimentoId: 'alim-aveia', quantidade: 20 };
+  const g = { unidade: 'g' };
+  const ml = { unidade: 'ml' };
+  assert.equal(unidadeMuda(item, g, g), false);
+  assert.equal(unidadeMuda(item, g, ml), true);
+  assert.equal(unidadeMuda(item, undefined, g), true);
+  assert.equal(unidadeMuda({ ...item, unidade: 'ml' }, g, ml), false, 'vale a do item');
+});
+
+test('as opções do grupo calculado dizem se são alimento ou prato', () => {
+  const grupo = REFEICOES[0].itens[0];
+  const r = calcularItem(grupo, indice);
+  assert.deepEqual(r.opcoes.map((o) => o.tipo), grupo.opcoes.map((o) => o.tipo));
+  assert.ok(r.opcoes.some((o) => o.tipo === TIPO_ITEM.PRATO), 'tem prato no exemplo');
 });
